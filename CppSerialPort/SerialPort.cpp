@@ -452,26 +452,21 @@ int SerialPort::read()
 
 ssize_t SerialPort::write(int byteToSend)
 {
-#if (defined(_WIN32) || defined(__CYGWIN__))
-    /*
-    DWORD writtenBytes{0};
-    WriteFile(this->m_serialPortHandle, &byteToSend, 1, &writtenBytes, NULL);
-    return ( (writtenBytes == 0) ? 1 : 0);
-    */
     auto writtenBytes = ::write(this->getFileDescriptor(), &byteToSend, 1);
-    //auto writtenBytes = fwrite(&byteToSend, sizeof(char), 1, this->m_fileStream);
     if(writtenBytes < 0) {
         return (errno == EAGAIN ? 0 : 1);
     }
     return writtenBytes;
-#else
-    auto writtenBytes = ::write(this->getFileDescriptor(), &byteToSend, 1);
-    //auto writtenBytes = fwrite(&byteToSend, sizeof(char), 1, this->m_fileStream);
+}
+
+ssize_t SerialPort::writeLine(const std::string &str)
+{
+    std::string toWrite{str + this->lineEnding()};
+    auto writtenBytes = ::write(this->getFileDescriptor(), toWrite.c_str(), toWrite.length());
     if(writtenBytes < 0) {
-        return (errno == EAGAIN ? 0 : 1);
+        return (errno == EAGAIN ? 0 : toWrite.length());
     }
     return writtenBytes;
-#endif
 }
 
 void SerialPort::closePort()

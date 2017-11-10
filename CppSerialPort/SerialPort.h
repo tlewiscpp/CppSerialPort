@@ -164,6 +164,9 @@ public:
     void disableRTS();
     void flushRx() override;
     void flushTx() override;
+    ssize_t write(int byteToWrite) override;
+    ssize_t writeLine(const std::string &str) override;
+
 
     void setBaudRate(BaudRate baudRate);
     void setStopBits(StopBits stopBits);
@@ -196,8 +199,6 @@ private:
     DataBits m_dataBits;
     Parity m_parity;
     bool m_isOpen;
-
-    ssize_t write(int byteToWrite) override;
 
     static const long constexpr SERIAL_PORT_BUFFER_MAX{4096};
     static const long constexpr SINGLE_MESSAGE_BUFFER_MAX{4096};
