@@ -1,0 +1,36 @@
+cmake_minimum_required (VERSION 3.1)
+set(CMAKE_CXX_STANDARD 14)
+set (PROJECT_NAME CppSerialPort)
+project (${PROJECT_NAME})
+
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Release)
+endif()
+
+if (SHARED_LIB_BUILD)
+    set(LIBRARY_TYPE SHARED)
+else()
+    set (LIBRARY_TYPE STATIC)
+endif()
+
+set (SOURCE_ROOT CppSerialPort)
+
+set (${PROJECT_NAME}_SOURCE_FILES
+        ${SOURCE_ROOT}/IByteStream.cpp
+        ${SOURCE_ROOT}/SerialPort.cpp
+        ${SOURCE_ROOT}/TcpClient.cpp)
+
+set (${PROJECT_NAME}_HEADER_FILES
+        ${SOURCE_ROOT}/IByteStream.h
+        ${SOURCE_ROOT}/SerialPort.h
+        ${SOURCE_ROOT}/TcpClient.h)
+
+#add_library(${PROJECT_NAME} STATIC ${${PROJECT_NAME}_SOURCES})
+add_library(${PROJECT_NAME} ${LIBRARY_TYPE} 
+    ${${PROJECT_NAME}_SOURCE_FILES}
+    ${${PROJECT_NAME}_HEADER_FILES})
+
+target_include_directories(${PROJECT_NAME}
+        PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
+        PUBLIC ${SOURCE_ROOT}/)
+
