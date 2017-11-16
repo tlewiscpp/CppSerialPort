@@ -7,6 +7,13 @@ if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release)
 endif()
 
+if (NOT STATIC_BUILD)
+    set (SHARED_LIB_BUILD)
+
+else()
+    unset(SHARED_LIB_BUILD)
+endif()
+
 if (SHARED_LIB_BUILD)
     set(LIBRARY_TYPE SHARED)
 else()
