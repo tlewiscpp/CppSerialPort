@@ -24,6 +24,7 @@
 #include <sstream>
 
 #include "IByteStream.h"
+#include <unordered_set>
 
 namespace CppSerialPort {
 
@@ -216,7 +217,7 @@ private:
 
     int getFileDescriptor() const;
 
-#if (defined(_WIN32) || defined(__CYGWIN__))
+#if (_MSC_VER)
     static const char *DTR_RTS_ON_IDENTIFIER;
         static const int constexpr NUMBER_OF_POSSIBLE_SERIAL_PORTS{256};
         static const char *SERIAL_PORT_REGISTRY_PATH;

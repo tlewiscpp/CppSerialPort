@@ -18,21 +18,18 @@
 
 #include <cstdio>
 #include <cstring>
-#include <cstdlib>
-#include <iostream>
 #include <utility>
-#include <chrono>
-#include <memory>
-#include <fstream>
 #include <stdexcept>
 #include <cctype>
 #include <algorithm>
 #include <future>
-#include <deque>
-#include <mutex>
-#include <wchar.h>
+#include <set>
+#include <climits>
+
 #if (defined(_WIN32) || defined(__CYGWIN__))
-    #include <Windows.h>
+#    include <Windows.h>
+#    include <io.h>
+//#    include <Winsock2.h>
 #else
     #include <termios.h>
     #include <sys/ioctl.h>
@@ -44,8 +41,6 @@
     #include <sys/file.h>
     #include <errno.h>
 #endif
-#include <set>
-#include <fcntl.h>
 
 #include "SerialPort.h"
 
@@ -353,26 +348,7 @@ std::pair<int, int> SerialPort::parseParity(Parity parity)
 
 int SerialPort::read()
 {
-#if (defined(_WIN32) || defined(__CYGWIN__))
-    /*
-    if (!this->m_readBuffer.empty()) {
-        char returnValue{this->m_readBuffer.front()};
-        this->m_readBuffer = this->m_readBuffer.substr(1);
-        return static_cast<int>(returnValue);
-    }
-    static char readStuff[SERIAL_PORT_BUFFER_MAX];
-    memset(readStuff, '\0', SERIAL_PORT_BUFFER_MAX);
-
-    DWORD readBytes{0};
-    auto readResult = ReadFile(this->m_serialPortHandle, readStuff, SERIAL_PORT_BUFFER_MAX - 1, &readBytes, NULL);
-    if ( (readBytes <= 0) || (readResult == false) ) {
-        return 0;
-    }
-    this->m_readBuffer += std::string{readStuff};
-    char returnValue{this->m_readBuffer.front()};
-    this->m_readBuffer = this->m_readBuffer.substr(1);
-    return static_cast<int>(returnValue);
-    */
+#if defined(_MSC_VER)
 
     if (!this->m_readBuffer.empty()) {
         char returnValue{this->m_readBuffer.front()};
@@ -398,7 +374,7 @@ int SerialPort::read()
     (void)timeout;
     // Wait for input to become ready or until the time out; the first parameter is
     // 1 more than the largest file descriptor in any of the sets
-    //if (select(this->getFileDescriptor() + 1, &read_fds, &write_fds, &except_fds, &timeout) == 1) {
+    if (select(this->getFileDescriptor() + 1, &read_fds, &write_fds, &except_fds, &timeout) == 1) {
         DWORD readBytes{0};
         auto readResult = ReadFile(this->m_serialPortHandle, readStuff, SERIAL_PORT_BUFFER_MAX - 1, &readBytes, NULL);
         if ( (readBytes <= 0) || (readResult <= 0) ) {
@@ -408,7 +384,7 @@ int SerialPort::read()
         char returnValue{this->m_readBuffer.front()};
         this->m_readBuffer = this->m_readBuffer.substr(1);
         return static_cast<int>(returnValue);
-    //}
+    }
     return 0;
 
 #else
@@ -452,7 +428,7 @@ int SerialPort::read()
 
 ssize_t SerialPort::write(int byteToSend)
 {
-    auto writtenBytes = ::write(this->getFileDescriptor(), &byteToSend, 1);
+    auto writtenBytes = _write(this->getFileDescriptor(), &byteToSend, 1);
     if(writtenBytes < 0) {
         return (errno == EAGAIN ? 0 : 1);
     }
@@ -462,7 +438,7 @@ ssize_t SerialPort::write(int byteToSend)
 ssize_t SerialPort::writeLine(const std::string &str)
 {
     std::string toWrite{str + this->lineEnding()};
-    auto writtenBytes = ::write(this->getFileDescriptor(), toWrite.c_str(), toWrite.length());
+    auto writtenBytes = _write(this->getFileDescriptor(), toWrite.c_str(), toWrite.length());
     if(writtenBytes < 0) {
         return (errno == EAGAIN ? 0 : toWrite.length());
     }
@@ -474,9 +450,8 @@ void SerialPort::closePort()
     if (!this->isOpen()) {
         return;
     }
-#if (defined(_WIN32) || defined(__CYGWIN__))
+#if defined(_MSC_VER)
     CloseHandle(this->m_serialPortHandle);
-    this->m_isOpen = false;
 #else
     int status{0};
     if(ioctl(this->getFileDescriptor(), TIOCMGET, &status) == -1) {
@@ -492,8 +467,8 @@ void SerialPort::closePort()
     //close(this->getFileDescriptor());
     flock(this->getFileDescriptor(), LOCK_UN);
     fclose(this->m_fileStream);
-    this->m_isOpen = false;
 #endif
+	this->m_isOpen = false;
 }
 
 
@@ -631,16 +606,19 @@ bool SerialPort::isAvailableSerialPort(const std::string &name)
 
 std::pair<int, std::string> SerialPort::getPortNameAndNumber(const std::string &name)
 {
-#if (defined(_WIN32) || defined(__CYGWIN__))
-    std::string str{name};
-    int i{0};
-    for (auto &it : SerialPort::SERIAL_PORT_NAMES) {
-        if (it.find(str) != std::string::npos) {
-            return std::make_pair(i, str);
-        }
-        i++;
-    }
-    throw std::runtime_error("ERROR: " + name + " is an invalid serial port name");
+#if defined(_MSC_VER)
+	auto foundCom = name.find("COM");
+	if ((foundCom == std::string::npos) || (foundCom != 0) || (name.length() == 3)) {
+		throw std::runtime_error("ERROR: " + name + " is an invalid serial port name");
+	}
+	try {
+		int comNumber{ std::stoi(name.substr(3)) };
+		return std::make_pair(comNumber, name);
+	} catch (std::exception &e) {
+		(void)e;
+		throw std::runtime_error("ERROR: " + name + " is an invalid serial port name");
+	}
+
 #else
     std::string str{name};
     auto iter = std::find(SERIAL_PORT_NAMES.cbegin(), SERIAL_PORT_NAMES.cend(), str);
@@ -1104,24 +1082,28 @@ std::vector<std::string> SerialPort::availableSerialPorts()
 
 std::vector<std::string> SerialPort::generateSerialPortNames()
 {
-    std::vector<std::string> returnVector;
+    std::vector<std::string> returnSet;
     for (auto &it : SerialPort::AVAILABLE_PORT_NAMES_BASE) {
-        for (int i = 0; i < 256; i++) {
-            returnVector.push_back(it + toStdString(i));
-        }
+		for (int i = 0; i < 256; i++) {
+			returnSet.push_back(it + toStdString(i));
+		}
     }
-    return returnVector;
+    return returnSet;
 }
 
 bool SerialPort::isValidSerialPortName(const std::string &serialPortName)
 {
-#if defined(_WIN32) || defined(__CYGWIN__)
-    for (int i = 0; i < 256; i++) {
-            if (serialPortName == ("COM" + std::to_string(i))) {
-                return true;
-            }
-        }
-        return false;
+#if defined(_WIN32)
+	auto foundCom = serialPortName.find("COM");
+	if ( (foundCom == std::string::npos) || (foundCom != 0) || (serialPortName.length() == 3)) {
+		return false;
+	}
+	try {
+		int comNumber{ std::stoi(serialPortName.substr(3)) };
+		return ((comNumber > 0) && (comNumber < 256));
+	} catch (std::exception &e) {
+		return false;
+	}
 #else
     for (auto &it : SerialPort::AVAILABLE_PORT_NAMES_BASE) {
         for (int i = 0; i < 256; i++) {

@@ -1,5 +1,5 @@
 /***********************************************************************
-*    ibytestream.h:                                                    *
+*    IByteStream.h:                                                    *
 *    IByteStream, base class for simple read and write operations      *
 *    Copyright (c) 2017 Tyler Lewis                                    *
 ************************************************************************
@@ -22,6 +22,13 @@
 #include <string>
 #include <sstream>
 #include <mutex>
+
+#if defined(_MSC_VER)
+#    define PATH_MAX MAX_PATH
+#    define ssize_t int
+#else
+
+#endif //defined(_MSC_VER)
 
 namespace CppSerialPort {
 

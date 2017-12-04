@@ -4,7 +4,12 @@
 
 #include "TcpClient.h"
 
-#include <unistd.h>
+#if defined(_MSC_VER)
+#    include "Ws2tcpip.h"
+#else
+#    include <unistd.h>
+#endif
+
 #include <cstring>
 
 using namespace CppSerialPort;
@@ -66,7 +71,11 @@ void TcpClient::connect()
     }
     this->m_socketDescriptor = socketDescriptor;
 
-    int acceptReuse{1};
+#if defined(_MSC_VER)
+	char acceptReuse{ 1 };
+#else
+	int acceptReuse{ 1 };
+#endif //defined(_MSC_VER)
     auto reuseSocketResult = setsockopt(socketDescriptor, SOL_SOCKET, SO_REUSEADDR, &acceptReuse, sizeof(decltype(acceptReuse)));
     if (reuseSocketResult == -1) {
         freeaddrinfo(addressInfo);
@@ -84,7 +93,11 @@ void TcpClient::connect()
 
 bool TcpClient::disconnect()
 {
-    close(this->m_socketDescriptor);
+#if defined(_MSC_VER)
+    closesocket(this->m_socketDescriptor);
+#else
+	close(this->m_socketDescriptor);
+#endif //defined(_MSC_VER)
     this->m_socketDescriptor = -1;
     this->m_readTimeoutSet = false;
     return true;
@@ -136,7 +149,12 @@ ssize_t TcpClient::write(int i)
     if (!this->isConnected()) {
         throw std::runtime_error("Cannot write on closed socket (call connect first)");
     }
-    return send(this->m_socketDescriptor, &i, 1, 0);
+#if defined(_MSC_VER)
+	char toSend{ static_cast<char>(i) };
+	return send(this->m_socketDescriptor, &toSend, 1, 0);
+#else
+	return send(this->m_socketDescriptor, &i, 1, 0);
+#endif //defined(_MSC_VER)
 }
 
 ssize_t TcpClient::writeLine(const std::string &str)

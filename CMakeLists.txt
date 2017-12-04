@@ -32,7 +32,6 @@ set (${PROJECT_NAME}_HEADER_FILES
         ${SOURCE_ROOT}/SerialPort.h
         ${SOURCE_ROOT}/TcpClient.h)
 
-#add_library(${PROJECT_NAME} STATIC ${${PROJECT_NAME}_SOURCES})
 add_library(${PROJECT_NAME} ${LIBRARY_TYPE} 
     ${${PROJECT_NAME}_SOURCE_FILES}
     ${${PROJECT_NAME}_HEADER_FILES})
@@ -40,4 +39,9 @@ add_library(${PROJECT_NAME} ${LIBRARY_TYPE}
 target_include_directories(${PROJECT_NAME}
         PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
         PUBLIC ${SOURCE_ROOT}/)
+
+if (WIN32)
+target_link_libraries(${PROJECT_NAME} shlwapi Ws2_32)
+endif()
+
 
