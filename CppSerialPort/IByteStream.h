@@ -48,6 +48,7 @@ public:
 
     std::string lineEnding() const;
     void setLineEnding(const std::string &str);
+    void setLineEnding(char chr);
 
     virtual ssize_t writeLine(const std::string &str);
 

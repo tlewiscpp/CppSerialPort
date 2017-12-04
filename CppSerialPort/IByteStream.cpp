@@ -65,6 +65,14 @@ void IByteStream::setLineEnding(const std::string &str)
     this->m_lineEnding = str;
 }
 
+void IByteStream::setLineEnding(char chr)
+{
+    if (chr == '\0') {
+        throw std::runtime_error("IByteStream::setLineEnding chr == '\\0' (invariant failure)");
+    }
+    this->m_lineEnding = std::string(1, chr);
+}
+
 ssize_t IByteStream::writeLine(const std::string &str)
 {
     std::lock_guard<std::mutex> writeLock{this->m_writeMutex};
