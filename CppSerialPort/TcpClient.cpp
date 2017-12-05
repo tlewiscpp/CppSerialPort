@@ -138,6 +138,20 @@ void TcpClient::connect()
     }
     freeaddrinfo(addressInfo);
     this->m_readBuffer.clear();
+
+    auto tv = toTimeVal(static_cast<uint32_t>(this->readTimeout()));
+    auto readTimeoutResult = setsockopt(this->m_socketDescriptor, SOL_SOCKET, SO_RCVTIMEO, reinterpret_cast<const char *>(&tv), sizeof(struct timeval));
+    if (readTimeoutResult == -1) {
+        auto errorCode = getLastError();
+        throw std::runtime_error("setsockopt(int, int, int, const void *, int) set read timeout failed: error code " + toStdString(errorCode) + " (" + getErrorString(errorCode) + ")");
+    }
+
+    tv = toTimeVal(static_cast<uint32_t>(this->writeTimeout()));
+    auto writeTimeoutResult = setsockopt(this->m_socketDescriptor, SOL_SOCKET, SO_SNDTIMEO, reinterpret_cast<const char *>(&tv), sizeof(struct timeval));
+    if (writeTimeoutResult == -1) {
+        auto errorCode = getLastError();
+        throw std::runtime_error("setsockopt(int, int, int, const void *, int) set write timeout failed: error code " + toStdString(errorCode) + " (" + getErrorString(errorCode) + ")");
+    }
 }
 
 bool TcpClient::disconnect()
@@ -154,17 +168,6 @@ bool TcpClient::disconnect()
 bool TcpClient::isConnected() const
 {
     return this->m_socketDescriptor != INVALID_SOCKET;
-}
-
-void TcpClient::setReadTimeout(int timeout) {
-	IByteStream::setReadTimeout(timeout);
-	auto tv = toTimeVal(static_cast<uint32_t>(this->readTimeout()));
-	auto readTimeoutResult = setsockopt(this->m_socketDescriptor, SOL_SOCKET, SO_RCVTIMEO,
-		reinterpret_cast<const char *>(&tv), sizeof(struct timeval));
-	if (readTimeoutResult == -1) {
-		auto errorCode = getLastError();
-		throw std::runtime_error("setsockopt(int, int, int, const void *, int): error code " + toStdString(errorCode) + " (" + getErrorString(errorCode) + ")");
-	}
 }
 
 int TcpClient::read()
@@ -267,8 +270,8 @@ void TcpClient::putBack(int c)
 timeval TcpClient::toTimeVal(uint32_t totalTimeout)
 {
     timeval tv{};
-    tv.tv_sec = totalTimeout / 1000;
-    tv.tv_usec = (totalTimeout % 1000) * 1000;
+    tv.tv_sec = static_cast<long>(totalTimeout / 1000);
+    tv.tv_usec = static_cast<long>((totalTimeout % 1000) * 1000);
     return tv;
 }
 

@@ -36,7 +36,6 @@ public:
     void flushRx() override;
     void flushTx() override;
     void putBack(int c) override;
-	void setReadTimeout(int timeout) override;
 
     void connect(const std::string &hostName, uint16_t portNumber);
     void connect();

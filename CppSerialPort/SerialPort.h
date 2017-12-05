@@ -165,7 +165,6 @@ public:
     void disableRTS();
     void flushRx() override;
     void flushTx() override;
-	void setReadTimeout(int timeout) override;
     ssize_t write(int byteToWrite) override;
 	ssize_t writeLine(const std::string &str) override;
 
@@ -194,7 +193,6 @@ private:
     std::string m_readBuffer;
     std::string m_portName;
     int m_portNumber;
-    FILE *m_fileStream;
     BaudRate m_baudRate;
     StopBits m_stopBits;
     DataBits m_dataBits;
@@ -225,8 +223,8 @@ private:
         static const int constexpr NUMBER_OF_POSSIBLE_SERIAL_PORTS{256};
         static const char *SERIAL_PORT_REGISTRY_PATH;
         HANDLE m_serialPortHandle;
-        int m_fileDescriptor;
 #else
+        FILE *m_fileStream;
     static const int constexpr NUMBER_OF_POSSIBLE_SERIAL_PORTS{256*9};
     int m_serialPortPool[NUMBER_OF_POSSIBLE_SERIAL_PORTS];
     termios m_newPortSettings;

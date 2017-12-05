@@ -1,5 +1,5 @@
 /***********************************************************************
-*    ibytestream.cpp:                                                  *
+*    IByteStream.cpp:                                                  *
 *    IByteStream, base class for simple read and write operations      *
 *    Copyright (c) 2017 Tyler Lewis                                    *
 ************************************************************************
@@ -11,7 +11,7 @@
 *    This file holds the implementaiton for the methods used in        *
 *                                                                      *
 *    You should have received a copy of the GNU Lesser General         *
-*    Public license along with tjlutils                                *
+*    Public license along with CppSerialPort                           *
 *    If not, see <http://www.gnu.org/licenses/>                        *
 ***********************************************************************/
 
@@ -31,9 +31,11 @@ const char *IByteStream::DEFAULT_LINE_ENDING{"\n"};
 #endif //defined(_WIN32)
 
 const int IByteStream::DEFAULT_READ_TIMEOUT{1000};
+const int IByteStream::DEFAULT_WRITE_TIMEOUT{1000};
 
 IByteStream::IByteStream() :
         m_readTimeout{DEFAULT_READ_TIMEOUT},
+        m_writeTimeout{DEFAULT_WRITE_TIMEOUT},
         m_lineEnding{DEFAULT_LINE_ENDING},
         m_writeMutex{}
 {
@@ -51,6 +53,19 @@ void IByteStream::setReadTimeout(int timeout)
 int IByteStream::readTimeout() const
 {
     return this->m_readTimeout;
+
+}
+void IByteStream::setWriteTimeout(int timeout)
+{
+    if (timeout < 0) {
+        throw std::runtime_error("IByteStream::setWriteTimeout(int): invariant failure (write timeout cannot be less than 0, " + toStdString(timeout) + " < 0)");
+    }
+    this->m_writeTimeout = timeout;
+}
+
+int IByteStream::writeTimeout() const
+{
+    return this->m_writeTimeout;
 }
 
 std::string IByteStream::lineEnding() const
@@ -104,7 +119,7 @@ std::string IByteStream::readLine(bool *timeout)
 std::string IByteStream::readUntil(const std::string &until, bool *timeout)
 {
     uint64_t startTime{IByteStream::getEpoch()};
-    std::stringstream returnString{""};
+    std::string returnString{""};
     if (timeout) {
         *timeout = false;
     }
@@ -113,16 +128,15 @@ std::string IByteStream::readUntil(const std::string &until, bool *timeout)
         if (maybeChar == 0) {
             continue;
         }
-        returnString << static_cast<char>(maybeChar);
-        size_t foundPosition{returnString.str().find(until)};
-        if (foundPosition != std::string::npos) {
-            return returnString.str().substr(0, foundPosition);
+        returnString += static_cast<char>(maybeChar);
+        if (endsWith(returnString, until)) {
+            return returnString;
         }
     } while ((IByteStream::getEpoch() - startTime) <= static_cast<unsigned long>(this->m_readTimeout));
     if (timeout) {
         *timeout = true;
     }
-    return returnString.str();
+    return returnString;
 }
 
 std::string IByteStream::readUntil(char until, bool *timeout)
@@ -143,34 +157,17 @@ bool IByteStream::available()
     return (this->peek() != '\0');
 }
 
-bool IByteStream::endsWith(const std::string &fullString, const std::string &ending) {
-    if (fullString.length() >= ending.length()) {
-        return (0 == fullString.compare (fullString.length() - ending.length(), ending.length(), ending));
-    } else {
-        return false;
-    }
-}
-
 bool IByteStream::fileExists(const std::string &fileToCheck)
 {
 #if defined(_WIN32)
     return (PathFileExists(fileToCheck.c_str()) == 1);
-#elif defined(_WIN32)
-    std::ifstream readFromFile;
-        readFromFile.open(fileToCheck);
-        if (readFromFile.good()) {
-            readFromFile.close();
-            return true;
-        } else {
-            return false;
-        }
 #else
     return (access(fileToCheck.c_str(),F_OK) != -1);
 #endif
 }
 
 
-#if defined(_WIN32)
+#if defined(_MSC_VER)
 #include <Windows.h>
 uint64_t IByteStream::getEpoch()
 {
@@ -188,7 +185,7 @@ uint64_t IByteStream::getEpoch()
 #include <sys/time.h>
 uint64_t IByteStream::getEpoch()
 {
-    struct timeval tv;
+    struct timeval tv{};
     gettimeofday(&tv, NULL);
     return (static_cast<unsigned long long>(tv.tv_sec) * 1000) +
            (static_cast<unsigned long long>(tv.tv_usec) / 1000);

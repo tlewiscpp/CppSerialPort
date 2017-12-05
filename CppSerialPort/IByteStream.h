@@ -38,7 +38,7 @@ class IByteStream
 {
 public:
     IByteStream();
-    virtual ~IByteStream() { }
+    virtual ~IByteStream() = default;
 
     virtual int read() = 0;
     virtual ssize_t write(int) = 0;
@@ -52,8 +52,11 @@ public:
 
     bool available();
     int peek();
-	virtual void setReadTimeout(int timeout);
+	void setReadTimeout(int timeout);
     int readTimeout() const;
+
+    void setWriteTimeout(int timeout);
+    int writeTimeout() const;
 
     std::string lineEnding() const;
     void setLineEnding(const std::string &str);
@@ -67,8 +70,9 @@ public:
 
 protected:
     virtual void putBack(int c) = 0;
-    bool endsWith (const std::string &fullString, const std::string &ending);
-
+    static inline bool endsWith (const std::string &fullString, const std::string &ending) {
+        return ( (fullString.length() < ending.length()) ? false : std::equal(ending.rbegin(), ending.rend(), fullString.rbegin()) );
+    }
     template<typename T> static inline std::string toStdString(const T &t) {
         return dynamic_cast<std::ostringstream &>(std::ostringstream{""} << t).str();
     }
@@ -84,14 +88,15 @@ protected:
     static bool fileExists(const std::string &filePath);
 
 	static const int DEFAULT_READ_TIMEOUT;
+	static const int DEFAULT_WRITE_TIMEOUT;
 
 private:
     int m_readTimeout;
+    int m_writeTimeout;
     std::string m_lineEnding;
     std::mutex m_writeMutex;
 
     static uint64_t getEpoch();
-
 
     static const char *DEFAULT_LINE_ENDING;
 
