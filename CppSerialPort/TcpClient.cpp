@@ -11,6 +11,7 @@
 #endif
 
 #include <cstring>
+#include <climits>
 
 using namespace CppSerialPort;
 
@@ -66,7 +67,7 @@ std::string TcpClient::getErrorString(int errorCode)
 	wcstombs(errorString, wideErrorString, PATH_MAX);
 	LocalFree(wideErrorString);
 #else
-	strerror_s(errorString, PATH_MAX, errorCode);
+	strerror_r(errorCode, errorString, PATH_MAX);
 #endif //defined(_MSC_VER)
 	return std::string{ errorString };
 }

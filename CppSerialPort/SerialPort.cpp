@@ -300,6 +300,7 @@ void SerialPort::openPort()
     status |= TIOCM_DTR;    /* turn on DTR */
     status |= TIOCM_RTS;    /* turn on RTS */
     if(ioctl(this->getFileDescriptor(), TIOCMSET, &status) == -1) {
+        auto errorCode = getLastError();
         this->closePort();
 		throw std::runtime_error("ioctl(int, int, int): Unable to set DTR & RTS settings for " + this->m_portName + ": " + toStdString(errorCode) + " (" + getErrorString(errorCode) + ")");
 	}
@@ -385,7 +386,7 @@ std::string SerialPort::getErrorString(int errorCode) {
 	wcstombs(errorString, wideErrorString, PATH_MAX);
 	LocalFree(wideErrorString);
 #else
-	strerror_s(errorString, PATH_MAX, errorCode);
+    strerror_r(errorCode, errorString, PATH_MAX);
 #endif //defined(_MSC_VER)
 	return std::string{ errorString };
 }
@@ -456,7 +457,11 @@ int SerialPort::read()
 
 ssize_t SerialPort::write(int byteToSend)
 {
+#if defined(_MSC_VER)
     auto writtenBytes = _write(this->getFileDescriptor(), &byteToSend, 1);
+#else
+    auto writtenBytes = ::write(this->getFileDescriptor(), &byteToSend, 1);
+#endif //defined(_MSC_VER)
     if(writtenBytes < 0) {
         return (errno == EAGAIN ? 0 : 1);
     }
@@ -466,7 +471,11 @@ ssize_t SerialPort::write(int byteToSend)
 ssize_t SerialPort::writeLine(const std::string &str)
 {
     std::string toWrite{str + this->lineEnding()};
+#if defined(_MSC_VER)
     auto writtenBytes = _write(this->getFileDescriptor(), toWrite.c_str(), toWrite.length());
+#else
+    auto writtenBytes = ::write(this->getFileDescriptor(), toWrite.c_str(), toWrite.length());
+#endif
     if(writtenBytes < 0) {
         return (errno == EAGAIN ? 0 : toWrite.length());
     }

@@ -23,6 +23,10 @@ target_include_directories(${PROJECT_NAME}
         PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
         PUBLIC ${SOURCE_ROOT}/
         PUBLIC ${CPP_SERIAL_PORT_ROOT}/)
+if (WIN32)
+    target_link_libraries(${PROJECT_NAME} CppSerialPort)
+else()
+    target_link_libraries(${PROJECT_NAME} CppSerialPort pthread)
+endif()
 
-target_link_libraries(${PROJECT_NAME} CppSerialPort)
 
