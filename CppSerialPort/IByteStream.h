@@ -50,7 +50,7 @@ public:
 
     bool available();
     int peek();
-    void setReadTimeout(int timeout);
+	virtual void setReadTimeout(int timeout);
     int readTimeout() const;
 
     std::string lineEnding() const;
@@ -65,7 +65,6 @@ public:
 
 protected:
     virtual void putBack(int c) = 0;
-
     bool endsWith (const std::string &fullString, const std::string &ending);
 
     template<typename T> static inline std::string toStdString(const T &t) {
@@ -82,6 +81,8 @@ protected:
 
     static bool fileExists(const std::string &filePath);
 
+	static const int DEFAULT_READ_TIMEOUT;
+
 private:
     int m_readTimeout;
     std::string m_lineEnding;
@@ -91,7 +92,6 @@ private:
 
 
     static const char *DEFAULT_LINE_ENDING;
-    static const int DEFAULT_READ_TIMEOUT;
 
     ssize_t write(const std::string &str);
 };

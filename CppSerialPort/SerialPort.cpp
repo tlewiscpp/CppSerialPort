@@ -26,9 +26,10 @@
 #include <set>
 #include <climits>
 
-#if (defined(_WIN32) || defined(__CYGWIN__))
+#if defined(_MSC_VER)
 #    include <Windows.h>
 #    include <io.h>
+#    include <Fcntl.h>
 //#    include <Winsock2.h>
 #else
     #include <termios.h>
@@ -43,6 +44,7 @@
 #endif
 
 #include "SerialPort.h"
+#include <iostream>
 
 namespace CppSerialPort {
 
@@ -184,10 +186,10 @@ int SerialPort::getFileDescriptor() const
 
 void SerialPort::openPort()
 {
-#if (defined(_WIN32) || defined(__CYGWIN__))
-    if (!isAvailableSerialPort(this->m_portName)) {
-        throw std::runtime_error("ERROR: " + this->m_portName + " is not a currently available serial port (is something else using it?)");
-    }
+	if (!isAvailableSerialPort(this->m_portName)) {
+		throw std::runtime_error("ERROR: " + this->m_portName + " is not a currently available serial port (is something else using it?)");
+	}
+#if defined(_MSC_VER)
     std::string mode{""};
     mode += "baud=" + std::to_string(static_cast<int>(this->m_baudRate)) + " ";
     mode += "data=" + std::to_string(static_cast<int>(this->m_dataBits)) + " ";
@@ -198,14 +200,15 @@ void SerialPort::openPort()
     this->m_serialPortHandle = CreateFileA(this->m_portName.c_str(),
                                                   GENERIC_READ|GENERIC_WRITE,
                                                   0,                          /* no share  */
-                                                  NULL,                       /* no security */
+                                                  nullptr,                       /* no security */
                                                   OPEN_EXISTING,
                                                   0,                          /* no threads */
-                                                  NULL);                      /* no templates */
+		                                          nullptr);                      /* no templates */
 
     if(this->m_serialPortHandle == INVALID_HANDLE_VALUE) {
-        throw std::runtime_error("ERROR: Unable to open serial port " + this->m_portName);
-    }
+		const auto errorCode = getLastError();
+		throw std::runtime_error("CreateFileA(LPCSTR, DWORD, DWORD, LPSECURITY_ATTRIBUTES, DWORD, DWORD, HANDLE, HANDLE): Unable to open serial port " + this->m_portName + ": " + toStdString(errorCode) + " (" + getErrorString(errorCode) + ")");
+	}
 
     DCB portSettings;
     memset(&portSettings, 0, sizeof(portSettings));
@@ -213,13 +216,15 @@ void SerialPort::openPort()
 
     if(!BuildCommDCBA(mode.c_str(), &portSettings)) {
         this->closePort();
-        throw std::runtime_error("ERROR: Unable to set dcb settings for serial port " + this->m_portName);
-    }
+		const auto errorCode = getLastError();
+		throw std::runtime_error("BuildCommDCBA(HANDLE, DCB*): Unable to set comm state settings for " + this->m_portName + ": " + toStdString(errorCode) + " (" + getErrorString(errorCode) + ")");
+	}
 
     if(!SetCommState(this->m_serialPortHandle, &portSettings)) {
         this->closePort();
-        throw std::runtime_error("ERROR: Unable to set cfg settings for serial port " + this->m_portName);
-    }
+	    const auto errorCode = getLastError();
+		throw std::runtime_error("SetCommState(HANDLE, DCB*): Unable to set comm state settings for " + this->m_portName + ": " + toStdString(errorCode) + " (" + getErrorString(errorCode) + ")");
+	}
 
     COMMTIMEOUTS Cptimeouts;
     Cptimeouts.ReadIntervalTimeout         = MAXDWORD;
@@ -230,24 +235,16 @@ void SerialPort::openPort()
 
     if(!SetCommTimeouts(this->m_serialPortHandle, &Cptimeouts)) {
         this->closePort();
-        throw std::runtime_error("ERROR: Unable to set timeout settings for serial port " + this->m_portName);
+		auto errorCode = getLastError();
+		throw std::runtime_error("SetCommTimeouts(HANDLE, COMMTIMEOUTS*): Unable to set timeout settings for " + this->m_portName + ": " + toStdString(errorCode) + " (" + getErrorString(errorCode) + ")");
     }
-    this->m_fileDescriptor = _open_osfhandle(reinterpret_cast<intptr_t>(this->m_serialPortHandle), 0);
+	this->m_fileDescriptor = _open_osfhandle(reinterpret_cast<intptr_t>(this->m_serialPortHandle), _O_TEXT);
     if (this->m_fileDescriptor == -1) {
-        throw std::runtime_error("ERROR: Unable to get raw file descriptor from HANDLE*: _open_osfhandle returned " + toStdString(this->m_fileDescriptor));
-    }
-    /*
-    this->m_fileStream = _fdopen(fileDescriptor, "rw");
-    if (this->m_fileStream == nullptr) {
-        throw std::runtime_error("ERROR: Unable to get FILE* fileDescriptor (which is " + toStdString(fileDescriptor) + ")");
-    }
-    */
-    this->m_isOpen = true;
+		const auto errorCode = getLastError();
+		throw std::runtime_error("_open_osfhandle(intptr_t, int): Unable to open C runtime file handle for " + this->m_portName + ": " + toStdString(errorCode) + " (" + getErrorString(errorCode) + ")");
+	}
 #else
 
-    if (!isAvailableSerialPort(this->m_portName)) {
-        throw std::runtime_error("ERROR: " + this->m_portName + " is not a currently available serial port (is something else using it?)");
-    }
     int status{0};
     int error{0};
     int baudRate{static_cast<int>(this->m_baudRate)};
@@ -256,34 +253,25 @@ void SerialPort::openPort()
     int cpar{parityPair.first};
     int ipar{parityPair.second};
     int bstop{static_cast<int>(this->m_stopBits)};
-    /*
-    this->m_serialPortHandle = open(this->m_portName.c_str(), O_RDWR | O_NOCTTY | O_NDELAY);
-    if(this->m_serialPortHandle == -1) {
-        throw std::runtime_error("ERROR: Unable to open serial port " + this->m_portName + " (is something else using it?)");
-    }
-    this->m_fileStream = fdopen(this->m_serialPortHandle, "rw");
-    if (!this->m_fileStream) {
-        this->closePort();
-        throw std::runtime_error("ERROR: Unable to open serial port file stream for serial port" + this->m_portName);
-    }
-    */
-    //this->m_fileStream = fdopen(this->m_serialPortHandle, "rw");
     this->m_fileStream = fopen(this->m_portName.c_str(), "r+");
     if (!this->m_fileStream) {
+		const auto errorCode = getLastError();
         this->closePort();
-        throw std::runtime_error("ERROR: Unable to open serial port file stream for serial port" + this->m_portName);
+		throw std::runtime_error("fopen(const char *, const char *): Unable to open FILE pointer for " + this->m_portName + ": " + toStdString(errorCode) + " (" + getErrorString(errorCode) + ")");
     }
 
     if(flock(this->getFileDescriptor(), LOCK_EX | LOCK_NB) != 0) {
+		const auto errorCode = getLastError();
         this->closePort();
-        throw std::runtime_error("ERROR: Another process has locked serial port " + this->m_portName);
-    }
+		throw std::runtime_error("flock(int, int): Unable to lock serial port " + this->m_portName + ": " + toStdString(errorCode) + " (" + getErrorString(errorCode) + ")");
+	}
 
     error = tcgetattr(this->getFileDescriptor(), this->m_oldPortSettings + this->m_portNumber);
     if (error == -1) {
-        this->closePort();
-        throw std::runtime_error("ERROR: Unable to read port settings for serial port " + this->m_portName);
-    }
+		const auto errorCode = getLastError();
+		this->closePort();
+		throw std::runtime_error("tcgetattr(int, termios *): Unable to read port settings for " + this->m_portName + ": " + toStdString(errorCode) + " (" + getErrorString(errorCode) + ")");
+	}
     memset(&this->m_newPortSettings, 0, sizeof(this->m_newPortSettings));
 
     this->m_newPortSettings.c_cflag = cbits | cpar | bstop | CLOCAL | CREAD;
@@ -298,30 +286,35 @@ void SerialPort::openPort()
 
     error = tcsetattr(this->getFileDescriptor(), TCSANOW, &this->m_newPortSettings);
     if(error == -1) {
+		const auto errorCode = getLastError();
         this->closePort();
-        throw std::runtime_error("ERROR: Unable to adjust port settings for serial port " + this->m_portName);
-    }
+		throw std::runtime_error("tcsetattr(int, int, termios *): Unable to set IO speed settings for " + this->m_portName + ": " + toStdString(errorCode) + " (" + getErrorString(errorCode) + ")");
+	}
 
     if(ioctl(this->getFileDescriptor(), TIOCMGET, &status) == -1) {
+		const auto errorCode = getLastError();
         this->closePort();
-        throw std::runtime_error("ERROR: Unable to get port status for serial port " + this->m_portName);
-    }
+		throw std::runtime_error("ioctl(int, int, int): Unable to get DTR & RTS settings for " + this->m_portName + ": " + toStdString(errorCode) + " (" + getErrorString(errorCode) + ")");
+	}
 
     status |= TIOCM_DTR;    /* turn on DTR */
     status |= TIOCM_RTS;    /* turn on RTS */
     if(ioctl(this->getFileDescriptor(), TIOCMSET, &status) == -1) {
         this->closePort();
-        throw std::runtime_error("ERROR: Unable to set port status for serial port " + this->m_portName);
-    }
+		throw std::runtime_error("ioctl(int, int, int): Unable to set DTR & RTS settings for " + this->m_portName + ": " + toStdString(errorCode) + " (" + getErrorString(errorCode) + ")");
+	}
 
-    this->m_isOpen = true;
 #endif
+	this->setReadTimeout(DEFAULT_READ_TIMEOUT);
+
+	this->m_isOpen = true;
+
 }
 
 
 std::pair<int, int> SerialPort::parseParity(Parity parity)
 {
-#if (defined(_WIN32) || defined(__CYGWIN__))
+#if defined(_MSC_VER)
     if (parity == Parity::NONE) {
         return std::make_pair('n', 0);
     } else if (parity == Parity::EVEN) {
@@ -346,6 +339,57 @@ std::pair<int, int> SerialPort::parseParity(Parity parity)
 #endif
 }
 
+void SerialPort::setReadTimeout(int readTimeout) 
+{
+	IByteStream::setReadTimeout(readTimeout);
+#if defined(_MSC_VER)
+	COMMTIMEOUTS Cptimeouts;
+	Cptimeouts.ReadIntervalTimeout = MAXDWORD;
+	Cptimeouts.ReadTotalTimeoutMultiplier = 0;
+	Cptimeouts.ReadTotalTimeoutConstant = readTimeout;
+	Cptimeouts.WriteTotalTimeoutMultiplier = 0;
+	Cptimeouts.WriteTotalTimeoutConstant = 0;
+
+	const auto setCommTimeoutsResult = SetCommTimeouts(this->m_serialPortHandle, &Cptimeouts);
+	if (setCommTimeoutsResult == 0) {
+		this->closePort();
+		auto errorCode = getLastError();
+		throw std::runtime_error("SetCommTimeouts(HANDLE, COMMTIMEOUTS*): Unable to set timeout settings for " + this->m_portName + ": " + toStdString(errorCode) + " (" + getErrorString(errorCode) + ")");
+	}
+#endif //defined(_MSC_VER)
+	
+}
+
+int SerialPort::getLastError() {
+#if defined(_MSC_VER)
+	return GetLastError();
+#else
+	return errno;
+#endif //defined(_MSC_VER
+}
+
+std::string SerialPort::getErrorString(int errorCode) {
+	char errorString[PATH_MAX];
+	memset(errorString, '\0', PATH_MAX);
+#if defined(_MSC_VER)
+	wchar_t *wideErrorString{ nullptr };
+	FormatMessageW(
+		FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+		nullptr,
+		errorCode,
+		MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+		reinterpret_cast<LPWSTR>(&wideErrorString),
+		0,
+		nullptr
+	);
+	wcstombs(errorString, wideErrorString, PATH_MAX);
+	LocalFree(wideErrorString);
+#else
+	strerror_s(errorString, PATH_MAX, errorCode);
+#endif //defined(_MSC_VER)
+	return std::string{ errorString };
+}
+
 int SerialPort::read()
 {
 #if defined(_MSC_VER)
@@ -356,37 +400,21 @@ int SerialPort::read()
         return static_cast<int>(returnValue);
     }
 
-    // Initialize file descriptor sets
-    fd_set read_fds{0, 0, 0};
-    fd_set write_fds{0, 0, 0};
-    fd_set except_fds{0, 0, 0};
-    FD_ZERO(&read_fds);
-    FD_ZERO(&write_fds);
-    FD_ZERO(&except_fds);
-    FD_SET(this->getFileDescriptor(), &read_fds);
-
-    struct timeval timeout{0, 0};
-    timeout.tv_sec = 0;
-    timeout.tv_usec = (this->readTimeout() * 1000);
     static char readStuff[SERIAL_PORT_BUFFER_MAX];
     memset(readStuff, '\0', SERIAL_PORT_BUFFER_MAX);
 
-    (void)timeout;
-    // Wait for input to become ready or until the time out; the first parameter is
-    // 1 more than the largest file descriptor in any of the sets
-    if (select(this->getFileDescriptor() + 1, &read_fds, &write_fds, &except_fds, &timeout) == 1) {
-        DWORD readBytes{0};
-        auto readResult = ReadFile(this->m_serialPortHandle, readStuff, SERIAL_PORT_BUFFER_MAX - 1, &readBytes, NULL);
-        if ( (readBytes <= 0) || (readResult <= 0) ) {
-            return 0;
-        }
-        this->m_readBuffer += std::string{readStuff};
-        char returnValue{this->m_readBuffer.front()};
-        this->m_readBuffer = this->m_readBuffer.substr(1);
-        return static_cast<int>(returnValue);
+    DWORD readBytes{0};
+    auto readResult = ReadFile(this->m_serialPortHandle, readStuff, SERIAL_PORT_BUFFER_MAX - 1, &readBytes, nullptr);
+	if (readResult == 0) {
+		return 0;
+	}
+    if ( ( readBytes <= 0 ) || (readStuff[0] == '\0') ) {
+        return 0;
     }
-    return 0;
-
+    this->m_readBuffer += std::string{readStuff};
+    char returnValue{this->m_readBuffer.front()};
+    this->m_readBuffer = this->m_readBuffer.substr(1);
+    return static_cast<int>(returnValue);
 #else
     if (!this->m_readBuffer.empty()) {
         char returnValue{this->m_readBuffer.front()};
@@ -451,7 +479,8 @@ void SerialPort::closePort()
         return;
     }
 #if defined(_MSC_VER)
-    CloseHandle(this->m_serialPortHandle);
+    //CloseHandle(this->m_serialPortHandle);
+	_close(this->m_fileDescriptor);
 #else
     int status{0};
     if(ioctl(this->getFileDescriptor(), TIOCMGET, &status) == -1) {
@@ -474,7 +503,7 @@ void SerialPort::closePort()
 
 void SerialPort::enableDTR()
 {
-#if (defined(_WIN32) || defined(__CYGWIN__))
+#if defined(_MSC_VER)
     EscapeCommFunction(this->m_serialPortHandle, SETDTR);
 #else
     int status{0};
@@ -487,7 +516,7 @@ void SerialPort::enableDTR()
 
 void SerialPort::disableDTR()
 {
-#if (defined(_WIN32) || defined(__CYGWIN__))
+#if defined(_MSC_VER)
     EscapeCommFunction(this->m_serialPortHandle, CLRDTR);
 #else
     int status{0};
@@ -501,7 +530,7 @@ void SerialPort::disableDTR()
 void SerialPort::enableRTS()
 {
 
-#if (defined(_WIN32) || defined(__CYGWIN__))
+#if defined(_MSC_VER)
     EscapeCommFunction(this->m_serialPortHandle, SETRTS);
 #else
     int status{0};
@@ -517,7 +546,7 @@ void SerialPort::enableRTS()
 
 void SerialPort::disableRTS()
 {
-#if (defined(_WIN32) || defined(__CYGWIN__))
+#if defined(_MSC_VER)
     EscapeCommFunction(this->m_serialPortHandle, CLRRTS);
 #else
     int status;
@@ -533,7 +562,7 @@ void SerialPort::disableRTS()
 
 bool SerialPort::isDCDEnabled() const
 {
-#if (defined(_WIN32) || defined(__CYGWIN__))
+#if defined(_MSC_VER)
     int status{0};
         GetCommModemStatus(this->m_serialPortHandle, (LPDWORD)((void *)&status));
         return ((status&MS_RLSD_ON) != 0 ? true : false);
@@ -547,7 +576,7 @@ bool SerialPort::isDCDEnabled() const
 
 bool SerialPort::isCTSEnabled() const
 {
-#if (defined(_WIN32) || defined(__CYGWIN__))
+#if defined(_MSC_VER)
     int status{0};
         GetCommModemStatus(this->m_serialPortHandle, (LPDWORD)((void *)&status));
         return ((status&MS_CTS_ON) != 0 ? true : false);
@@ -560,7 +589,7 @@ bool SerialPort::isCTSEnabled() const
 
 bool SerialPort::isDSREnabled() const
 {
-#if (defined(_WIN32) || defined(__CYGWIN__))
+#if defined(_MSC_VER)
     int status{0};
         GetCommModemStatus(this->m_serialPortHandle, (LPDWORD)((void *)&status));
         return ((status&MS_DSR_ON) != 0 ? true : false);
@@ -573,7 +602,7 @@ bool SerialPort::isDSREnabled() const
 
 void SerialPort::flushRx()
 {
-#if (defined(_WIN32) || defined(__CYGWIN__))
+#if defined(_MSC_VER)
     PurgeComm(this->m_serialPortHandle, PURGE_RXCLEAR | PURGE_RXABORT);
 #else
     tcflush(this->getFileDescriptor(), TCIFLUSH);
@@ -587,7 +616,7 @@ void SerialPort::flushRx()
 
 void SerialPort::flushTx()
 {
-#if (defined(_WIN32) || defined(__CYGWIN__))
+#if defined(_MSC_VER)
     PurgeComm(this->m_serialPortHandle, PURGE_TXCLEAR | PURGE_TXABORT);
 #else
     tcflush(this->getFileDescriptor(), TCOFLUSH);
@@ -735,7 +764,7 @@ BaudRate SerialPort::parseBaudRateFromRaw(const std::string &baudRate)
 {
     std::string copyString{baudRate};
     std::transform(copyString.begin(), copyString.end(), copyString.begin(), ::tolower);
-#if (defined(_WIN32) || defined(__CYGWIN__))
+#if defined(_MSC_VER)
     if (copyString == "110") {
         return BaudRate::BAUD110;
     } else if (copyString == "300") {
@@ -883,7 +912,7 @@ Parity SerialPort::parseParityFromRaw(const std::string &parity)
 
 std::string SerialPort::baudRateToString(BaudRate baudRate)
 {
-#if (defined(_WIN32) || defined(__CYGWIN__))
+#if defined(_MSC_VER)
     if (baudRate == BaudRate::BAUD110) {
         return "110";
     } else if (baudRate == BaudRate::BAUD300) {
@@ -1025,7 +1054,7 @@ std::string SerialPort::parityToString(Parity parity)
 std::vector<std::string> SerialPort::availableSerialPorts()
 {
     std::vector<std::string> returnVector;
-#if (defined(_WIN32) || defined(__CYGWIN__))
+#if defined(_MSC_VER)
     try {
         HKEY hRegistryKey;
         LONG operationResult{ RegOpenKeyExA(HKEY_LOCAL_MACHINE, SERIAL_PORT_REGISTRY_PATH, 0, KEY_READ, &hRegistryKey) };

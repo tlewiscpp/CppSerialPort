@@ -24,7 +24,6 @@ class TcpClient : public CppSerialPort::IByteStream
 {
 public:
     TcpClient(const std::string &hostName, uint16_t portNumber);
-
     ~TcpClient() override;
 
     int read() override;
@@ -37,6 +36,7 @@ public:
     void flushRx() override;
     void flushTx() override;
     void putBack(int c) override;
+	void setReadTimeout(int timeout) override;
 
     void connect(const std::string &hostName, uint16_t portNumber);
     void connect();
@@ -55,10 +55,11 @@ private:
     uint16_t m_portNumber;
     std::string m_hostName;
     std::string m_readBuffer;
-    bool m_readTimeoutSet;
 
     static timeval toTimeVal(uint32_t totalTimeout);
 
+	static std::string getErrorString(int errorCode);
+	static int getLastError();
 };
 
 

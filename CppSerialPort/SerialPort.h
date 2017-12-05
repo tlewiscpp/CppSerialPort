@@ -1,5 +1,5 @@
 /***********************************************************************
-*    serialport.h:                                                     *
+*    SerialPort.h:                                                     *
 *    SerialPort class, for connecting to an RS232 serial port          *
 *    Copyright (c) 2017 Tyler Lewis                                    *
 ************************************************************************
@@ -165,9 +165,9 @@ public:
     void disableRTS();
     void flushRx() override;
     void flushTx() override;
+	void setReadTimeout(int timeout) override;
     ssize_t write(int byteToWrite) override;
-    ssize_t writeLine(const std::string &str) override;
-
+	ssize_t writeLine(const std::string &str) override;
 
     void setBaudRate(BaudRate baudRate);
     void setStopBits(StopBits stopBits);
@@ -216,6 +216,9 @@ private:
     void putBack(int c) override;
 
     int getFileDescriptor() const;
+
+	static int getLastError();
+	static std::string getErrorString(int errorCode);
 
 #if (_MSC_VER)
     static const char *DTR_RTS_ON_IDENTIFIER;

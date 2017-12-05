@@ -9,7 +9,6 @@ endif()
 
 if (NOT STATIC_BUILD)
     set (SHARED_LIB_BUILD)
-
 else()
     unset(SHARED_LIB_BUILD)
 endif()
@@ -44,4 +43,5 @@ if (WIN32)
 target_link_libraries(${PROJECT_NAME} shlwapi Ws2_32)
 endif()
 
+add_subdirectory(Test/)
 

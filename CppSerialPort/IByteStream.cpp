@@ -21,14 +21,15 @@
 
 namespace CppSerialPort {
 
-#if defined(_WIN32)
+#if defined(_MSC_VER)
 const char *IByteStream::DEFAULT_LINE_ENDING{"\r\n"};
-#include <Windows.h>
-#include <shlwapi.h>
+#    include <Windows.h>
+#    include <shlwapi.h>
 #else
-#include <unistd.h>
+#    include <unistd.h>
 const char *IByteStream::DEFAULT_LINE_ENDING{"\n"};
-#endif //defined(_WIN32)
+#endif //defined(_MSC_VER)
+
 const int IByteStream::DEFAULT_READ_TIMEOUT{1000};
 
 IByteStream::IByteStream() :

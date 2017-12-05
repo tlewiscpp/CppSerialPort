@@ -19,12 +19,56 @@ using namespace CppSerialPort;
 
 TcpClient::TcpClient(const std::string &hostName, uint16_t portNumber)
 {
+#if defined(_MSC_VER)
+	WSADATA wsaData;   
+	// if this doesn't work
+	//WSAData wsaData; // then try this instead
+	// MAKEWORD(1,1) for Winsock 1.1, MAKEWORD(2,0) for Winsock 2.0:
+	
+	auto wsaStartupResult = WSAStartup(MAKEWORD(2, 0), &wsaData);
+	if (wsaStartupResult != 0) {
+		throw std::runtime_error("WSAStartup failed: error code " + toStdString(wsaStartupResult) + " (" + this->getErrorString(wsaStartupResult) + ")");
+	}
+#endif //defined(_MSC_VER)
     if (portNumber < MINIMUM_PORT_NUMBER) {
         throw std::runtime_error("portNumber cannot be less than minimum value (" + toStdString(portNumber) + " < " + toStdString(MINIMUM_PORT_NUMBER) + ")");
     }
     this->m_hostName = hostName;
     this->m_portNumber = portNumber;
     this->m_socketDescriptor = -1;
+	this->setReadTimeout(DEFAULT_READ_TIMEOUT);
+}
+
+int TcpClient::getLastError()
+{
+#if defined(_MSC_VER)
+	return WSAGetLastError();
+#else
+	return errno;
+#endif //defined(_MSC_VER
+}
+
+std::string TcpClient::getErrorString(int errorCode)
+{
+	char errorString[PATH_MAX];
+	memset(errorString, '\0', PATH_MAX);
+#if defined(_MSC_VER)
+	wchar_t *wideErrorString{ nullptr };
+	FormatMessageW(
+		FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+		nullptr,
+		errorCode,
+		MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+		reinterpret_cast<LPWSTR>(&wideErrorString),
+		0,
+		nullptr
+	);
+	wcstombs(errorString, wideErrorString, PATH_MAX);
+	LocalFree(wideErrorString);
+#else
+	strerror_s(errorString, PATH_MAX, errorCode);
+#endif //defined(_MSC_VER)
+	return std::string{ errorString };
 }
 
 TcpClient::~TcpClient()
@@ -37,7 +81,7 @@ TcpClient::~TcpClient()
 void TcpClient::connect(const std::string &hostName, uint16_t portNumber)
 {
     if (this->isConnected()) {
-        throw std::runtime_error("Cannot connect to new host when already connected (call disconnect() first");
+        throw std::runtime_error("Cannot connect to new host when already connected (call disconnect() first)");
     }
     this->m_hostName = hostName;
     this->m_portNumber = portNumber;
@@ -47,7 +91,7 @@ void TcpClient::connect(const std::string &hostName, uint16_t portNumber)
 void TcpClient::connect()
 {
     if (this->isConnected()) {
-        throw std::runtime_error("Cannot connect to new host when already connected (call disconnect() first");
+        throw std::runtime_error("Cannot connect to new host when already connected (call disconnect() first)");
     }
     addrinfo *addressInfo{nullptr};
     addrinfo hints{};
@@ -67,7 +111,8 @@ void TcpClient::connect()
     auto socketDescriptor = socket(addressInfo->ai_family, addressInfo->ai_socktype, addressInfo->ai_protocol);
     if (socketDescriptor == -1) {
         freeaddrinfo(addressInfo);
-        throw std::runtime_error("socket(int, int, int): error code " + toStdString(errno) + " (" + strerror(errno) + ")");
+		auto errorCode = getLastError();
+		throw std::runtime_error("socket(int, int, int): error code " + toStdString(errorCode) + " (" + getErrorString(errorCode) +")");
     }
     this->m_socketDescriptor = socketDescriptor;
 
@@ -79,13 +124,15 @@ void TcpClient::connect()
     auto reuseSocketResult = setsockopt(socketDescriptor, SOL_SOCKET, SO_REUSEADDR, &acceptReuse, sizeof(decltype(acceptReuse)));
     if (reuseSocketResult == -1) {
         freeaddrinfo(addressInfo);
-        throw std::runtime_error("setsockopt(int, int, int, const void *, socklen_t): error code " + toStdString(errno) + " (" + strerror(errno) + ")");
+		auto errorCode = getLastError();
+        throw std::runtime_error("setsockopt(int, int, int, const void *, socklen_t): error code " + toStdString(errorCode) + " (" + getErrorString(errorCode) + ")");
     }
 
     auto connectResult = ::connect(this->m_socketDescriptor, addressInfo->ai_addr, addressInfo->ai_addrlen);
     if (connectResult == -1) {
         freeaddrinfo(addressInfo);
-        throw std::runtime_error("connect(int, const sockaddr *addr, socklen_t): error code " + toStdString(errno) +  " (" + strerror(errno) + ")");
+		auto errorCode = getLastError();
+        throw std::runtime_error("connect(int, const sockaddr *addr, socklen_t): error code " + toStdString(errorCode) +  " (" + getErrorString(errorCode) + ")");
     }
     freeaddrinfo(addressInfo);
     this->m_readBuffer.clear();
@@ -99,40 +146,44 @@ bool TcpClient::disconnect()
 	close(this->m_socketDescriptor);
 #endif //defined(_MSC_VER)
     this->m_socketDescriptor = -1;
-    this->m_readTimeoutSet = false;
     return true;
 }
 
 bool TcpClient::isConnected() const
 {
-    return this->m_socketDescriptor != -1;
+#if defined(_MSC_VER)
+	return this->m_socketDescriptor != INVALID_SOCKET;
+#else
+	return this->m_socketDescriptor != -1;
+#endif //defined(_MSC_VER)
+}
+
+void TcpClient::setReadTimeout(int timeout) {
+	IByteStream::setReadTimeout(timeout);
+	auto tv = toTimeVal(static_cast<uint32_t>(this->readTimeout()));
+	auto readTimeoutResult = setsockopt(this->m_socketDescriptor, SOL_SOCKET, SO_RCVTIMEO,
+		reinterpret_cast<const char *>(&tv), sizeof(struct timeval));
+	if (readTimeoutResult == -1) {
+		auto errorCode = getLastError();
+		throw std::runtime_error("setsockopt(int, int, int, const void *, int): error code " + toStdString(errorCode) + " (" + getErrorString(errorCode) + ")");
+	}
 }
 
 int TcpClient::read()
 {
-
-    if (!this->m_readBuffer.empty()) {
-        char returnValue{this->m_readBuffer.front()};
-        this->m_readBuffer = this->m_readBuffer.substr(1);
-        return static_cast<int>(returnValue);
-    }
-
-    if (!this->m_readTimeoutSet) {
-        auto tv = toTimeVal(static_cast<uint32_t>(this->readTimeout()));
-        auto readTimeoutResult = setsockopt(this->m_socketDescriptor, SOL_SOCKET, SO_RCVTIMEO,
-                                            reinterpret_cast<const char *>(&tv), sizeof(struct timeval));
-        if (readTimeoutResult == -1) {
-            throw std::runtime_error("setsockopt(int, int, int, const void *, int): error code " + toStdString(errno) + " (" + strerror(errno) + ")");
-        }
-        this->m_readTimeoutSet = true;
-    }
+	if (!this->m_readBuffer.empty()) {
+		char returnValue{ this->m_readBuffer.front() };
+		this->m_readBuffer = this->m_readBuffer.substr(1);
+		return static_cast<int>(returnValue);
+	}
 
     char buffer[BUFFER_MAX];
     memset(buffer, '\0', BUFFER_MAX);
     auto receiveResult = recv(this->m_socketDescriptor, buffer, BUFFER_MAX - 1, 0); //no flags
     if (receiveResult == -1) {
-        if (errno != EAGAIN) {
-            throw std::runtime_error("recv(int, void *, size_t, int): error code " + toStdString(errno) + " (" + strerror(errno) + ")");
+		auto errorCode = getLastError();
+        if (errorCode != EAGAIN) {
+            throw std::runtime_error("recv(int, void *, size_t, int): error code " + toStdString(errorCode) + " (" + getErrorString(errorCode) + ")");
         }
         return 0;
     } else if (strlen(buffer) != 0) {
@@ -168,7 +219,8 @@ ssize_t TcpClient::writeLine(const std::string &str)
         std::string toSend{str.substr(sentBytes)};
         auto sendResult = send(this->m_socketDescriptor, toSend.c_str(), toSend.length(), 0);
         if (sendResult == -1) {
-            throw std::runtime_error("send(int, const void *, int, int): error code " + toStdString(errno) + " (" + strerror(errno) + ")");
+			auto errorCode = getLastError();
+            throw std::runtime_error("send(int, const void *, int, int): error code " + toStdString(errorCode) + " (" + getErrorString(errorCode) + ")");
         }
         sentBytes += sendResult;
     }
