@@ -130,7 +130,7 @@ std::string IByteStream::readUntil(const std::string &until, bool *timeout)
         }
         returnString += static_cast<char>(maybeChar);
         if (endsWith(returnString, until)) {
-            return returnString;
+            return returnString.substr(0, returnString.length() - until.length());
         }
     } while ((IByteStream::getEpoch() - startTime) <= static_cast<unsigned long>(this->m_readTimeout));
     if (timeout) {
