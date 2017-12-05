@@ -23,12 +23,14 @@
 #include <sstream>
 #include <mutex>
 
-#if defined(_MSC_VER)
-#    define PATH_MAX MAX_PATH
+#if defined(_WIN32)
+#    ifndef PATH_MAX
+#        define PATH_MAX MAX_PATH
+#    endif
 #    define ssize_t int
 #else
 
-#endif //defined(_MSC_VER)
+#endif //defined(_WIN32)
 
 namespace CppSerialPort {
 

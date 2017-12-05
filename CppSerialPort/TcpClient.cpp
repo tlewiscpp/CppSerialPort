@@ -4,11 +4,12 @@
 
 #include "TcpClient.h"
 
-#if defined(_MSC_VER)
+#if defined(_WIN32)
 #    include "Ws2tcpip.h"
 #else
 #    include <unistd.h>
-#endif
+#    define INVALID_SOCKET -1
+#endif //defined(_WIN32)
 
 #include <cstring>
 #include <climits>
@@ -20,8 +21,8 @@ using namespace CppSerialPort;
 
 TcpClient::TcpClient(const std::string &hostName, uint16_t portNumber)
 {
-#if defined(_MSC_VER)
-	WSADATA wsaData;   
+#if defined(_WIN32)
+	WSADATA wsaData{};
 	// if this doesn't work
 	//WSAData wsaData; // then try this instead
 	// MAKEWORD(1,1) for Winsock 1.1, MAKEWORD(2,0) for Winsock 2.0:
@@ -30,30 +31,30 @@ TcpClient::TcpClient(const std::string &hostName, uint16_t portNumber)
 	if (wsaStartupResult != 0) {
 		throw std::runtime_error("WSAStartup failed: error code " + toStdString(wsaStartupResult) + " (" + this->getErrorString(wsaStartupResult) + ")");
 	}
-#endif //defined(_MSC_VER)
+#endif //defined(_WIN32)
     if (portNumber < MINIMUM_PORT_NUMBER) {
         throw std::runtime_error("portNumber cannot be less than minimum value (" + toStdString(portNumber) + " < " + toStdString(MINIMUM_PORT_NUMBER) + ")");
     }
+    this->m_socketDescriptor = INVALID_SOCKET;
     this->m_hostName = hostName;
     this->m_portNumber = portNumber;
-    this->m_socketDescriptor = -1;
 	this->setReadTimeout(DEFAULT_READ_TIMEOUT);
 }
 
 int TcpClient::getLastError()
 {
-#if defined(_MSC_VER)
+#if defined(_WIN32)
 	return WSAGetLastError();
 #else
 	return errno;
-#endif //defined(_MSC_VER
+#endif //defined(_WIN32)
 }
 
 std::string TcpClient::getErrorString(int errorCode)
 {
 	char errorString[PATH_MAX];
 	memset(errorString, '\0', PATH_MAX);
-#if defined(_MSC_VER)
+#if defined(_WIN32)
 	wchar_t *wideErrorString{ nullptr };
 	FormatMessageW(
 		FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
@@ -68,7 +69,7 @@ std::string TcpClient::getErrorString(int errorCode)
 	LocalFree(wideErrorString);
 #else
 	strerror_r(errorCode, errorString, PATH_MAX);
-#endif //defined(_MSC_VER)
+#endif //defined(_WIN32)
 	return std::string{ errorString };
 }
 
@@ -110,18 +111,18 @@ void TcpClient::connect()
         throw std::runtime_error("getaddrinfo(const char *, const char *, constr addrinfo *, addrinfo **): error code " + toStdString(returnStatus) + " (" + gai_strerror(returnStatus) + ")");
     }
     auto socketDescriptor = socket(addressInfo->ai_family, addressInfo->ai_socktype, addressInfo->ai_protocol);
-    if (socketDescriptor == -1) {
+    if (socketDescriptor == INVALID_SOCKET) {
         freeaddrinfo(addressInfo);
 		auto errorCode = getLastError();
 		throw std::runtime_error("socket(int, int, int): error code " + toStdString(errorCode) + " (" + getErrorString(errorCode) +")");
     }
     this->m_socketDescriptor = socketDescriptor;
 
-#if defined(_MSC_VER)
+#if defined(_WIN32)
 	char acceptReuse{ 1 };
 #else
 	int acceptReuse{ 1 };
-#endif //defined(_MSC_VER)
+#endif //defined(_WIN32)
     auto reuseSocketResult = setsockopt(socketDescriptor, SOL_SOCKET, SO_REUSEADDR, &acceptReuse, sizeof(decltype(acceptReuse)));
     if (reuseSocketResult == -1) {
         freeaddrinfo(addressInfo);
@@ -141,22 +142,18 @@ void TcpClient::connect()
 
 bool TcpClient::disconnect()
 {
-#if defined(_MSC_VER)
+#if defined(_WIN32)
     closesocket(this->m_socketDescriptor);
 #else
 	close(this->m_socketDescriptor);
-#endif //defined(_MSC_VER)
-    this->m_socketDescriptor = -1;
+#endif //defined(_WIN32)
+    this->m_socketDescriptor = INVALID_SOCKET;
     return true;
 }
 
 bool TcpClient::isConnected() const
 {
-#if defined(_MSC_VER)
-	return this->m_socketDescriptor != INVALID_SOCKET;
-#else
-	return this->m_socketDescriptor != -1;
-#endif //defined(_MSC_VER)
+    return this->m_socketDescriptor != INVALID_SOCKET;
 }
 
 void TcpClient::setReadTimeout(int timeout) {
@@ -201,12 +198,12 @@ ssize_t TcpClient::write(int i)
     if (!this->isConnected()) {
         throw std::runtime_error("Cannot write on closed socket (call connect first)");
     }
-#if defined(_MSC_VER)
+#if defined(_WIN32)
 	char toSend{ static_cast<char>(i) };
 	return send(this->m_socketDescriptor, &toSend, 1, 0);
 #else
 	return send(this->m_socketDescriptor, &i, 1, 0);
-#endif //defined(_MSC_VER)
+#endif //defined(_WIN32)
 }
 
 ssize_t TcpClient::writeLine(const std::string &str)

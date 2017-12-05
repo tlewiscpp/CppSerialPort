@@ -220,7 +220,7 @@ private:
 	static int getLastError();
 	static std::string getErrorString(int errorCode);
 
-#if (_MSC_VER)
+#if (_WIN32)
     static const char *DTR_RTS_ON_IDENTIFIER;
         static const int constexpr NUMBER_OF_POSSIBLE_SERIAL_PORTS{256};
         static const char *SERIAL_PORT_REGISTRY_PATH;

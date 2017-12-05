@@ -6,14 +6,14 @@
 #define CPPTCP_TCPCLIENT_H
 
 #include <string>
-#if defined(_MSC_VER)
+#if defined(_WIN32)
 #    include "WinSock2.h"
 #    include "Windows.h"
 #else
 #    include <sys/socket.h>
 #    include <netinet/in.h>
 #    include <netdb.h>
-#endif //defined(_MSC_VER)
+#endif //defined(_WIN32)
 
 
 #include <sys/types.h>
@@ -47,11 +47,11 @@ public:
     uint16_t portNumber() const;
     std::string hostName() const;
 private:
-#if defined(_MSC_VER)
+#if defined(_WIN32)
 	SOCKET m_socketDescriptor;
 #else
 	int m_socketDescriptor;
-#endif //defined(_MSC_VER)
+#endif //defined(_WIN32)
     uint16_t m_portNumber;
     std::string m_hostName;
     std::string m_readBuffer;

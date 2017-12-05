@@ -21,14 +21,14 @@
 
 namespace CppSerialPort {
 
-#if defined(_MSC_VER)
+#if defined(_WIN32)
 const char *IByteStream::DEFAULT_LINE_ENDING{"\r\n"};
 #    include <Windows.h>
 #    include <shlwapi.h>
 #else
 #    include <unistd.h>
 const char *IByteStream::DEFAULT_LINE_ENDING{"\n"};
-#endif //defined(_MSC_VER)
+#endif //defined(_WIN32)
 
 const int IByteStream::DEFAULT_READ_TIMEOUT{1000};
 
@@ -153,7 +153,7 @@ bool IByteStream::endsWith(const std::string &fullString, const std::string &end
 
 bool IByteStream::fileExists(const std::string &fileToCheck)
 {
-#if defined(_MSC_VER)
+#if defined(_WIN32)
     return (PathFileExists(fileToCheck.c_str()) == 1);
 #elif defined(_WIN32)
     std::ifstream readFromFile;
@@ -170,7 +170,7 @@ bool IByteStream::fileExists(const std::string &fileToCheck)
 }
 
 
-#if defined(_MSC_VER)
+#if defined(_WIN32)
 #include <Windows.h>
 uint64_t IByteStream::getEpoch()
 {
@@ -194,6 +194,6 @@ uint64_t IByteStream::getEpoch()
            (static_cast<unsigned long long>(tv.tv_usec) / 1000);
 }
 
-#endif //defined(_MSC_VER)
+#endif //defined(_WIN32)
 
 } //namespace CppSerialPort
