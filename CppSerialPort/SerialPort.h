@@ -138,8 +138,9 @@ public:
     SerialPort &operator=(const SerialPort &rhs) = delete;
     SerialPort &operator=(SerialPort &&rhs) = delete;
     SerialPort(const SerialPort &other) = delete;
+	~SerialPort() override;
 
-    void openPort() override;
+	void openPort() override;
     void closePort() override;
     int read() override;
 
@@ -207,7 +208,6 @@ private:
     static std::pair<int, std::string> getPortNameAndNumber(const std::string &name);
     static std::vector<std::string> generateSerialPortNames();
 
-    static const std::vector<const char *> AVAILABLE_PORT_NAMES_BASE;
     static const std::vector<std::string> SERIAL_PORT_NAMES;
 
     std::pair<int, int> parseParity(Parity parity);
@@ -220,12 +220,16 @@ private:
 	static std::string getErrorString(int errorCode);
 
 #if (_WIN32)
+	static const char *AVAILABLE_PORT_NAMES_BASE;
     static const char *DTR_RTS_ON_IDENTIFIER;
-        static const int constexpr NUMBER_OF_POSSIBLE_SERIAL_PORTS{256};
-        static const char *SERIAL_PORT_REGISTRY_PATH;
-        HANDLE m_serialPortHandle;
+    static const int constexpr NUMBER_OF_POSSIBLE_SERIAL_PORTS{256};
+    static const char *SERIAL_PORT_REGISTRY_PATH;
+    HANDLE m_serialPortHandle;
+	bool m_readCompleted;
+	void cancelRead();
 #else
-        FILE *m_fileStream;
+	FILE *m_fileStream;
+	static const std::vector<const char *> AVAILABLE_PORT_NAMES_BASE;
     static const int constexpr NUMBER_OF_POSSIBLE_SERIAL_PORTS{256*9};
     int m_serialPortPool[NUMBER_OF_POSSIBLE_SERIAL_PORTS];
     termios m_newPortSettings;

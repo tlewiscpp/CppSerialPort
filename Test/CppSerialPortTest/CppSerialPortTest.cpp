@@ -23,7 +23,9 @@ SerialPort serialPort{ SERIAL_PORT_NAME, BaudRate::BAUD115200, DataBits::EIGHT, 
 
 std::string asyncGetlineTask() {
     std::string returnString{ "" };
-    std::getline(std::cin, returnString);
+	do {
+		std::getline(std::cin, returnString);
+	} while (returnString.empty());
     return returnString;
 }
 
@@ -41,7 +43,7 @@ std::string asyncReadlineTask() {
 int main()
 {
     serialPort.setLineEnding("\r\n");
-    serialPort.setReadTimeout(10000);
+    serialPort.setReadTimeout(1000);
     serialPort.openPort();
     serialPort.flushRx();
     std::string sendString{""};
@@ -57,7 +59,8 @@ int main()
             asyncGetlineFuture = new std::future<std::string>{std::async(std::launch::async, asyncGetlineTask)};
         }
         if (asyncReadlineFuture->wait_for(std::chrono::milliseconds(0)) == std::future_status::ready) {
-            std::cout << "Read string \"" << receivedString << "\" from serial port" << std::endl;
+			receivedString = asyncReadlineFuture->get();
+        	std::cout << "Read string \"" << receivedString << "\" from serial port" << std::endl;
             delete asyncReadlineFuture;
             asyncReadlineFuture = new std::future<std::string>{ std::async(std::launch::async, asyncReadlineTask) };
         }
