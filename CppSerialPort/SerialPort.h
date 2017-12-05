@@ -25,6 +25,7 @@
 
 #include "IByteStream.h"
 #include <unordered_set>
+#include <unordered_set>
 
 namespace CppSerialPort {
 
@@ -184,7 +185,7 @@ public:
     static const BaudRate DEFAULT_BAUD_RATE;
     static const std::string DEFAULT_LINE_ENDING;
 
-    static std::vector<std::string> availableSerialPorts();
+    static std::unordered_set<std::string> availableSerialPorts();
     static bool isValidSerialPortName(const std::string &serialPortName);
 
     static const long DEFAULT_RETRY_COUNT;
