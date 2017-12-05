@@ -389,13 +389,10 @@ int SerialPort::read()
 		const auto errorCode = getLastError();
 		std::cout << "ClearCommError(HANDLE, LPDWORD, LPCOMSTAT) error: " << toStdString(errorCode) << " (" << getErrorString(errorCode) << ")" << std::endl;
 	}
-	if (commStatus.cbInQue == 0) {
-		return 0;
-	}
-
 
     DWORD readBytes{0};
-    auto readResult = ReadFile(this->m_serialPortHandle, readStuff, commStatus.cbInQue, &readBytes, nullptr);
+	DWORD maxBytes{ (commStatus.cbInQue == 0 ? 1 : commStatus.cbInQue) };
+    auto readResult = ReadFile(this->m_serialPortHandle, readStuff, maxBytes, &readBytes, nullptr);
 	if (readResult == 0) {
 		const auto errorCode = getLastError();
 		std::cout << "ReadFile(HANDLE, LPVOID, DWORD, LPDWORD, LPDWORD) error: " << toStdString(errorCode) << " (" << getErrorString(errorCode) << ")" << std::endl;
@@ -451,7 +448,7 @@ ssize_t SerialPort::write(int byteToSend)
 {
 #if defined(_WIN32)
     DWORD writtenBytes{0};
-    if (!WriteFile(this->m_serialPortHandle, &byteToSend, 1, &writtenBytes, nullptr)) {
+	if (!WriteFile(this->m_serialPortHandle, &byteToSend, sizeof(byteToSend) , &writtenBytes, nullptr)) {
         auto errorCode = getLastError();
         (void)errorCode;
         //TODO: Check if errorCode is IO_NOT_COMPLETED or whatever
@@ -697,7 +694,7 @@ std::pair<int, std::string> SerialPort::getPortNameAndNumber(const std::string &
     }
     iter = std::find(SERIAL_PORT_NAMES.cbegin(), SERIAL_PORT_NAMES.cend(), str);
     if (iter != SERIAL_PORT_NAMES.cend()) {
-        return std::make_pair(static_cast<int>(std::distance(SERIAL_PORT_NAMES.begin(), iter)), str);
+        return std::make_pair(static_cast<int>(std::distance(SERIAL_PORT_NAMES.begin(), iter)), strstr);
     }
 //    for (auto &it : SerialPort::SERIAL_PORT_NAMES) {
 //        if (str == it) {

@@ -89,6 +89,8 @@ protected:
 
 	static const int DEFAULT_READ_TIMEOUT;
 	static const int DEFAULT_WRITE_TIMEOUT;
+	static uint64_t getEpoch();
+
 
 private:
     int m_readTimeout;
@@ -96,7 +98,6 @@ private:
     std::string m_lineEnding;
     std::mutex m_writeMutex;
 
-    static uint64_t getEpoch();
 
     static const char *DEFAULT_LINE_ENDING;
 
