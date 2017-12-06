@@ -3,11 +3,11 @@
 #include <future>
 #include <mutex>
 #include <cstring>
-#include <memory>
 
 #if defined(_WIN32)
-
+#    define SERIAL_PORT_NAME "COM3"
 #else
+#    define SERIAL_PORT_NAME "/dev/ttyACM0"
 #    include <unistd.h>
 #    include <signal.h>
 #endif
@@ -19,7 +19,7 @@ using namespace CppSerialPort;
 std::future<std::string> *asyncGetlineFuture{nullptr};
 std::future<std::string> *asyncReadlineFuture{ nullptr };
 
-std::shared_ptr<SerialPort> serialPort{nullptr};
+SerialPort serialPort{ SERIAL_PORT_NAME, BaudRate::BAUD115200, DataBits::EIGHT, StopBits::ONE, Parity::NONE };
 
 std::string asyncGetlineTask() {
     std::string returnString{ "" };
@@ -32,7 +32,7 @@ std::string asyncGetlineTask() {
 std::string asyncReadlineTask() {
     bool timeout{ false };
     while (true) {
-        std::string returnString{ serialPort->readLine(&timeout) };
+        std::string returnString{ serialPort.readLine(&timeout) };
         if (returnString.length() > 0) {
             return returnString;
         }
@@ -40,17 +40,12 @@ std::string asyncReadlineTask() {
 }
 
 
-int main(int argc, char *argv[])
+int main()
 {
-    if (argc == 1) {
-        std::cout << "Usage: CppSerialPortTest [PortName]" << std::endl;
-        return 1;
-    }
-    serialPort = std::make_shared<SerialPort>(argv[1], BaudRate::BAUD115200, DataBits::EIGHT, StopBits::ONE, Parity::NONE);
-    serialPort->setLineEnding("\r\n");
-    serialPort->setReadTimeout(1000);
-    serialPort->openPort();
-    serialPort->flushRx();
+    serialPort.setLineEnding("\r\n");
+    serialPort.setReadTimeout(1000);
+    serialPort.openPort();
+    serialPort.flushRx();
     std::string sendString{""};
     std::string receivedString{""};
     asyncGetlineFuture = new std::future<std::string>{std::async(std::launch::async, asyncGetlineTask)};
@@ -59,7 +54,7 @@ int main(int argc, char *argv[])
         if (asyncGetlineFuture->wait_for(std::chrono::milliseconds(0)) == std::future_status::ready) {
             sendString = asyncGetlineFuture->get();
             std::cout << "Sending string \"" << sendString << "\" to serial port" << std::endl;
-            serialPort->writeLine(sendString);
+            serialPort.writeLine(sendString);
             delete asyncGetlineFuture;
             asyncGetlineFuture = new std::future<std::string>{std::async(std::launch::async, asyncGetlineTask)};
         }

@@ -445,7 +445,9 @@ int SerialPort::read()
     // Wait for input to become ready or until the time out; the first parameter is
     // 1 more than the largest file descriptor in any of the sets
     if (select(this->getFileDescriptor() + 1, &read_fds, &write_fds, &except_fds, &timeout) == 1) {
-        auto returnedBytes = fread(readStuff, sizeof(char), SERIAL_PORT_BUFFER_MAX, this->m_fileStream);
+        int bytesAvailable{0};
+        ioctl(this->getFileDescriptor(), FIONREAD, &bytesAvailable);
+        auto returnedBytes = fread(readStuff, sizeof(char), static_cast<size_t>(bytesAvailable), this->m_fileStream);
         this->m_readBuffer += std::string{readStuff};
         //auto returnedBytes = fread(&readValue, sizeof(char), 1, this->m_fileStream);
         if ((returnedBytes <= 0) || (readStuff[0] == '\0')) {
@@ -654,9 +656,9 @@ bool SerialPort::isAvailableSerialPort(const std::string &name)
 #if defined(_WIN32)
     std::string copyName{name};
     copyName.erase(std::remove_if(copyName.begin(), copyName.end(), [](char c) { return ( (c == '.') || (c == '\\') ); }), copyName.end());
-    return (std::find(availablePorts.begin(), availablePorts.end(), copyName) != availablePorts.end());
+	return (availablePorts.find(copyName) != availablePorts.end());
 #else
-	return (std::find(availablePorts.begin(), availablePorts.end(), name) != availablePorts.end());
+	return (availablePorts.find(name) != availablePorts.end());
 #endif //defined(_WIN32)
 }
 
