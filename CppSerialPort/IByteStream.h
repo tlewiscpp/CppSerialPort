@@ -65,9 +65,9 @@ public:
 
     virtual ssize_t writeLine(const std::string &str);
 
-    virtual std::string readLine(bool *timeout = nullptr);
-    virtual std::string readUntil(const std::string &until, bool *timeout = nullptr);
-    virtual std::string readUntil(char until, bool *timeout = nullptr);
+    std::string readLine(bool *timeout = nullptr);
+    std::string readUntil(const std::string &until, bool *timeout = nullptr);
+    std::string readUntil(char until, bool *timeout = nullptr);
 
 protected:
     virtual void putBack(int c) = 0;
