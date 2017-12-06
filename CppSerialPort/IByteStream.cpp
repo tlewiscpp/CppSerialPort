@@ -92,25 +92,16 @@ void IByteStream::setLineEnding(char chr)
 ssize_t IByteStream::writeLine(const std::string &str)
 {
     std::lock_guard<std::mutex> writeLock{this->m_writeMutex};
-    ssize_t returnValue = 0;
-    for (auto &it : str) {
-        returnValue += this->write(static_cast<int>(it));
-    }
-    for (auto &it : this->m_lineEnding) {
-        returnValue += this->write(static_cast<int>(it));
-    }
-    return returnValue;
+	std::string toWrite{ str + this->lineEnding() };
+	return this->write(toWrite.c_str(), toWrite.length());
 }
 
 ssize_t IByteStream::write(const std::string &str)
 {
     std::lock_guard<std::mutex> writeLock{this->m_writeMutex};
-    ssize_t returnValue{0};
-    for (auto &it : str) {
-        returnValue += this->write(static_cast<int>(it));
-    }
-    return returnValue;
+	return this->write(str.c_str(), str.length());
 }
+
 std::string IByteStream::readLine(bool *timeout)
 {
     return this->readUntil(this->m_lineEnding, timeout);

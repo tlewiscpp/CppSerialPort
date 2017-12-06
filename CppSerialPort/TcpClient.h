@@ -27,8 +27,8 @@ public:
     ~TcpClient() override;
 
     int read() override;
-    ssize_t write(int i) override;
-    ssize_t writeLine(const std::string &str) override;
+    ssize_t write(char i) override;
+	ssize_t write(const char *bytes, size_t numberOfBytes);
     std::string portName() const override;
     bool isOpen() const override;
     void openPort() override;

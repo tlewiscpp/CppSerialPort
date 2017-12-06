@@ -65,7 +65,10 @@ std::string TcpClient::getErrorString(int errorCode)
 		0,
 		nullptr
 	);
-	wcstombs(errorString, wideErrorString, PATH_MAX);
+	size_t converted{ 0 };
+	auto conversionResult = wcstombs_s(&converted, errorString, PATH_MAX, wideErrorString, PATH_MAX);
+	(void)conversionResult;
+	//wcstombs(errorString, wideErrorString, PATH_MAX);
 	LocalFree(wideErrorString);
 #else
 	strerror_r(errorCode, errorString, PATH_MAX);
@@ -196,34 +199,36 @@ int TcpClient::read()
     return 0;
 }
 
-ssize_t TcpClient::write(int i)
+ssize_t TcpClient::write(char c)
 {
     if (!this->isConnected()) {
         throw std::runtime_error("Cannot write on closed socket (call connect first)");
     }
 #if defined(_WIN32)
-	char toSend{ static_cast<char>(i) };
-	return send(this->m_socketDescriptor, &toSend, 1, 0);
+	return send(this->m_socketDescriptor, &c, 1, 0);
 #else
-	return send(this->m_socketDescriptor, &i, 1, 0);
+	return send(this->m_socketDescriptor, &c, 1, 0);
 #endif //defined(_WIN32)
 }
 
-ssize_t TcpClient::writeLine(const std::string &str)
+ssize_t TcpClient::write(const char *bytes, size_t numberOfBytes)
 {
     if (!this->isConnected()) {
         throw std::runtime_error("Cannot write on closed socket (call connect first)");
     }
     unsigned sentBytes{0};
     //Make sure all bytes are sent
-    while (sentBytes < str.length()) {
-        std::string toSend{str.substr(sentBytes)};
-        auto sendResult = send(this->m_socketDescriptor, toSend.c_str(), toSend.length(), 0);
+	auto startTime = IByteStream::getEpoch();
+    while (sentBytes < numberOfBytes)  {
+        auto sendResult = send(this->m_socketDescriptor, bytes + sentBytes, numberOfBytes - sentBytes, 0);
         if (sendResult == -1) {
 			auto errorCode = getLastError();
             throw std::runtime_error("send(int, const void *, int, int): error code " + toStdString(errorCode) + " (" + getErrorString(errorCode) + ")");
         }
         sentBytes += sendResult;
+		if ( (getEpoch() - startTime) >= this->writeTimeout() ) {
+			break;
+		}
     }
     return sentBytes;
 }

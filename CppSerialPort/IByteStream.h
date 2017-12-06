@@ -41,7 +41,8 @@ public:
     virtual ~IByteStream() = default;
 
     virtual int read() = 0;
-    virtual ssize_t write(int) = 0;
+    virtual ssize_t write(char) = 0;
+	virtual ssize_t write(const char *, size_t) = 0;
 
     virtual std::string portName() const = 0;
     virtual bool isOpen() const = 0;

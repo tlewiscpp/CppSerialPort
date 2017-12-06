@@ -167,8 +167,9 @@ public:
     void disableRTS();
     void flushRx() override;
     void flushTx() override;
-    ssize_t write(int byteToWrite) override;
-	ssize_t writeLine(const std::string &str) override;
+    ssize_t write(char c) override;
+	ssize_t write(const char *bytes, size_t numberOfBytes) override;
+
 
     void setBaudRate(BaudRate baudRate);
     void setStopBits(StopBits stopBits);

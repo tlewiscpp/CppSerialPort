@@ -444,11 +444,11 @@ int SerialPort::read()
 #endif
 }
 
-ssize_t SerialPort::write(int byteToSend)
+ssize_t SerialPort::write(char c)
 {
 #if defined(_WIN32)
     DWORD writtenBytes{0};
-	if (!WriteFile(this->m_serialPortHandle, &byteToSend, sizeof(byteToSend) , &writtenBytes, nullptr)) {
+	if (!WriteFile(this->m_serialPortHandle, &c, 1 , &writtenBytes, nullptr)) {
         auto errorCode = getLastError();
         (void)errorCode;
         //TODO: Check if errorCode is IO_NOT_COMPLETED or whatever
@@ -456,33 +456,31 @@ ssize_t SerialPort::write(int byteToSend)
     }
     return static_cast<ssize_t>(writtenBytes);
 #else
-    auto writtenBytes = ::write(this->getFileDescriptor(), &byteToSend, 1);
+    auto writtenBytes = ::write(this->getFileDescriptor(), &c, 1);
     if (writtenBytes != 0) {
-        return (getLastError() == EAGAIN ? 0 : 1);
+        return (getLastError() == EAGAIN ? 0 : writtenBytes);
     }
     return writtenBytes;
 #endif //defined(_WIN32)
 }
 
-ssize_t SerialPort::writeLine(const std::string &str)
-{
-    std::string toWrite{str + this->lineEnding()};
+ssize_t SerialPort::write(const char *bytes, size_t numberOfBytes) {
 #if defined(_WIN32)
-    DWORD writtenBytes{0};
-    if (!WriteFile(this->m_serialPortHandle, toWrite.c_str(), toWrite.length(), &writtenBytes, nullptr)) {
-        auto errorCode = getLastError();
-        (void)errorCode;
-        //TODO: Check if errorCode is IO_NOT_COMPLETED or whatever
-        return 0;
-    }
-    return static_cast<ssize_t>(writtenBytes);
+	DWORD writtenBytes{ 0 };
+	if (!WriteFile(this->m_serialPortHandle, bytes, numberOfBytes, &writtenBytes, nullptr)) {
+		auto errorCode = getLastError();
+		(void)errorCode;
+		//TODO: Check if errorCode is IO_NOT_COMPLETED or whatever
+		return 0;
+	}
+	return static_cast<ssize_t>(writtenBytes);
 #else
-    auto writtenBytes = ::write(this->getFileDescriptor(), toWrite.c_str(), toWrite.length());
-    if(writtenBytes < 0) {
-        return (errno == EAGAIN ? 0 : toWrite.length());
-    }
-    return writtenBytes;
-#endif
+	auto writtenBytes = ::write(this->getFileDescriptor(), &byteToSend, numberOfBytes);
+	if (writtenBytes != 0) {
+		return (getLastError() == EAGAIN ? 0 : writtenBytes);
+	}
+	return writtenBytes;
+#endif //defined(_WIN32)
 }
 
 void SerialPort::closePort()
