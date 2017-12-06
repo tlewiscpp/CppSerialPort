@@ -226,7 +226,7 @@ ssize_t TcpClient::write(const char *bytes, size_t numberOfBytes)
             throw std::runtime_error("send(int, const void *, int, int): error code " + toStdString(errorCode) + " (" + getErrorString(errorCode) + ")");
         }
         sentBytes += sendResult;
-		if ( (getEpoch() - startTime) >= this->writeTimeout() ) {
+		if ( (getEpoch() - startTime) >= static_cast<unsigned int>(this->writeTimeout()) ) {
 			break;
 		}
     }

@@ -384,16 +384,22 @@ int SerialPort::read()
 
 	DWORD commErrors{};
 	COMSTAT commStatus{};
-	const auto clearErrorsResult = ClearCommError(this->m_serialPortHandle, &commErrors, &commStatus);
+	auto clearErrorsResult = ClearCommError(this->m_serialPortHandle, &commErrors, &commStatus);
 	if (clearErrorsResult == 0) {
 		const auto errorCode = getLastError();
 		std::cout << "ClearCommError(HANDLE, LPDWORD, LPCOMSTAT) error: " << toStdString(errorCode) << " (" << getErrorString(errorCode) << ")" << std::endl;
 	}
 
     DWORD readBytes{0};
-	DWORD maxBytes{ (commStatus.cbInQue == 0 ? 1 : commStatus.cbInQue) };
+	DWORD maxBytes{ commStatus.cbInQue };
+    bool firstByte{false};
+    if (commStatus.cbInQue == 0) {
+        maxBytes = 1;
+        firstByte = true;
+    }
+
     auto readResult = ReadFile(this->m_serialPortHandle, readStuff, maxBytes, &readBytes, nullptr);
-	if (readResult == 0) {
+    if (readResult == 0) {
 		const auto errorCode = getLastError();
 		std::cout << "ReadFile(HANDLE, LPVOID, DWORD, LPDWORD, LPDWORD) error: " << toStdString(errorCode) << " (" << getErrorString(errorCode) << ")" << std::endl;
 		return 0;
@@ -402,6 +408,15 @@ int SerialPort::read()
 		return 0;
     }
     this->m_readBuffer += std::string{readStuff};
+    if (firstByte) {
+        clearErrorsResult = ClearCommError(this->m_serialPortHandle, &commErrors, &commStatus);
+        if ( (clearErrorsResult != 0) && (commStatus.cbInQue != 0) ) {
+            readResult = ReadFile(this->m_serialPortHandle, readStuff, commStatus.cbInQue, &readBytes, nullptr);
+            if ((readResult != 0) && (readBytes > 0)) {
+                this->m_readBuffer += readStuff;
+            }
+        }
+    }
     char returnValue{this->m_readBuffer.front()};
     this->m_readBuffer = this->m_readBuffer.substr(1);
     return static_cast<int>(returnValue);
