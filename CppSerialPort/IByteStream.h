@@ -77,15 +77,6 @@ protected:
     template<typename T> static inline std::string toStdString(const T &t) {
         return dynamic_cast<std::ostringstream &>(std::ostringstream{""} << t).str();
     }
-
-    static inline std::string vaToStdString() {
-        return "";
-    }
-
-    template <typename First, typename ...Args> static inline std::string vaToStdString(First first, Args ...args) {
-        return toStdString(first) + vaToStdString(args...);
-    }
-
     static bool fileExists(const std::string &filePath);
 
 	static const int DEFAULT_READ_TIMEOUT;

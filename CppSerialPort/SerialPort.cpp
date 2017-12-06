@@ -490,7 +490,7 @@ ssize_t SerialPort::write(const char *bytes, size_t numberOfBytes) {
 	}
 	return static_cast<ssize_t>(writtenBytes);
 #else
-	auto writtenBytes = ::write(this->getFileDescriptor(), &byteToSend, numberOfBytes);
+	auto writtenBytes = ::write(this->getFileDescriptor(), bytes, numberOfBytes);
 	if (writtenBytes != 0) {
 		return (getLastError() == EAGAIN ? 0 : writtenBytes);
 	}
@@ -681,12 +681,6 @@ std::pair<int, std::string> SerialPort::getPortNameAndNumber(const std::string &
     if (iter != SERIAL_PORT_NAMES.cend()) {
         return std::make_pair(static_cast<int>(std::distance(SERIAL_PORT_NAMES.begin(), iter)), str);
     }
-//    for (auto &it : SerialPort::SERIAL_PORT_NAMES) {
-//        if (str == it) {
-//            return std::make_pair(i, str);
-//        }
-//        i++;
-//    }
     str = name;
     if (str.find("/dev/tty") == std::string::npos) {
         str = "/dev/tty" + str;
@@ -695,28 +689,16 @@ std::pair<int, std::string> SerialPort::getPortNameAndNumber(const std::string &
     if (iter != SERIAL_PORT_NAMES.cend()) {
         return std::make_pair(static_cast<int>(std::distance(SERIAL_PORT_NAMES.begin(), iter)), str);
     }
-//    for (auto &it : SerialPort::SERIAL_PORT_NAMES) {
-//        if (str == it) {
-//            return std::make_pair(i, str);
-//        }
-//        i++;
-//    }
     str = name;
     if (str.find("/dev/") == std::string::npos) {
         str = "/dev/" + str;
     }
     iter = std::find(SERIAL_PORT_NAMES.cbegin(), SERIAL_PORT_NAMES.cend(), str);
     if (iter != SERIAL_PORT_NAMES.cend()) {
-        return std::make_pair(static_cast<int>(std::distance(SERIAL_PORT_NAMES.begin(), iter)), strstr);
+        return std::make_pair(static_cast<int>(std::distance(SERIAL_PORT_NAMES.begin(), iter)), str);
     }
-//    for (auto &it : SerialPort::SERIAL_PORT_NAMES) {
-//        if (str == it) {
-//            return std::make_pair(i, str);
-//        }
-//        i++;
-//    }
 
-    throw std::runtime_error(vaToStdString("ERROR: ", name, " is an invalid serial port name"));
+    throw std::runtime_error("ERROR: " + name + " is an invalid serial port name");
 #endif
 }
 
