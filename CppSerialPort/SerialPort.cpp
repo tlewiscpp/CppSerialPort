@@ -448,11 +448,11 @@ int SerialPort::read()
         int bytesAvailable{0};
         ioctl(this->getFileDescriptor(), FIONREAD, &bytesAvailable);
         auto returnedBytes = fread(readStuff, sizeof(char), static_cast<size_t>(bytesAvailable), this->m_fileStream);
-        this->m_readBuffer += std::string{readStuff};
         //auto returnedBytes = fread(&readValue, sizeof(char), 1, this->m_fileStream);
         if ((returnedBytes <= 0) || (readStuff[0] == '\0')) {
             return 0;
         }
+        this->m_readBuffer += std::string{readStuff};
         char returnValue{this->m_readBuffer.front()};
         this->m_readBuffer = this->m_readBuffer.substr(1);
         return static_cast<int>(returnValue);
