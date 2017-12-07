@@ -46,6 +46,7 @@
 #include "SerialPort.h"
 #include <iostream>
 #include <limits>
+#include <allegro/internal/aintern.h>
 
 namespace CppSerialPort {
 
@@ -259,17 +260,24 @@ void SerialPort::openPort()
 		this->closePort();
 		throw std::runtime_error("tcgetattr(int, termios *): Unable to read port settings for " + this->portName() + ": " + toStdString(errorCode) + " (" + getErrorString(errorCode) + ")");
 	}
+
     memset(&this->m_newPortSettings, 0, sizeof(this->m_newPortSettings));
 
     this->m_newPortSettings.c_cflag = static_cast<tcflag_t>(cbits | cpar | bstop | CLOCAL | CREAD);
     this->m_newPortSettings.c_iflag = static_cast<tcflag_t>(ipar);
     this->m_newPortSettings.c_oflag = 0;
     this->m_newPortSettings.c_lflag = 0;
-    this->m_newPortSettings.c_cc[VMIN] = 0;      /* block untill n bytes are received */
-    this->m_newPortSettings.c_cc[VTIME] = 0;     /* block untill a timer expires (n * 100 mSec.) */
+    this->m_newPortSettings.c_cc[VMIN] = 0;
+    this->m_newPortSettings.c_cc[VTIME] = static_cast<cc_t>(this->readTimeout() / 100);
 
     cfsetispeed(&this->m_newPortSettings, static_cast<speed_t>(baudRate));
     cfsetospeed(&this->m_newPortSettings, static_cast<speed_t>(baudRate));
+
+    fcntl(this->getFileDescriptor(), F_SETFL, O_SYNC);
+
+    if (this->readTimeout() == 0) {
+        fcntl(this->getFileDescriptor(), F_SETFL, O_NDELAY);
+    }
 
     error = tcsetattr(this->getFileDescriptor(), TCSANOW, &this->m_newPortSettings);
     if(error == -1) {
@@ -291,6 +299,22 @@ void SerialPort::openPort()
         this->closePort();
 		throw std::runtime_error("ioctl(int, int, int): Unable to set DTR & RTS settings for " + this->portName() + ": " + toStdString(errorCode) + " (" + getErrorString(errorCode) + ")");
 	}
+
+    /*
+    if (this->m_flowControl == FlowControl::Off) {
+        this->m_newPortSettings.c_cflag &= (~CRTSCTS);
+        this->m_newPortSettings.c_iflag &= (~(IXON | IXOFF | IXANY));
+        tcsetattr(fd, TCSAFLUSH, &this->m_newPortSettings);
+    } else if (this->m_flowControl == FlowControl::XonXoff) {
+        this->m_newPortSettings.c_cflag&=(~CRTSCTS);
+        this->m_newPortSettings.c_iflag|=(IXON|IXOFF|IXANY);
+        tcsetattr(fd, TCSAFLUSH, &this->m_newPortSettings);
+    } else {
+        this->m_newPortSettings.c_cflag|=CRTSCTS;
+        this->m_newPortSettings.c_iflag&=(~(IXON|IXOFF|IXANY));
+        tcsetattr(fd, TCSAFLUSH, &this->m_newPortSettings);
+    }
+    */
 
 #endif
 	this->m_isOpen = true;
@@ -628,6 +652,7 @@ void SerialPort::flushTx()
 #endif
 }
 
+
 bool SerialPort::isAvailableSerialPort(const std::string &name)
 {
 	auto availablePorts = availableSerialPorts();
@@ -722,6 +747,17 @@ void SerialPort::setParity(Parity parity)
     }
 }
 
+/*
+void SerialPort::setFlowControl(FlowControl flowControl)
+{
+    if (!this->m_isOpen) {
+        this->m_flowControl = flowControl;
+    } else {
+        throw std::runtime_error("ERROR: Cannot change flow control while serial port " + this->m_portName + " is open");
+    }
+}
+*/
+
 BaudRate SerialPort::baudRate() const
 {
     return this->m_baudRate;
@@ -741,6 +777,13 @@ Parity SerialPort::parity() const
 {
     return this->m_parity;
 }
+
+/*
+FlowControl SerialPort::flowControl() const
+{
+    return this->m_flowControl;
+}
+*/
 
 std::string SerialPort::portName() const
 {

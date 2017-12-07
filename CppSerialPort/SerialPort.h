@@ -29,7 +29,21 @@
 namespace CppSerialPort {
 //    PAR_MARK,               //WINDOWS ONLY
 //PAR_SPACE
-enum class Parity { Even, Odd, None };
+
+
+enum class FlowControl {
+    Off,
+    Hardware,
+    XonXoff
+};
+
+
+enum class Parity {
+    Even,
+    Odd,
+    None,
+};
+
 
 #if defined(_WIN32)
 //1.5
@@ -60,6 +74,7 @@ enum class BaudRate {
     Baud500000 = 500000,
     Baud1000000 = 1000000
 };
+
 #else
 #include <termios.h>
 
@@ -105,20 +120,8 @@ enum class BaudRate {
     Baud3500000 = B3500000,
     Baud4000000 = B4000000
 };
-
-/*
-enum FlowType
-{
-    FLOW_OFF,
-    FLOW_HARDWARE,
-    FLOW_XONXOFF
-};
- */
-
-enum class FlowControl {
-
-};
 #endif
+
 
     using HANDLE = void *;
 
@@ -158,16 +161,6 @@ public:
     void closePort() override;
     int read() override;
 
-    static BaudRate parseBaudRateFromRaw(const std::string &baudRate);
-    static DataBits parseDataBitsFromRaw(const std::string &dataBits);
-    static StopBits parseStopBitsFromRaw(const std::string &stopBits);
-    static Parity parseParityFromRaw(const std::string &parity);
-
-    static std::string baudRateToString(BaudRate baudRate);
-    static std::string stopBitsToString(StopBits stopBits);
-    static std::string dataBitsToString(DataBits dataBits);
-    static std::string parityToString(Parity parity);
-
 public:
     std::string portName() const override;
     bool isOpen() const override;
@@ -189,16 +182,20 @@ public:
     void setStopBits(StopBits stopBits);
     void setParity(Parity parity);
     void setDataBits(DataBits dataBits);
+    //void setFlowControl(FlowControl flowControl);
 
     BaudRate baudRate() const;
     StopBits stopBits() const;
     DataBits dataBits() const;
     Parity parity() const;
+    //FlowControl flowControl() const;
 
-    static const DataBits DEFAULT_DATA_BITS;
+
     static const StopBits DEFAULT_STOP_BITS;
     static const Parity DEFAULT_PARITY;
     static const BaudRate DEFAULT_BAUD_RATE;
+    static const DataBits DEFAULT_DATA_BITS;
+    //static const FlowControl DEFAULT_FLOW_CONTROL;
     static const std::string DEFAULT_LINE_ENDING;
 
     static std::unordered_set<std::string> availableSerialPorts();
@@ -214,6 +211,7 @@ private:
     StopBits m_stopBits;
     DataBits m_dataBits;
     Parity m_parity;
+    //FlowControl m_flowControl;
     bool m_isOpen;
 
     static const long constexpr SERIAL_PORT_BUFFER_MAX{4096};
