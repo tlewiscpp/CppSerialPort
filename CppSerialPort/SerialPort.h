@@ -27,10 +27,12 @@
 #include <unordered_set>
 
 namespace CppSerialPort {
-
+//    PAR_MARK,               //WINDOWS ONLY
+//PAR_SPACE
 enum class Parity { Even, Odd, None };
 
 #if defined(_WIN32)
+//1.5
 enum class StopBits {
     One = 1,
     Two = 2
@@ -103,6 +105,15 @@ enum class BaudRate {
     Baud3500000 = B3500000,
     Baud4000000 = B4000000
 };
+
+/*
+enum FlowType
+{
+    FLOW_OFF,
+    FLOW_HARDWARE,
+    FLOW_XONXOFF
+};
+ */
 
 enum class FlowControl {
 
