@@ -40,7 +40,7 @@ public:
     IByteStream();
     virtual ~IByteStream() = default;
 
-    virtual int read() = 0;
+    virtual char read() = 0;
     virtual ssize_t write(char) = 0;
 	virtual ssize_t write(const char *, size_t) = 0;
 
@@ -53,10 +53,10 @@ public:
 
     bool available();
     int peek();
-	void setReadTimeout(int timeout);
+	virtual void setReadTimeout(int timeout);
     int readTimeout() const;
 
-    void setWriteTimeout(int timeout);
+	virtual void setWriteTimeout(int timeout);
     int writeTimeout() const;
 
     std::string lineEnding() const;
@@ -70,7 +70,7 @@ public:
     std::string readUntil(char until, bool *timeout = nullptr);
 
 protected:
-    virtual void putBack(int c) = 0;
+    virtual void putBack(char c) = 0;
     static inline bool endsWith (const std::string &fullString, const std::string &ending) {
         return ( (fullString.length() < ending.length()) ? false : std::equal(ending.rbegin(), ending.rend(), fullString.rbegin()) );
     }

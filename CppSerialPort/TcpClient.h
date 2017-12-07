@@ -26,7 +26,7 @@ public:
     TcpClient(const std::string &hostName, uint16_t portNumber);
     ~TcpClient() override;
 
-    int read() override;
+    char read() override;
     ssize_t write(char i) override;
 	ssize_t write(const char *bytes, size_t numberOfBytes);
     std::string portName() const override;
@@ -35,7 +35,7 @@ public:
     void closePort() override;
     void flushRx() override;
     void flushTx() override;
-    void putBack(int c) override;
+    void putBack(char c) override;
 
     void connect(const std::string &hostName, uint16_t portNumber);
     void connect();

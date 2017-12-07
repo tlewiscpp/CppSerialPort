@@ -173,12 +173,12 @@ bool TcpClient::isConnected() const
     return this->m_socketDescriptor != INVALID_SOCKET;
 }
 
-int TcpClient::read()
+char TcpClient::read()
 {
 	if (!this->m_readBuffer.empty()) {
 		char returnValue{ this->m_readBuffer.front() };
 		this->m_readBuffer = this->m_readBuffer.substr(1);
-		return static_cast<int>(returnValue);
+		return returnValue;
 	}
 
     char buffer[BUFFER_MAX];
@@ -267,9 +267,9 @@ void TcpClient::flushTx()
 
 }
 
-void TcpClient::putBack(int c)
+void TcpClient::putBack(char c)
 {
-    this->m_readBuffer.insert(this->m_readBuffer.begin(), static_cast<char>(c));
+    this->m_readBuffer.insert(this->m_readBuffer.begin(), c);
 }
 
 timeval TcpClient::toTimeVal(uint32_t totalTimeout)

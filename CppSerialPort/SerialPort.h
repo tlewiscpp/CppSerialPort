@@ -27,66 +27,75 @@
 #include <unordered_set>
 
 namespace CppSerialPort {
-//    PAR_MARK,               //WINDOWS ONLY
-//PAR_SPACE
-
 
 enum class FlowControl {
-    Off,
-    Hardware,
-    XonXoff
-};
-
-
-enum class Parity {
-    Even,
-    Odd,
-    None,
+    FlowOff,
+    FlowHardware,
+    FlowXonXoff
 };
 
 
 #if defined(_WIN32)
-//1.5
+using HANDLE = void *;
+using modem_status_t = DWORD;
+
 enum class StopBits {
-    One = 1,
-    Two = 2
+    StopOne = ONESTOPBIT,
+    StopOneFive = ONE5STOPBIT,
+    StopTwo = TWOSTOPBITS
 };
+
+enum class Parity : unsigned char {
+    ParityNone  = 0,
+    ParityOdd   = 1,
+    ParityEven  = 2,
+    ParityMark  = 3,
+    ParitySpace = 4
+};
+
 enum class DataBits {
-    Five = 5,
-    Six = 6,
-    Seven = 7,
-    Eight = 8
+    DataFive = 5,
+    DataSix = 6,
+    DataSeven = 7,
+    DataEight = 8
 };
+
 enum class BaudRate {
-    Baud110 = 110,
-    Baud300 = 300,
-    Baud600 = 600,
-    Baud1200 = 1200,
-    Baud2400 = 2400,
-    Baud4800 = 4800,
-    Baud9600 = 9600,
-    Baud19200 = 19200,
-    Baud38400 = 38400,
-    Baud57600 = 57600,
-    Baud115200 = 115200,
-    Baud128000 = 128000,
-    Baud256000 = 256000,
-    Baud500000 = 500000,
-    Baud1000000 = 1000000
+    Baud110     = CBR_110,
+    Baud300     = CBR_300,
+    Baud600     = CBR_600,
+    Baud1200    = CBR_1200,
+    Baud2400    = CBR_2400,
+    Baud4800    = CBR_4800,
+    Baud9600    = CBR_9600,
+    Baud19200   = CBR_19200,
+    Baud38400   = CBR_38400,
+    Baud57600   = CBR_57600,
+    Baud115200  = CBR_115200,
+    Baud128000  = CBR_128000,
+    Baud256000  = CBR_256000,
+    Baud500000  = CBR_500000,
+    Baud1000000 = CBR_1000000
 };
 
 #else
+using modem_status_t = int;
 #include <termios.h>
-
+enum class Parity {
+    ParityEven,
+    ParityOdd,
+    ParityNone,
+    ParitySpace
+};
 enum class StopBits {
-    One = 0,
-    Two = CSTOPB
+    StopOne,
+    StopTwo
 };
 enum class DataBits {
-    Five = CS5,
-    Six = CS6,
-    Seven = CS7,
-    Eight = CS8
+    DataFive = CS5,
+    DataSix = CS6,
+    DataSeven = CS7,
+    DataEight = CS8
 };
 enum class BaudRate {
     Baud50 = B50,
@@ -122,9 +131,6 @@ enum class BaudRate {
 };
 #endif
 
-
-    using HANDLE = void *;
-
 class SerialPort : public IByteStream
 {
 public:
@@ -136,6 +142,9 @@ public:
     SerialPort(const std::string &name, BaudRate baudRate, StopBits stopBits, Parity parity);
     SerialPort(const std::string &name, BaudRate baudRate, DataBits dataBits, StopBits stopBits, Parity parity);
     SerialPort(const std::string &name, BaudRate baudRate, StopBits stopBits, DataBits dataBits, Parity parity);
+	SerialPort(const std::string &name, BaudRate baudRate, DataBits dataBits, StopBits stopBits, Parity parity, FlowControl flowControl);
+	SerialPort(const std::string &name, BaudRate baudRate, StopBits stopBits, DataBits dataBits, Parity parity, FlowControl flowControl);
+
 
     SerialPort(const std::string &name, DataBits dataBits);
     SerialPort(const std::string &name, DataBits dataBits, StopBits stopBits);
@@ -159,7 +168,8 @@ public:
 
 	void openPort() override;
     void closePort() override;
-    int read() override;
+    char read() override;
+    void setReadTimeout(int timeout) override;
 
 public:
     std::string portName() const override;
@@ -182,20 +192,20 @@ public:
     void setStopBits(StopBits stopBits);
     void setParity(Parity parity);
     void setDataBits(DataBits dataBits);
-    //void setFlowControl(FlowControl flowControl);
+    void setFlowControl(FlowControl flowControl);
 
     BaudRate baudRate() const;
     StopBits stopBits() const;
     DataBits dataBits() const;
     Parity parity() const;
-    //FlowControl flowControl() const;
+    FlowControl flowControl() const;
 
 
     static const StopBits DEFAULT_STOP_BITS;
     static const Parity DEFAULT_PARITY;
     static const BaudRate DEFAULT_BAUD_RATE;
     static const DataBits DEFAULT_DATA_BITS;
-    //static const FlowControl DEFAULT_FLOW_CONTROL;
+    static const FlowControl DEFAULT_FLOW_CONTROL;
     static const std::string DEFAULT_LINE_ENDING;
 
     static std::unordered_set<std::string> availableSerialPorts();
@@ -211,7 +221,7 @@ private:
     StopBits m_stopBits;
     DataBits m_dataBits;
     Parity m_parity;
-    //FlowControl m_flowControl;
+    FlowControl m_flowControl;
     bool m_isOpen;
 
     static const long constexpr SERIAL_PORT_BUFFER_MAX{4096};
@@ -222,10 +232,7 @@ private:
     static std::vector<std::string> generateSerialPortNames();
 
     static const std::vector<std::string> SERIAL_PORT_NAMES;
-
-    std::pair<int, int> parseParity(Parity parity);
-
-    void putBack(int c) override;
+    void putBack(char c) override;
 
     int getFileDescriptor() const;
 
@@ -238,17 +245,17 @@ private:
     static const int constexpr NUMBER_OF_POSSIBLE_SERIAL_PORTS{256};
     static const char *SERIAL_PORT_REGISTRY_PATH;
     HANDLE m_serialPortHandle;
-	bool m_readCompleted;
-	void cancelRead();
+    COMMCONFIG m_portSettings;
 #else
 	FILE *m_fileStream;
 	static const std::vector<const char *> AVAILABLE_PORT_NAMES_BASE;
     static const int constexpr NUMBER_OF_POSSIBLE_SERIAL_PORTS{256*9};
-    int m_serialPortPool[NUMBER_OF_POSSIBLE_SERIAL_PORTS];
-    termios m_newPortSettings;
-    termios m_oldPortSettings[NUMBER_OF_POSSIBLE_SERIAL_PORTS];
-#endif
+    termios m_portSettings;
+    termios m_oldPortSettings;
+    modem_status_t getModemStatus() const;
 
+#endif
+    void applyPortSettings();
 };
 
 } //namespace CppSerialPort
