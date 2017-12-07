@@ -30,7 +30,6 @@
 #    include <Windows.h>
 #    include <io.h>
 #    include <Fcntl.h>
-//#    include <Winsock2.h>
 #else
     #include <termios.h>
     #include <sys/ioctl.h>
@@ -38,9 +37,10 @@
     #include <fcntl.h>
     #include <sys/types.h>
     #include <sys/stat.h>
-    #include <limits.h>
+    #include <climits>
     #include <sys/file.h>
-    #include <errno.h>
+    #include <cerrno>
+
 #endif
 
 #include "SerialPort.h"
@@ -49,10 +49,10 @@
 
 namespace CppSerialPort {
 
-const DataBits SerialPort::DEFAULT_DATA_BITS{DataBits::EIGHT};
-const StopBits SerialPort::DEFAULT_STOP_BITS{StopBits::ONE};
-const Parity SerialPort::DEFAULT_PARITY{Parity::NONE};
-const BaudRate SerialPort::DEFAULT_BAUD_RATE{BaudRate::BAUD115200};
+const DataBits SerialPort::DEFAULT_DATA_BITS{DataBits::Eight};
+const StopBits SerialPort::DEFAULT_STOP_BITS{StopBits::One};
+const Parity SerialPort::DEFAULT_PARITY{Parity::None};
+const BaudRate SerialPort::DEFAULT_BAUD_RATE{BaudRate::Baud9600};
 
 #if defined(_WIN32)
     const char *SerialPort::AVAILABLE_PORT_NAMES_BASE{R"(\\.\COM)"};
@@ -63,18 +63,6 @@ const std::vector<const char *> SerialPort::AVAILABLE_PORT_NAMES_BASE{"/dev/ttyS
                                                                       "/dev/ttyAMA", "/dev/ttyrfcomm", "/dev/ircomm",
                                                                       "/dev/cuau", "/dev/cuaU", "/dev/rfcomm"};
 #endif
-
-//#if defined(_WIN32) || defined(__CYGWIN__)
-//    const std::vector<const char *> SerialPort::AVAILABLE_BAUD_RATE{"110", "300", "600", "1200", "2400", "4800",
-//                                                                    "9600", "19200", "38400", "57600", "115200",
-//                                                                    "128000", "256000", "500000", "1000000"};
-//#else
-//    const std::vector<const char *> SerialPort::AVAILABLE_BAUD_RATE{"50", "75", "110", "134", "150", "200", "300",
-//                                                                    "600", "1200", "1800", "2400", "4800", "9600", "19200",
-//                                                                    "38400", "57600", "115200", "230400", "460800", "500000",
-//                                                                    "576000", "921600", "1000000", "1152000", "1500000",
-//                                                                    "2000000", "2500000", "3000000", "3500000", "4000000"};
-//#endif
 
 const std::vector<std::string> SerialPort::SERIAL_PORT_NAMES{SerialPort::generateSerialPortNames()};
 
@@ -273,8 +261,8 @@ void SerialPort::openPort()
 	}
     memset(&this->m_newPortSettings, 0, sizeof(this->m_newPortSettings));
 
-    this->m_newPortSettings.c_cflag = cbits | cpar | bstop | CLOCAL | CREAD;
-    this->m_newPortSettings.c_iflag = ipar;
+    this->m_newPortSettings.c_cflag = static_cast<tcflag_t>(cbits | cpar | bstop | CLOCAL | CREAD);
+    this->m_newPortSettings.c_iflag = static_cast<tcflag_t>(ipar);
     this->m_newPortSettings.c_oflag = 0;
     this->m_newPortSettings.c_lflag = 0;
     this->m_newPortSettings.c_cc[VMIN] = 0;      /* block untill n bytes are received */
@@ -313,27 +301,21 @@ void SerialPort::openPort()
 std::pair<int, int> SerialPort::parseParity(Parity parity)
 {
 #if defined(_WIN32)
-    if (parity == Parity::NONE) {
+    if (parity == Parity::None) {
         return std::make_pair('n', 0);
-    } else if (parity == Parity::EVEN) {
+    } else if (parity == Parity::Even) {
         return std::make_pair('e', 0);
-    } else if (parity == Parity::ODD) {
+    } else if (parity == Parity::Odd) {
         return std::make_pair('o', 0);
-    } else {
-        return parseParity(DEFAULT_PARITY);
     }
-    return parseParity(DEFAULT_PARITY);
 #else
-    if (parity == Parity::NONE) {
+    if (parity == Parity::None) {
         return std::make_pair(0, IGNPAR);
-    } else if (parity == Parity::EVEN) {
+    } else if (parity == Parity::Even) {
         return std::make_pair(PARENB, INPCK);
-    } else if (parity == Parity::ODD) {
+    } else if (parity == Parity::Odd) {
         return std::make_pair( (PARENB | PARODD), INPCK);
-    } else {
-        return parseParity(DEFAULT_PARITY);
     }
-    return parseParity(DEFAULT_PARITY);
 #endif
 }
 
@@ -596,7 +578,7 @@ bool SerialPort::isDCDEnabled() const
 #else
     int status{0};
     ioctl(this->getFileDescriptor(), TIOCMGET, &status);
-    return (status&TIOCM_CAR);
+    return static_cast<bool>(status & TIOCM_CAR);
 #endif
 }
 
@@ -610,7 +592,7 @@ bool SerialPort::isCTSEnabled() const
 #else
     int status{0};
     ioctl(this->getFileDescriptor(), TIOCMGET, &status);
-    return (status&TIOCM_CTS);
+    return static_cast<bool>(status & TIOCM_CTS);
 #endif
 }
 
@@ -623,7 +605,7 @@ bool SerialPort::isDSREnabled() const
 #else
     int status{0};
     ioctl(this->getFileDescriptor(), TIOCMGET, &status);
-    return (status&TIOCM_DSR);
+    return static_cast<bool>(status & TIOCM_DSR);
 #endif
 }
 
@@ -634,10 +616,6 @@ void SerialPort::flushRx()
 #else
     tcflush(this->getFileDescriptor(), TCIFLUSH);
 #endif
-    int readValue{0};
-    do {
-        readValue = this->read();
-    } while (readValue != 0);
 }
 
 
@@ -676,7 +654,6 @@ std::pair<int, std::string> SerialPort::getPortNameAndNumber(const std::string &
 		(void)e;
 		throw std::runtime_error("ERROR: " + name + " is an invalid serial port name");
 	}
-
 #else
     std::string str{name};
     auto iter = std::find(SERIAL_PORT_NAMES.cbegin(), SERIAL_PORT_NAMES.cend(), str);
@@ -774,298 +751,6 @@ std::string SerialPort::portName() const
 #else
     return this->m_portName;
 #endif //defined(_WIN32)
-}
-
-
-BaudRate SerialPort::parseBaudRateFromRaw(const std::string &baudRate)
-{
-    std::string copyString{baudRate};
-    std::transform(copyString.begin(), copyString.end(), copyString.begin(), ::tolower);
-#if defined(_WIN32)
-    if (copyString == "110") {
-        return BaudRate::BAUD110;
-    } else if (copyString == "300") {
-        return BaudRate::BAUD300;
-    } else if (copyString == "600") {
-        return BaudRate::BAUD600;
-    } else if (copyString == "1200") {
-        return BaudRate::BAUD1200;
-    } else if (copyString == "2400") {
-        return BaudRate::BAUD2400;
-    } else if (copyString == "4800") {
-        return BaudRate::BAUD4800;
-    } else if (copyString == "9600") {
-        return BaudRate::BAUD9600;
-    } else if (copyString == "19200") {
-        return BaudRate::BAUD19200;
-    } else if (copyString == "38400") {
-        return BaudRate::BAUD38400;
-    } else if (copyString == "57600") {
-        return BaudRate::BAUD57600;
-    } else if (copyString == "115200") {
-        return BaudRate::BAUD115200;
-    } else if (copyString == "128000") {
-        return BaudRate::BAUD128000;
-    } else if (copyString == "256000") {
-        return BaudRate::BAUD256000;
-    } else if (copyString == "500000") {
-        return BaudRate::BAUD500000;
-    } else if (copyString == "1000000") {
-        return BaudRate::BAUD1000000;
-    } else {
-        throw std::runtime_error("Invalid baud rate passed to parseBaudRateFromRaw(const std::string &): " + baudRate);
-    }
-#else
-    if (copyString == "50") {
-        return BaudRate::BAUD50;
-    } else if (copyString == "75") {
-        return BaudRate::BAUD75;
-    } else if (copyString == "110") {
-        return BaudRate::BAUD110;
-    } else if (copyString == "134") {
-        return BaudRate::BAUD134;
-    } else if (copyString == "150") {
-        return BaudRate::BAUD150;
-    } else if (copyString == "200") {
-        return BaudRate::BAUD200;
-    } else if (copyString == "300") {
-        return BaudRate::BAUD300;
-    } else if (copyString == "600") {
-        return BaudRate::BAUD600;
-    } else if (copyString == "1200") {
-        return BaudRate::BAUD1200;
-    } else if (copyString == "1800") {
-        return BaudRate::BAUD1800;
-    } else if (copyString == "2400") {
-        return BaudRate::BAUD2400;
-    } else if (copyString == "4800") {
-        return BaudRate::BAUD4800;
-    } else if (copyString == "9600") {
-        return BaudRate::BAUD9600;
-    } else if (copyString == "19200") {
-        return BaudRate::BAUD19200;
-    } else if (copyString == "38400") {
-        return BaudRate::BAUD38400;
-    } else if (copyString == "57600") {
-        return BaudRate::BAUD57600;
-    } else if (copyString == "115200") {
-        return BaudRate::BAUD115200;
-    } else if (copyString == "230400") {
-        return BaudRate::BAUD230400;
-    } else if (copyString == "460800") {
-        return BaudRate::BAUD460800;
-    } else if (copyString == "500000") {
-        return BaudRate::BAUD500000;
-    } else if (copyString == "576000") {
-        return BaudRate::BAUD576000;
-    } else if (copyString == "921600") {
-        return BaudRate::BAUD921600;
-    } else if (copyString == "1000000") {
-        return BaudRate::BAUD1000000;
-    } else if (copyString == "1152000") {
-        return BaudRate::BAUD1152000;
-    } else if (copyString == "1500000") {
-        return BaudRate::BAUD1500000;
-    } else if (copyString == "2000000") {
-        return BaudRate::BAUD2000000;
-    } else if (copyString == "2500000") {
-        return BaudRate::BAUD2500000;
-    } else if (copyString == "3000000") {
-        return BaudRate::BAUD3000000;
-    } else if (copyString == "3500000") {
-        return BaudRate::BAUD3500000;
-    } else if (copyString == "4000000") {
-        return BaudRate::BAUD4000000;
-    } else {
-        throw std::runtime_error("Invalid baud rate passed to parseBaudRateFromRaw(const std::string &): " + baudRate);
-    }
-#endif
-}
-
-DataBits SerialPort::parseDataBitsFromRaw(const std::string &dataBits)
-{
-    std::string copyString{dataBits};
-    std::transform(copyString.begin(), copyString.end(), copyString.begin(), ::tolower);
-    if ((copyString == "eight") || (copyString == "8")) {
-        return DataBits::EIGHT;
-    } else if ((copyString == "seven") || (copyString == "7")) {
-        return DataBits::SEVEN;
-    } else if ((copyString == "six") || (copyString == "6")) {
-        return DataBits::SIX;
-    } else if ((copyString == "five") || (copyString == "5")) {
-        return DataBits::FIVE;
-    } else {
-        throw std::runtime_error("Invalid data bits passed to parseDataBitsFromRaw(const std::string &): " + dataBits);
-    }
-}
-
-StopBits SerialPort::parseStopBitsFromRaw(const std::string &stopBits)
-{
-    std::string copyString{stopBits};
-    std::transform(copyString.begin(), copyString.end(), copyString.begin(), ::tolower);
-    if ((copyString == "one") || (copyString == "1")) {
-        return StopBits::ONE;
-    } else if ((copyString == "two" || copyString == "2")) {
-        return StopBits::TWO;
-    } else {
-        throw std::runtime_error("Invalid stop bits passed to parseStopBitsFromRaw(const std::string &): " + stopBits);
-    }
-}
-
-Parity SerialPort::parseParityFromRaw(const std::string &parity)
-{
-    std::string copyString{parity};
-    std::transform(copyString.begin(), copyString.end(), copyString.begin(), ::tolower);
-    if ((copyString == "none") || (copyString == "n")) {
-        return Parity::NONE;
-    } else if ((copyString == "even") || (copyString == "e")) {
-        return Parity::EVEN;
-    } else if ((copyString == "odd") || (copyString == "o")) {
-        return Parity::ODD;
-    } else {
-        throw std::runtime_error("Invalid parity passed to parseParityFromRaw(const std::string &): " + parity);
-    }
-}
-
-std::string SerialPort::baudRateToString(BaudRate baudRate)
-{
-#if defined(_WIN32)
-    if (baudRate == BaudRate::BAUD110) {
-        return "110";
-    } else if (baudRate == BaudRate::BAUD300) {
-        return "300";
-    } else if (baudRate == BaudRate::BAUD600) {
-        return "600";
-    } else if (baudRate == BaudRate::BAUD1200) {
-        return "1200";
-    } else if (baudRate == BaudRate::BAUD2400) {
-        return "2400";
-    } else if (baudRate == BaudRate::BAUD4800) {
-        return "4800";
-    } else if (baudRate == BaudRate::BAUD9600) {
-        return "9600";
-    } else if (baudRate == BaudRate::BAUD19200) {
-        return "19200";
-    } else if (baudRate == BaudRate::BAUD38400) {
-        return "38400";
-    } else if (baudRate == BaudRate::BAUD57600) {
-        return "57600";
-    } else if (baudRate == BaudRate::BAUD115200) {
-        return "115200";
-    } else if (baudRate == BaudRate::BAUD128000) {
-        return "128000";
-    } else if (baudRate == BaudRate::BAUD256000) {
-        return "256000";
-    } else if (baudRate == BaudRate::BAUD500000) {
-        return "500000";
-    } else if (baudRate == BaudRate::BAUD1000000) {
-        return "1000000";
-    } else {
-        return "";
-    }
-#else
-    if (baudRate == BaudRate::BAUD50) {
-        return "50";
-    } else if (baudRate == BaudRate::BAUD75) {
-        return "75";
-    } else if (baudRate == BaudRate::BAUD110) {
-        return "110";
-    } else if (baudRate == BaudRate::BAUD134) {
-        return "134";
-    } else if (baudRate == BaudRate::BAUD150) {
-        return "150";
-    } else if (baudRate == BaudRate::BAUD200) {
-        return "200";
-    } else if (baudRate == BaudRate::BAUD300) {
-        return "300";
-    } else if (baudRate == BaudRate::BAUD600) {
-        return "600";
-    } else if (baudRate == BaudRate::BAUD1200) {
-        return "1200";
-    } else if (baudRate == BaudRate::BAUD1800) {
-        return "1800";
-    } else if (baudRate == BaudRate::BAUD2400) {
-        return "2400";
-    } else if (baudRate == BaudRate::BAUD4800) {
-        return "4800";
-    } else if (baudRate == BaudRate::BAUD9600) {
-        return "9600";
-    } else if (baudRate == BaudRate::BAUD19200) {
-        return "19200";
-    } else if (baudRate == BaudRate::BAUD38400) {
-        return "38400";
-    } else if (baudRate == BaudRate::BAUD57600) {
-        return "57600";
-    } else if (baudRate == BaudRate::BAUD115200) {
-        return "115200";
-    } else if (baudRate == BaudRate::BAUD230400) {
-        return "230400";
-    } else if (baudRate == BaudRate::BAUD460800) {
-        return "460800";
-    } else if (baudRate == BaudRate::BAUD500000) {
-        return "500000";
-    } else if (baudRate == BaudRate::BAUD576000) {
-        return "576000";
-    } else if (baudRate == BaudRate::BAUD921600) {
-        return "921600";
-    } else if (baudRate == BaudRate::BAUD1000000) {
-        return "1000000";
-    } else if (baudRate == BaudRate::BAUD1152000) {
-        return "1152000";
-    } else if (baudRate == BaudRate::BAUD1500000) {
-        return "1500000";
-    } else if (baudRate == BaudRate::BAUD2000000) {
-        return "2000000";
-    } else if (baudRate == BaudRate::BAUD2500000) {
-        return "2500000";
-    } else if (baudRate == BaudRate::BAUD3000000) {
-        return "3000000";
-    } else if (baudRate == BaudRate::BAUD3500000) {
-        return "3500000";
-    } else if (baudRate == BaudRate::BAUD4000000) {
-        return "4000000";
-    } else {
-        return "";
-    }
-#endif
-}
-std::string SerialPort::stopBitsToString(StopBits stopBits)
-{
-    if (stopBits == StopBits::ONE) {
-        return "1";
-    } else if (stopBits == StopBits::TWO) {
-        return "2";
-    } else {
-        return "";
-    }
-}
-
-std::string SerialPort::dataBitsToString(DataBits dataBits)
-{
-    if (dataBits == DataBits::EIGHT) {
-        return "8";
-    } else if (dataBits == DataBits::SEVEN) {
-        return "7";
-    } else if (dataBits == DataBits::SIX) {
-        return "6";
-    } else if (dataBits == DataBits::FIVE) {
-        return "5";
-    } else {
-        return "";
-    }
-}
-
-std::string SerialPort::parityToString(Parity parity)
-{
-    if (parity == Parity::EVEN) {
-        return "Even";
-    } else if (parity == Parity::ODD) {
-        return "Odd";
-    } else if (parity == Parity::NONE) {
-        return "None";
-    } else {
-        return "";
-    }
 }
 
 std::unordered_set<std::string> SerialPort::availableSerialPorts()

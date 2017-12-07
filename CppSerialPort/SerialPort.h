@@ -25,84 +25,87 @@
 
 #include "IByteStream.h"
 #include <unordered_set>
-#include <unordered_set>
 
 namespace CppSerialPort {
 
-enum class Parity { EVEN, ODD, NONE };
+enum class Parity { Even, Odd, None };
 
-#if (defined(_WIN32) || defined(__CYGWIN__))
+#if defined(_WIN32)
 enum class StopBits {
-    ONE = 1,
-    TWO = 2
+    One = 1,
+    Two = 2
 };
 enum class DataBits {
-    FIVE = 5,
-    SIX = 6,
-    SEVEN = 7,
-    EIGHT = 8
+    Five = 5,
+    Six = 6,
+    Seven = 7,
+    Eight = 8
 };
 enum class BaudRate {
-    BAUD110 = 110,
-    BAUD300 = 300,
-    BAUD600 = 600,
-    BAUD1200 = 1200,
-    BAUD2400 = 2400,
-    BAUD4800 = 4800,
-    BAUD9600 = 9600,
-    BAUD19200 = 19200,
-    BAUD38400 = 38400,
-    BAUD57600 = 57600,
-    BAUD115200 = 115200,
-    BAUD128000 = 128000,
-    BAUD256000 = 256000,
-    BAUD500000 = 500000,
-    BAUD1000000 = 1000000
+    Baud110 = 110,
+    Baud300 = 300,
+    Baud600 = 600,
+    Baud1200 = 1200,
+    Baud2400 = 2400,
+    Baud4800 = 4800,
+    Baud9600 = 9600,
+    Baud19200 = 19200,
+    Baud38400 = 38400,
+    Baud57600 = 57600,
+    Baud115200 = 115200,
+    Baud128000 = 128000,
+    Baud256000 = 256000,
+    Baud500000 = 500000,
+    Baud1000000 = 1000000
 };
 #else
 #include <termios.h>
 
 enum class StopBits {
-    ONE = 0,
-    TWO = CSTOPB
+    One = 0,
+    Two = CSTOPB
 };
 enum class DataBits {
-    FIVE = CS5,
-    SIX = CS6,
-    SEVEN = CS7,
-    EIGHT = CS8
+    Five = CS5,
+    Six = CS6,
+    Seven = CS7,
+    Eight = CS8
 };
 enum class BaudRate {
-    BAUD50 = B50,
-    BAUD75 = B75,
-    BAUD110 = B110,
-    BAUD134 = B134,
-    BAUD150 = B150,
-    BAUD200 = B200,
-    BAUD300 = B300,
-    BAUD600 = B600,
-    BAUD1200 = B1200,
-    BAUD1800 = B1800,
-    BAUD2400 = B2400,
-    BAUD4800 = B4800,
-    BAUD9600 = B9600,
-    BAUD19200 = B19200,
-    BAUD38400 = B38400,
-    BAUD57600 = B57600,
-    BAUD115200 = B115200,
-    BAUD230400 = B230400,
-    BAUD460800 = B460800,
-    BAUD500000 = B500000,
-    BAUD576000 = B576000,
-    BAUD921600 = B921600,
-    BAUD1000000 = B1000000,
-    BAUD1152000 = B1152000,
-    BAUD1500000 = B1500000,
-    BAUD2000000 = B2000000,
-    BAUD2500000 = B2500000,
-    BAUD3000000 = B3000000,
-    BAUD3500000 = B3500000,
-    BAUD4000000 = B4000000
+    Baud50 = B50,
+    Baud75 = B75,
+    Baud110 = B110,
+    Baud134 = B134,
+    Baud150 = B150,
+    Baud200 = B200,
+    Baud300 = B300,
+    Baud600 = B600,
+    Baud1200 = B1200,
+    Baud1800 = B1800,
+    Baud2400 = B2400,
+    Baud4800 = B4800,
+    Baud9600 = B9600,
+    Baud19200 = B19200,
+    Baud38400 = B38400,
+    Baud57600 = B57600,
+    Baud115200 = B115200,
+    Baud230400 = B230400,
+    Baud460800 = B460800,
+    Baud500000 = B500000,
+    Baud576000 = B576000,
+    Baud921600 = B921600,
+    Baud1000000 = B1000000,
+    Baud1152000 = B1152000,
+    Baud1500000 = B1500000,
+    Baud2000000 = B2000000,
+    Baud2500000 = B2500000,
+    Baud3000000 = B3000000,
+    Baud3500000 = B3500000,
+    Baud4000000 = B4000000
+};
+
+enum class FlowControl {
+
 };
 #endif
 
