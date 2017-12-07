@@ -36,21 +36,21 @@ enum class FlowControl {
 
 
 #if defined(_WIN32)
-using HANDLE = void *;
+#include <Windows.h>
 using modem_status_t = DWORD;
 
 enum class StopBits {
-    StopOne = ONESTOPBIT,
-    StopOneFive = ONE5STOPBIT,
-    StopTwo = TWOSTOPBITS
+    StopOne     = ONESTOPBIT,
+    StopOneFive = ONE5STOPBITS,
+    StopTwo     = TWOSTOPBITS
 };
 
 enum class Parity : unsigned char {
-    ParityNone  = 0,
-    ParityOdd   = 1,
-    ParityEven  = 2,
-    ParityMark  = 3,
-    ParitySpace = 4
+    ParityNone  = NOPARITY,
+    ParityOdd   = ODDPARITY,
+    ParityEven  = EVENPARITY,
+    ParityMark  = MARKPARITY,
+    ParitySpace = SPACEPARITY
 };
 
 enum class DataBits {
@@ -73,9 +73,7 @@ enum class BaudRate {
     Baud57600   = CBR_57600,
     Baud115200  = CBR_115200,
     Baud128000  = CBR_128000,
-    Baud256000  = CBR_256000,
-    Baud500000  = CBR_500000,
-    Baud1000000 = CBR_1000000
+    Baud256000  = CBR_256000
 };
 
 #else
@@ -187,7 +185,6 @@ public:
     ssize_t write(char c) override;
 	ssize_t write(const char *bytes, size_t numberOfBytes) override;
 
-
     void setBaudRate(BaudRate baudRate);
     void setStopBits(StopBits stopBits);
     void setParity(Parity parity);
@@ -252,11 +249,9 @@ private:
     static const int constexpr NUMBER_OF_POSSIBLE_SERIAL_PORTS{256*9};
     termios m_portSettings;
     termios m_oldPortSettings;
-    modem_status_t getModemStatus() const;
-
 #endif
     void applyPortSettings();
-};
+        modem_status_t getModemStatus() const; };
 
 } //namespace CppSerialPort
 

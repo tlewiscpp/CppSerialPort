@@ -197,19 +197,11 @@ void SerialPort::openPort()
 	}
 #if defined(_WIN32)
 
-    this->m_serialPortHandle = CreateFileA(this->m_portName.c_str(), GENERIC_READ|GENERIC_WRITE, 0, OPEN_EXISTING, 0, nullptr);
+    this->m_serialPortHandle = CreateFileA(this->m_portName.c_str(), GENERIC_READ|GENERIC_WRITE, 0, nullptr, OPEN_EXISTING, 0, nullptr);
     if(this->m_serialPortHandle == INVALID_HANDLE_VALUE) {
 		const auto errorCode = getLastError();
 		throw std::runtime_error("CreateFileA(LPCSTR, DWORD, DWORD, LPSECURITY_ATTRIBUTES, DWORD, DWORD, HANDLE, HANDLE): Unable to open serial port " + this->portName() + ": " + toStdString(errorCode) + " (" + getErrorString(errorCode) + ")");
 	}
-
-    /*
-    if(!SetCommState(this->m_serialPortHandle, &portSettings)) {
-        const auto errorCode = getLastError();
-        this->closePort();
-		throw std::runtime_error("SetCommState(HANDLE, DCB*): Unable to set comm state settings for " + this->portName() + ": " + toStdString(errorCode) + " (" + getErrorString(errorCode) + ")");
-	}
-	*/
 
     //Get full configuration
     GetCommConfig(this->m_serialPortHandle, &this->m_portSettings, &this->m_portSettings.dwSize);
@@ -281,8 +273,6 @@ void SerialPort::setReadTimeout(int timeout)
 		throw std::runtime_error("SetCommTimeouts(HANDLE, COMMTIMEOUTS*): Unable to set timeout settings for " + this->portName() + ": " + toStdString(errorCode) + " (" + getErrorString(errorCode) + ")");
     }
 #else
-
-#endif //defined(_WIN32)
     if (this->readTimeout() == 0) {
         fcntl(this->getFileDescriptor(), F_SETFL, O_NDELAY);
     } else {
@@ -290,6 +280,7 @@ void SerialPort::setReadTimeout(int timeout)
         this->m_portSettings.c_cc[VTIME] = static_cast<cc_t>(this->readTimeout() / 100);
         tcsetattr(this->getFileDescriptor(), TCSANOW, &this->m_portSettings);
     }
+#endif //defined(_WIN32)
 }
 
 
@@ -298,7 +289,7 @@ int SerialPort::getLastError() {
 	return static_cast<int>(GetLastError());
 #else
 	return errno;
-#endif //defined(_WIN32
+#endif //defined(_WIN32)
 }
 
 std::string SerialPort::getErrorString(int errorCode) {
