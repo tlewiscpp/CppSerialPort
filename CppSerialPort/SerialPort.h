@@ -26,6 +26,7 @@
 #include "IByteStream.h"
 #include <unordered_set>
 
+
 namespace CppSerialPort {
 
 enum class FlowControl {
@@ -254,5 +255,6 @@ private:
         modem_status_t getModemStatus() const; };
 
 } //namespace CppSerialPort
+
 
 #endif //CPPSERIALPORT_SERIALPORT_H

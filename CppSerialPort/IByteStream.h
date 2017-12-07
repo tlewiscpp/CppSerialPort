@@ -19,6 +19,17 @@
 #ifndef CPPSERIALPORT_IBYTESTREAM_H
 #define CPPSERIALPORT_IBYTESTREAM_H
 
+#if defined(_MSC_VER)
+#    if defined(SHARED_LIBRARY_BUILD)
+	/* define DLLBUILD when building the DLL */
+#        define CPPSERIALPORT_API __declspec(dllexport)
+#    else
+#        define CPPSERIALPORT_API __declspec(dllimport)
+#    endif
+#else
+#    define CPPSERIALPORT_API
+#endif
+
 #include <string>
 #include <sstream>
 #include <mutex>
@@ -40,44 +51,45 @@ public:
     IByteStream();
     virtual ~IByteStream() = default;
 
-    virtual char read() = 0;
-    virtual ssize_t write(char) = 0;
+	virtual char read() = 0;
+	virtual ssize_t write(char) = 0;
 	virtual ssize_t write(const char *, size_t) = 0;
 
-    virtual std::string portName() const = 0;
-    virtual bool isOpen() const = 0;
-    virtual void openPort() = 0;
-    virtual void closePort() = 0;
-    virtual void flushRx() = 0;
-    virtual void flushTx() = 0;
+	virtual std::string portName() const = 0;
+	virtual bool isOpen() const = 0;
+	virtual void openPort() = 0;
+	virtual void closePort() = 0;
+	virtual void flushRx() = 0;
+	virtual void flushTx() = 0;
 
-    bool available();
-    int peek();
+	bool available();
+	int peek();
 	virtual void setReadTimeout(int timeout);
-    int readTimeout() const;
+	int readTimeout() const;
 
 	virtual void setWriteTimeout(int timeout);
-    int writeTimeout() const;
+	int writeTimeout() const;
 
-    std::string lineEnding() const;
-    void setLineEnding(const std::string &str);
-    void setLineEnding(char chr);
+	std::string lineEnding() const;
+	void setLineEnding(const std::string &str);
+	void setLineEnding(char chr);
 
-    virtual ssize_t writeLine(const std::string &str);
+	virtual ssize_t writeLine(const std::string &str);
 
-    std::string readLine(bool *timeout = nullptr);
-    std::string readUntil(const std::string &until, bool *timeout = nullptr);
-    std::string readUntil(char until, bool *timeout = nullptr);
+	std::string readLine(bool *timeout = nullptr);
+	std::string readUntil(const std::string &until, bool *timeout = nullptr);
+	std::string readUntil(char until, bool *timeout = nullptr);
 
 protected:
-    virtual void putBack(char c) = 0;
-    static inline bool endsWith (const std::string &fullString, const std::string &ending) {
+	virtual void putBack(char c) = 0;
+
+	static bool fileExists(const std::string &filePath);
+	static inline bool endsWith (const std::string &fullString, const std::string &ending) {
         return ( (fullString.length() < ending.length()) ? false : std::equal(ending.rbegin(), ending.rend(), fullString.rbegin()) );
     }
-    template<typename T> static inline std::string toStdString(const T &t) {
+	template<typename T> static inline std::string toStdString(const T &t) {
         return dynamic_cast<std::ostringstream &>(std::ostringstream{""} << t).str();
     }
-    static bool fileExists(const std::string &filePath);
 
 	static const int DEFAULT_READ_TIMEOUT;
 	static const int DEFAULT_WRITE_TIMEOUT;
