@@ -1,7 +1,3 @@
-//
-// Created by pinguinsan on 11/3/17.
-//
-
 #include "TcpClient.h"
 
 #if defined(_WIN32)
@@ -14,7 +10,7 @@
 #include <cstring>
 #include <climits>
 
-using namespace CppSerialPort;
+namespace CppSerialPort {
 
 #define MINIMUM_PORT_NUMBER 1024
 #define BUFFER_MAX 8192
@@ -301,3 +297,5 @@ uint16_t TcpClient::portNumber() const {
 std::string TcpClient::hostName() const {
     return this->m_hostName;
 }
+
+} //namespace CppSerialPort

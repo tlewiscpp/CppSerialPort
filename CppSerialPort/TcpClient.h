@@ -1,7 +1,3 @@
-//
-// Created by pinguinsan on 11/3/17.
-//
-
 #ifndef CPPTCP_TCPCLIENT_H
 #define CPPTCP_TCPCLIENT_H
 
@@ -20,7 +16,9 @@
 #include <memory>
 #include "IByteStream.h"
 
-class TcpClient : public CppSerialPort::IByteStream
+namespace CppSerialPort {
+
+class TcpClient : public IByteStream
 {
 public:
     TcpClient(const std::string &hostName, uint16_t portNumber);
@@ -61,5 +59,6 @@ private:
 	static int getLastError();
 };
 
+} //namespace CppSerialPort
 
 #endif //CPPTCP_TCPCLIENT_H
