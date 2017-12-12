@@ -9,6 +9,7 @@
 
 #include <cstring>
 #include <climits>
+#include <iostream>
 
 namespace CppSerialPort {
 
@@ -67,7 +68,11 @@ std::string TcpClient::getErrorString(int errorCode)
 	//wcstombs(errorString, wideErrorString, PATH_MAX);
 	LocalFree(wideErrorString);
 #else
-	strerror_r(errorCode, errorString, PATH_MAX);
+    auto strerrorCode = strerror_r(errorCode, errorString, PATH_MAX);
+    if (strerrorCode == nullptr) {
+        std::cerr << "strerror_r(int, char *, int): error occurred" << std::endl;
+        return "";
+    }
 #endif //defined(_WIN32)
 	return std::string{ errorString };
 }
