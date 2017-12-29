@@ -677,7 +677,6 @@ void SerialPort::setBaudRate(BaudRate baudRate)
     }
 #if defined(_WIN32)
     this->m_portSettings.dcb.BaudRate = static_cast<DWORD>(baudRate);
-    this->applyPortSettings();
 #else
     if (cfsetispeed(&this->m_portSettings, static_cast<speed_t>(baudRate)) == -1) {
         const auto errorCode = getLastError();
@@ -687,8 +686,9 @@ void SerialPort::setBaudRate(BaudRate baudRate)
         const auto errorCode = getLastError();
         throw std::runtime_error("cfsetospeed(port_settings_t *, speed_t): Unable to set baud rate settings for " + this->portName() + ": " + toStdString(errorCode) + " (" + getErrorString(errorCode) + ")");
     }
-    this->m_baudRate = baudRate;
 #endif //defined(_WIN32)
+    this->applyPortSettings();
+    this->m_baudRate = baudRate;
 }
 
 void SerialPort::setStopBits(StopBits stopBits)
