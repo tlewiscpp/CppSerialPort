@@ -151,7 +151,9 @@ bool IByteStream::available()
 bool IByteStream::fileExists(const std::string &fileToCheck)
 {
 #if defined(_WIN32)
-    return (PathFileExists(fileToCheck.c_str()) == 1);
+    std::ifstream readFromFile{};
+    readFromFile.open(fileToCheck.c_str());
+    return readFromFile.is_open();
 #else
     return (access(fileToCheck.c_str(),F_OK) != -1);
 #endif
