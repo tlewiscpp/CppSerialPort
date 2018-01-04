@@ -59,108 +59,18 @@ const FlowControl SerialPort::DEFAULT_FLOW_CONTROL{FlowControl::FlowOff};
     const char *SerialPort::AVAILABLE_PORT_NAMES_BASE{R"(\\.\COM)"};
     const char *SerialPort::DTR_RTS_ON_IDENTIFIER{"dtr=on rts=on"};
     const char *SerialPort::SERIAL_PORT_REGISTRY_PATH{R"(HARDWARE\DEVICEMAP\SERIALCOMM\)"};
+    const std::string SerialPort::DEFAULT_LINE_ENDING{"\r\n"};
 #else
 const std::vector<const char *> SerialPort::AVAILABLE_PORT_NAMES_BASE{"/dev/ttyS", "/dev/ttyACM", "/dev/ttyUSB",
                                                                       "/dev/ttyAMA", "/dev/ttyrfcomm", "/dev/ircomm",
                                                                       "/dev/cuau", "/dev/cuaU", "/dev/rfcomm"};
+const std::string SerialPort::DEFAULT_LINE_ENDING{"\n"};
+
 #endif
 
 const std::vector<std::string> SerialPort::SERIAL_PORT_NAMES{SerialPort::generateSerialPortNames()};
 
-SerialPort::SerialPort(const std::string &name) :
-        SerialPort(name, DEFAULT_BAUD_RATE, DEFAULT_STOP_BITS, DEFAULT_DATA_BITS, DEFAULT_PARITY, DEFAULT_FLOW_CONTROL)
-{
-
-}
-
-SerialPort::SerialPort(const std::string &name, BaudRate baudRate) :
-        SerialPort(name, baudRate, DEFAULT_STOP_BITS, DEFAULT_DATA_BITS, DEFAULT_PARITY, DEFAULT_FLOW_CONTROL)
-{
-
-}
-
-SerialPort::SerialPort(const std::string &name, BaudRate baudRate, DataBits dataBits) :
-        SerialPort(name, baudRate, DEFAULT_STOP_BITS, dataBits, DEFAULT_PARITY, DEFAULT_FLOW_CONTROL)
-{
-
-}
-
-SerialPort::SerialPort(const std::string &name, BaudRate baudRate, StopBits stopBits) :
-        SerialPort(name, baudRate, stopBits, DEFAULT_DATA_BITS, DEFAULT_PARITY, DEFAULT_FLOW_CONTROL)
-{
-
-}
-
-SerialPort::SerialPort(const std::string &name, BaudRate baudRate, DataBits dataBits, Parity parity) :
-        SerialPort(name, baudRate, DEFAULT_STOP_BITS, dataBits, parity, DEFAULT_FLOW_CONTROL)
-{
-
-}
-
-SerialPort::SerialPort(const std::string &name, BaudRate baudRate, StopBits stopBits, Parity parity) :
-        SerialPort(name, baudRate, stopBits, DEFAULT_DATA_BITS, parity, DEFAULT_FLOW_CONTROL)
-{
-
-}
-
-SerialPort::SerialPort(const std::string &name, BaudRate baudRate, DataBits dataBits, StopBits stopBits, Parity parity) :
-        SerialPort(name, baudRate, stopBits, dataBits, parity, DEFAULT_FLOW_CONTROL)
-{
-
-}
-
-SerialPort::SerialPort(const std::string &name, BaudRate baudRate, DataBits dataBits, StopBits stopBits, Parity parity, FlowControl flowControl) :
-        SerialPort(name, baudRate, stopBits, dataBits, parity, flowControl)
-{
-
-}
-
-SerialPort::SerialPort(const std::string &name, DataBits dataBits) :
-        SerialPort(name, DEFAULT_BAUD_RATE, DEFAULT_STOP_BITS, dataBits, DEFAULT_PARITY, DEFAULT_FLOW_CONTROL)
-{
-
-}
-
-SerialPort::SerialPort(const std::string &name, DataBits dataBits, StopBits stopBits) :
-        SerialPort(name, DEFAULT_BAUD_RATE, stopBits, dataBits, DEFAULT_PARITY, DEFAULT_FLOW_CONTROL)
-
-{
-}
-
-SerialPort::SerialPort(const std::string &name, DataBits dataBits, StopBits stopBits, Parity parity) :
-        SerialPort(name, DEFAULT_BAUD_RATE, stopBits, dataBits, parity, DEFAULT_FLOW_CONTROL)
-{
-
-}
-
-SerialPort::SerialPort(const std::string &name, DataBits dataBits, Parity parity) :
-        SerialPort(name, DEFAULT_BAUD_RATE, DEFAULT_STOP_BITS, dataBits, parity, DEFAULT_FLOW_CONTROL)
-{
-}
-
-SerialPort::SerialPort(const std::string &name, StopBits stopBits) :
-        SerialPort(name, DEFAULT_BAUD_RATE, stopBits, DEFAULT_DATA_BITS, DEFAULT_PARITY, DEFAULT_FLOW_CONTROL)
-{
-}
-
-SerialPort::SerialPort(const std::string &name, StopBits stopBits, Parity parity) :
-        SerialPort(name, DEFAULT_BAUD_RATE, stopBits, DEFAULT_DATA_BITS, parity, DEFAULT_FLOW_CONTROL)
-{
-}
-
-SerialPort::SerialPort(const std::string &name, Parity parity) :
-        SerialPort(name, DEFAULT_BAUD_RATE, DEFAULT_STOP_BITS, DEFAULT_DATA_BITS, parity, DEFAULT_FLOW_CONTROL)
-{
-
-}
-
-SerialPort::SerialPort(const std::string &name, BaudRate baudRate, StopBits stopBits, DataBits dataBits, Parity parity) :
-        SerialPort(name, baudRate, stopBits, dataBits, parity, DEFAULT_FLOW_CONTROL)
-{
-
-}
-
-SerialPort::SerialPort(const std::string &name, BaudRate baudRate, StopBits stopBits, DataBits dataBits, Parity parity, FlowControl flowControl) :
+SerialPort::SerialPort(const std::string &name, BaudRate baudRate, DataBits dataBits, StopBits stopBits, Parity parity, FlowControl flowControl, const std::string &lineEnding) :
         m_portName{name},
         m_portNumber{0},
         m_baudRate{baudRate},
@@ -170,6 +80,7 @@ SerialPort::SerialPort(const std::string &name, BaudRate baudRate, StopBits stop
         m_flowControl{flowControl},
         m_isOpen{false}
 {
+    this->setLineEnding(lineEnding);
     std::pair<int, std::string> truePortNameAndNumber{getPortNameAndNumber(this->m_portName)};
     this->m_portNumber = truePortNameAndNumber.first;
     this->m_portName = truePortNameAndNumber.second;
@@ -677,7 +588,6 @@ void SerialPort::setBaudRate(BaudRate baudRate)
     }
 #if defined(_WIN32)
     this->m_portSettings.dcb.BaudRate = static_cast<DWORD>(baudRate);
-    this->applyPortSettings();
 #else
     if (cfsetispeed(&this->m_portSettings, static_cast<speed_t>(baudRate)) == -1) {
         const auto errorCode = getLastError();
@@ -687,8 +597,13 @@ void SerialPort::setBaudRate(BaudRate baudRate)
         const auto errorCode = getLastError();
         throw std::runtime_error("cfsetospeed(port_settings_t *, speed_t): Unable to set baud rate settings for " + this->portName() + ": " + toStdString(errorCode) + " (" + getErrorString(errorCode) + ")");
     }
-    this->m_baudRate = baudRate;
+    /*
+    this->m_portSettings.c_cflag &= ~(CBAUD);
+    this->m_portSettings.c_cflag |= static_cast<speed_t>(baudRate);
+    */
 #endif //defined(_WIN32)
+    this->applyPortSettings();
+    this->m_baudRate = baudRate;
 }
 
 void SerialPort::setStopBits(StopBits stopBits)

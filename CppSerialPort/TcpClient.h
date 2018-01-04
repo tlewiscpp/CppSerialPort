@@ -1,5 +1,5 @@
-#ifndef CPPTCP_TCPCLIENT_H
-#define CPPTCP_TCPCLIENT_H
+#ifndef CPPSERIALPORT_TCPCLIENT_H
+#define CPPSERIALPORT_TCPCLIENT_H
 
 #include <string>
 #if defined(_WIN32)
