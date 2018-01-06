@@ -46,7 +46,7 @@ IByteStream::IByteStream() :
 void IByteStream::setReadTimeout(int timeout)
 {
     if (timeout < 0) {
-        throw std::runtime_error("IByteStream::setReadTimeout(int): invariant failure (read timeout cannot be less than 0, " + toStdString(timeout) + " < 0)");
+        throw std::runtime_error("CppSerialPort::IByteStream::setReadTimeout(int): invariant failure (read timeout cannot be less than 0, " + toStdString(timeout) + " < 0)");
     }
     this->m_readTimeout = timeout;
 }
@@ -59,7 +59,7 @@ int IByteStream::readTimeout() const
 void IByteStream::setWriteTimeout(int timeout)
 {
     if (timeout < 0) {
-        throw std::runtime_error("IByteStream::setWriteTimeout(int): invariant failure (write timeout cannot be less than 0, " + toStdString(timeout) + " < 0)");
+        throw std::runtime_error("CppSerialPort::IByteStream::setWriteTimeout(int): invariant failure (write timeout cannot be less than 0, " + toStdString(timeout) + " < 0)");
     }
     this->m_writeTimeout = timeout;
 }
@@ -77,7 +77,7 @@ std::string IByteStream::lineEnding() const
 void IByteStream::setLineEnding(const std::string &str)
 {
     if (str.length() == 0) {
-        throw std::runtime_error("IByteStream::setLineEnding str.length() == 0 (invariant failure)");
+        throw std::runtime_error("CppSerialPort::IByteStream::setLineEnding str.length() == 0 (invariant failure)");
     }
     this->m_lineEnding = str;
 }
@@ -85,7 +85,7 @@ void IByteStream::setLineEnding(const std::string &str)
 void IByteStream::setLineEnding(char chr)
 {
     if (chr == '\0') {
-        throw std::runtime_error("IByteStream::setLineEnding chr == '\\0' (invariant failure)");
+        throw std::runtime_error("CppSerialPort::IByteStream::setLineEnding chr == '\\0' (invariant failure)");
     }
     this->m_lineEnding = std::string(1, chr);
 }

@@ -26,7 +26,6 @@
 #include "IByteStream.h"
 #include <unordered_set>
 
-
 #include <type_traits>
 
 
@@ -230,7 +229,7 @@ public:
     SerialPort(const SerialPort &other) = delete;
 	~SerialPort() override;
 
-    //IByteStream compliance
+    //IByteStream interface
 	void openPort() override;
     void closePort() override;
     char read() override;

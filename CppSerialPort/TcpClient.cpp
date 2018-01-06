@@ -26,11 +26,11 @@ TcpClient::TcpClient(const std::string &hostName, uint16_t portNumber)
 	
 	auto wsaStartupResult = WSAStartup(MAKEWORD(2, 0), &wsaData);
 	if (wsaStartupResult != 0) {
-		throw std::runtime_error("WSAStartup failed: error code " + toStdString(wsaStartupResult) + " (" + this->getErrorString(wsaStartupResult) + ")");
+		throw std::runtime_error("CppSerialPort::TcpClient::TcpClient(const std::string &, uint16_t): WSAStartup failed: error code " + toStdString(wsaStartupResult) + " (" + this->getErrorString(wsaStartupResult) + ')');
 	}
 #endif //defined(_WIN32)
     if (portNumber < MINIMUM_PORT_NUMBER) {
-        throw std::runtime_error("portNumber cannot be less than minimum value (" + toStdString(portNumber) + " < " + toStdString(MINIMUM_PORT_NUMBER) + ")");
+        throw std::runtime_error("CppSerialPort::TcpClient::TcpClient(const std::string &, uint16_t): portNumber cannot be less than minimum value (" + toStdString(portNumber) + " < " + toStdString(MINIMUM_PORT_NUMBER) + ')');
     }
     this->m_socketDescriptor = INVALID_SOCKET;
     this->m_hostName = hostName;
@@ -74,7 +74,7 @@ std::string TcpClient::getErrorString(int errorCode)
         return "";
     }
 #endif //defined(_WIN32)
-	return std::string{ errorString };
+	return stripLineEndings(errorString);
 }
 
 TcpClient::~TcpClient()
@@ -87,7 +87,7 @@ TcpClient::~TcpClient()
 void TcpClient::connect(const std::string &hostName, uint16_t portNumber)
 {
     if (this->isConnected()) {
-        throw std::runtime_error("Cannot connect to new host when already connected (call disconnect() first)");
+        throw std::runtime_error("CppSerialPort::TcpClient::connect(const std::string &, uint16_t): Cannot connect to new host when already connected (call disconnect() first)");
     }
     this->m_hostName = hostName;
     this->m_portNumber = portNumber;
@@ -97,7 +97,7 @@ void TcpClient::connect(const std::string &hostName, uint16_t portNumber)
 void TcpClient::connect()
 {
     if (this->isConnected()) {
-        throw std::runtime_error("Cannot connect to new host when already connected (call disconnect() first)");
+        throw std::runtime_error("CppSerialPort::TcpClient::connect(): Cannot connect to new host when already connected (call disconnect() first)");
     }
     addrinfo *addressInfo{nullptr};
     addrinfo hints{};
@@ -112,13 +112,13 @@ void TcpClient::connect()
     );
     if (returnStatus != 0) {
         freeaddrinfo(addressInfo);
-        throw std::runtime_error("getaddrinfo(const char *, const char *, constr addrinfo *, addrinfo **): error code " + toStdString(returnStatus) + " (" + gai_strerror(returnStatus) + ")");
+        throw std::runtime_error("CppSerialPort::TcpClient::connect(): getaddrinfo(const char *, const char *, constr addrinfo *, addrinfo **): error code " + toStdString(returnStatus) + " (" + gai_strerror(returnStatus) + ')');
     }
     auto socketDescriptor = socket(addressInfo->ai_family, addressInfo->ai_socktype, addressInfo->ai_protocol);
     if (socketDescriptor == INVALID_SOCKET) {
         freeaddrinfo(addressInfo);
 		auto errorCode = getLastError();
-		throw std::runtime_error("socket(int, int, int): error code " + toStdString(errorCode) + " (" + getErrorString(errorCode) +")");
+		throw std::runtime_error("CppSerialPort::TcpClient::connect(): socket(int, int, int): error code " + toStdString(errorCode) + " (" + getErrorString(errorCode) + ')');
     }
     this->m_socketDescriptor = socketDescriptor;
 
@@ -131,14 +131,14 @@ void TcpClient::connect()
     if (reuseSocketResult == -1) {
         freeaddrinfo(addressInfo);
 		auto errorCode = getLastError();
-        throw std::runtime_error("setsockopt(int, int, int, const void *, socklen_t): error code " + toStdString(errorCode) + " (" + getErrorString(errorCode) + ")");
+        throw std::runtime_error("CppSerialPort::TcpClient::connect(): setsockopt(int, int, int, const void *, socklen_t): error code " + toStdString(errorCode) + " (" + getErrorString(errorCode) + ')');
     }
 
     auto connectResult = ::connect(this->m_socketDescriptor, addressInfo->ai_addr, addressInfo->ai_addrlen);
     if (connectResult == -1) {
         freeaddrinfo(addressInfo);
 		auto errorCode = getLastError();
-        throw std::runtime_error("connect(int, const sockaddr *addr, socklen_t): error code " + toStdString(errorCode) +  " (" + getErrorString(errorCode) + ")");
+        throw std::runtime_error("CppSerialPort::TcpClient::connect(): connect(int, const sockaddr *addr, socklen_t): error code " + toStdString(errorCode) +  " (" + getErrorString(errorCode) + ')');
     }
     freeaddrinfo(addressInfo);
     this->m_readBuffer.clear();
@@ -147,14 +147,14 @@ void TcpClient::connect()
     auto readTimeoutResult = setsockopt(this->m_socketDescriptor, SOL_SOCKET, SO_RCVTIMEO, reinterpret_cast<const char *>(&tv), sizeof(struct timeval));
     if (readTimeoutResult == -1) {
         auto errorCode = getLastError();
-        throw std::runtime_error("setsockopt(int, int, int, const void *, int) set read timeout failed: error code " + toStdString(errorCode) + " (" + getErrorString(errorCode) + ")");
+        throw std::runtime_error("CppSerialPort::TcpClient::connect(): setsockopt(int, int, int, const void *, int) set read timeout failed: error code " + toStdString(errorCode) + " (" + getErrorString(errorCode) + ')');
     }
 
     tv = toTimeVal(static_cast<uint32_t>(this->writeTimeout()));
     auto writeTimeoutResult = setsockopt(this->m_socketDescriptor, SOL_SOCKET, SO_SNDTIMEO, reinterpret_cast<const char *>(&tv), sizeof(struct timeval));
     if (writeTimeoutResult == -1) {
         auto errorCode = getLastError();
-        throw std::runtime_error("setsockopt(int, int, int, const void *, int) set write timeout failed: error code " + toStdString(errorCode) + " (" + getErrorString(errorCode) + ")");
+        throw std::runtime_error("CppSerialPort::TcpClient::connect(): setsockopt(int, int, int, const void *, int) set write timeout failed: error code " + toStdString(errorCode) + " (" + getErrorString(errorCode) + ')');
     }
 }
 
@@ -188,14 +188,14 @@ char TcpClient::read()
     if (receiveResult == -1) {
 		auto errorCode = getLastError();
         if (errorCode != EAGAIN) {
-            throw std::runtime_error("recv(int, void *, size_t, int): error code " + toStdString(errorCode) + " (" + getErrorString(errorCode) + ")");
+            throw std::runtime_error("CppSerialPort::TcpClient::read(): recv(int, void *, size_t, int): error code " + toStdString(errorCode) + " (" + getErrorString(errorCode) + ')');
         }
         return 0;
     } else if (strlen(buffer) != 0) {
         this->m_readBuffer += std::string{buffer};
         return this->m_readBuffer[0];
     } else if (receiveResult == 0) {
-        throw std::runtime_error("Server [" + this->m_hostName + ':' + toStdString(this->m_portNumber) + "] hung up unexpectedly");
+        throw std::runtime_error("CppSerialPort::TcpClient::read(): Server [" + this->m_hostName + ':' + toStdString(this->m_portNumber) + "] hung up unexpectedly");
     }
     return 0;
 }
@@ -203,7 +203,7 @@ char TcpClient::read()
 ssize_t TcpClient::write(char c)
 {
     if (!this->isConnected()) {
-        throw std::runtime_error("Cannot write on closed socket (call connect first)");
+        throw std::runtime_error("CppSerialPort::TcpClient::write(char): Cannot write on closed socket (call connect first)");
     }
 #if defined(_WIN32)
 	return send(this->m_socketDescriptor, &c, 1, 0);
@@ -215,7 +215,7 @@ ssize_t TcpClient::write(char c)
 ssize_t TcpClient::write(const char *bytes, size_t numberOfBytes)
 {
     if (!this->isConnected()) {
-        throw std::runtime_error("Cannot write on closed socket (call connect first)");
+        throw std::runtime_error("CppSerialPort::TcpClient::write(const char *, size_t): Cannot write on closed socket (call connect first)");
     }
     unsigned sentBytes{0};
     //Make sure all bytes are sent
@@ -224,7 +224,7 @@ ssize_t TcpClient::write(const char *bytes, size_t numberOfBytes)
         auto sendResult = send(this->m_socketDescriptor, bytes + sentBytes, numberOfBytes - sentBytes, 0);
         if (sendResult == -1) {
 			auto errorCode = getLastError();
-            throw std::runtime_error("send(int, const void *, int, int): error code " + toStdString(errorCode) + " (" + getErrorString(errorCode) + ")");
+            throw std::runtime_error("CppSerialPort::TcpClient::write(const char *bytes, size_t): send(int, const void *, int, int): error code " + toStdString(errorCode) + " (" + getErrorString(errorCode) + ')');
         }
         sentBytes += sendResult;
 		if ( (getEpoch() - startTime) >= static_cast<unsigned int>(this->writeTimeout()) ) {
@@ -283,14 +283,14 @@ timeval TcpClient::toTimeVal(uint32_t totalTimeout)
 
 void TcpClient::setPortNumber(uint16_t portNumber) {
     if (this->isConnected()) {
-        throw std::runtime_error("Cannot set port number when already connected (call disconnect() first");
+        throw std::runtime_error("CppSerialPort::TcpClient::setPortNumber(uint16_t): Cannot set port number when already connected (call disconnect() first)");
     }
     this->m_portNumber = portNumber;
 }
 
 void TcpClient::setHostName(const std::string &hostName) {
     if (this->isConnected()) {
-        throw std::runtime_error("Cannot set host name when already connected (call disconnect() first");
+        throw std::runtime_error("CppSerialPort::TcpClient::setHostName(const std::string &): Cannot set host name when already connected (call disconnect() first)");
     }
     this->m_hostName = hostName;
 }
