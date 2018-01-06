@@ -34,10 +34,11 @@ const int IByteStream::DEFAULT_READ_TIMEOUT{1000};
 const int IByteStream::DEFAULT_WRITE_TIMEOUT{1000};
 
 IByteStream::IByteStream() :
-        m_readTimeout{DEFAULT_READ_TIMEOUT},
-        m_writeTimeout{DEFAULT_WRITE_TIMEOUT},
-        m_lineEnding{DEFAULT_LINE_ENDING},
-        m_writeMutex{}
+	m_readTimeout{ DEFAULT_READ_TIMEOUT },
+	m_writeTimeout{ DEFAULT_WRITE_TIMEOUT },
+	m_lineEnding{ DEFAULT_LINE_ENDING },
+	m_writeMutex{},
+	m_readMutex{}
 {
 
 }
@@ -109,6 +110,7 @@ std::string IByteStream::readLine(bool *timeout)
 
 std::string IByteStream::readUntil(const std::string &until, bool *timeout)
 {
+	std::lock_guard<std::mutex> readLock{ this->m_readMutex };
     uint64_t startTime{IByteStream::getEpoch()};
     std::string returnString{""};
     if (timeout) {

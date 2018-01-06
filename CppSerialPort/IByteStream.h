@@ -21,7 +21,7 @@
 
 #if defined(_MSC_VER)
 #    if defined(SHARED_LIBRARY_BUILD)
-	/* define DLLBUILD when building the DLL */
+	    /* define DLLBUILD when building the DLL */
 #        define CPPSERIALPORT_API __declspec(dllexport)
 #    else
 #        define CPPSERIALPORT_API __declspec(dllimport)
@@ -101,6 +101,7 @@ private:
     int m_writeTimeout;
     std::string m_lineEnding;
     std::mutex m_writeMutex;
+	std::mutex m_readMutex;
 
 
     static const char *DEFAULT_LINE_ENDING;
