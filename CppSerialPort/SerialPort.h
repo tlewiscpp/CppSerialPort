@@ -47,8 +47,7 @@ namespace PermutedConstructor
 
     template <typename T> struct has_T<T> : std::false_type {};
 
-    template <typename T, typename... Ts> struct has_T<T, T, Ts...>
-    : std::true_type {};
+    template <typename T, typename... Ts> struct has_T<T, T, Ts...> : std::true_type {};
 
     template <typename T, typename Tail, typename... Ts>
     struct has_T<T, Tail, Ts...> : has_T<T, Ts...> {};
@@ -225,24 +224,18 @@ public:
         }
     {}
 
-    friend inline bool operator==(const SerialPort &lhs, const SerialPort &rhs) {
-        (void)lhs;
-        (void)rhs;
-        return false;
-    }
-
     SerialPort(SerialPort &&other) = delete;
     SerialPort &operator=(const SerialPort &rhs) = delete;
     SerialPort &operator=(SerialPort &&rhs) = delete;
     SerialPort(const SerialPort &other) = delete;
 	~SerialPort() override;
 
+    //IByteStream compliance
 	void openPort() override;
     void closePort() override;
     char read() override;
     void setReadTimeout(int timeout) override;
 
-public:
     std::string portName() const override;
     bool isOpen() const override;
 
@@ -270,7 +263,6 @@ public:
     Parity parity() const;
     FlowControl flowControl() const;
 
-
     static const StopBits DEFAULT_STOP_BITS;
     static const Parity DEFAULT_PARITY;
     static const BaudRate DEFAULT_BAUD_RATE;
@@ -280,7 +272,6 @@ public:
 
     static std::unordered_set<std::string> availableSerialPorts();
     static bool isValidSerialPortName(const std::string &serialPortName);
-
     static const long DEFAULT_RETRY_COUNT;
 
 private:
@@ -304,8 +295,6 @@ private:
     static const std::vector<std::string> SERIAL_PORT_NAMES;
     void putBack(char c) override;
 
-    int getFileDescriptor() const;
-
 	static int getLastError();
 	static std::string getErrorString(int errorCode);
 
@@ -322,9 +311,11 @@ private:
     static const int constexpr NUMBER_OF_POSSIBLE_SERIAL_PORTS{256*9};
     termios m_portSettings;
     termios m_oldPortSettings;
+	int getFileDescriptor() const;
 #endif
     void applyPortSettings();
-        modem_status_t getModemStatus() const; };
+    modem_status_t getModemStatus() const; 
+};
 
 } //namespace CppSerialPort
 

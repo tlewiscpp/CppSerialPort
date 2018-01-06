@@ -91,14 +91,13 @@ SerialPort::SerialPort(const std::string &name, BaudRate baudRate, DataBits data
 #endif //defined(_WIN32)
 }
 
+
+#if !defined(_WIN32)
 int SerialPort::getFileDescriptor() const
 {
-#if defined(_WIN32)
-    return _get_osfhandle(reinterpret_cast<intptr_t>(this->m_serialPortHandle));
-#else
     return fileno(this->m_fileStream);
-#endif
 }
+#endif //!defined(_WIN32)
 
 
 void SerialPort::openPort()
@@ -346,7 +345,7 @@ ssize_t SerialPort::write(char c)
 ssize_t SerialPort::write(const char *bytes, size_t numberOfBytes) {
 #if defined(_WIN32)
 	DWORD writtenBytes{ 0 };
-	if (!WriteFile(this->m_serialPortHandle, bytes, numberOfBytes, &writtenBytes, nullptr)) {
+	if (!WriteFile(this->m_serialPortHandle, bytes, static_cast<DWORD>(numberOfBytes), &writtenBytes, nullptr)) {
 		auto errorCode = getLastError();
 		(void)errorCode;
 		//TODO: Check if errorCode is IO_NOT_COMPLETED or whatever
@@ -572,7 +571,7 @@ void SerialPort::setDataBits(DataBits dataBits)
     if ( (dataBits != DataBits::DataFive) && (this->m_stopBits == StopBits::StopOneFive) ) {
         throw std::runtime_error("SerialPort::setDataBits(DataBits): 1.5 stop bits can only be used with 5 data bits");
     }
-    this->m_portSettings.dcb.ByteSize = static_cast<DWORD>(dataBits);
+    this->m_portSettings.dcb.ByteSize = static_cast<BYTE>(dataBits);
 #else
     this->m_portSettings.c_cflag &= (~CSIZE);
     this->m_portSettings.c_cflag |= static_cast<tcflag_t>(dataBits);
@@ -618,7 +617,7 @@ void SerialPort::setStopBits(StopBits stopBits)
     if ( (stopBits == StopBits::StopOneFive) && (this->m_dataBits != DataBits::DataFive) ) {
         throw std::runtime_error("SerialPort::setStopBits(StopBits): 1.5 stop bits can only be used with 5 data bits");
     }
-    this->m_portSettings.dcb.StopBits = static_cast<DWORD>(stopBits);
+    this->m_portSettings.dcb.StopBits = static_cast<BYTE>(stopBits);
 #else
     if (stopBits == StopBits::StopOne) {
         this->m_portSettings.c_cflag &= (~CSTOPB);
@@ -829,9 +828,10 @@ bool SerialPort::isValidSerialPortName(const std::string &serialPortName)
 		return false;
 	}
 	try {
-		int comNumber{ std::stoi(serialPortName.substr(3)) };
+		int comNumber{ std::stoi(serialPortName.substr(strlen("COM"))) };
 		return ((comNumber > 0) && (comNumber < UCHAR_MAX));
 	} catch (std::exception &e) {
+		(void)e;
 		return false;
 	}
 #else
