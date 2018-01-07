@@ -14,11 +14,15 @@
 namespace CppSerialPort {
 
 #define MINIMUM_PORT_NUMBER 1024
-#define BUFFER_MAX 8192
+#define TCP_CLIENT_BUFFER_MAX 8192
 
-TcpClient::TcpClient(const std::string &hostName, uint16_t portNumber)
+TcpClient::TcpClient(const std::string &hostName, uint16_t portNumber) :
+    m_socketDescriptor{INVALID_SOCKET},
+    m_hostName{hostName},
+    m_portNumber{portNumber},
+    m_readBuffer{""}
 {
-#if defined(_WIN32)
+    #if defined(_WIN32)
 	WSADATA wsaData{};
 	// if this doesn't work
 	//WSAData wsaData; // then try this instead
@@ -30,11 +34,9 @@ TcpClient::TcpClient(const std::string &hostName, uint16_t portNumber)
 	}
 #endif //defined(_WIN32)
     if (portNumber < MINIMUM_PORT_NUMBER) {
+        this->m_portNumber = 0;
         throw std::runtime_error("CppSerialPort::TcpClient::TcpClient(const std::string &, uint16_t): portNumber cannot be less than minimum value (" + toStdString(portNumber) + " < " + toStdString(MINIMUM_PORT_NUMBER) + ')');
     }
-    this->m_socketDescriptor = INVALID_SOCKET;
-    this->m_hostName = hostName;
-    this->m_portNumber = portNumber;
 	this->setReadTimeout(DEFAULT_READ_TIMEOUT);
 }
 
@@ -176,26 +178,45 @@ bool TcpClient::isConnected() const
 
 char TcpClient::read()
 {
-	if (!this->m_readBuffer.empty()) {
-		char returnValue{ this->m_readBuffer.front() };
-		this->m_readBuffer = this->m_readBuffer.substr(1);
-		return returnValue;
-	}
+    if (!this->m_readBuffer.empty()) {
+        char returnValue{ this->m_readBuffer.front() };
+        this->m_readBuffer = this->m_readBuffer.substr(1);
+        return returnValue;
+    }
 
-    char buffer[BUFFER_MAX];
-    memset(buffer, '\0', BUFFER_MAX);
-    auto receiveResult = recv(this->m_socketDescriptor, buffer, BUFFER_MAX - 1, 0); //no flags
-    if (receiveResult == -1) {
-		auto errorCode = getLastError();
-        if (errorCode != EAGAIN) {
-            throw std::runtime_error("CppSerialPort::TcpClient::read(): recv(int, void *, size_t, int): error code " + toStdString(errorCode) + " (" + getErrorString(errorCode) + ')');
+    //Use select() to wait for data to arrive
+    //At socket, then read and return
+    fd_set read_fds{0, 0, 0};
+    fd_set write_fds{0, 0, 0};
+    fd_set except_fds{0, 0, 0};
+    FD_ZERO(&read_fds);
+    FD_ZERO(&write_fds);
+    FD_ZERO(&except_fds);
+    FD_SET(this->m_socketDescriptor, &read_fds);
+
+    struct timeval timeout{0, 0};
+    timeout.tv_sec = 0;
+    timeout.tv_usec = (this->readTimeout() * 1000);
+    static char readBuffer[TCP_CLIENT_BUFFER_MAX];
+    memset(readBuffer, '\0', TCP_CLIENT_BUFFER_MAX);
+
+    if (select(this->m_socketDescriptor + 1, &read_fds, &write_fds, &except_fds, &timeout) == 1) {
+        auto receiveResult = recv(this->m_socketDescriptor, readBuffer, TCP_CLIENT_BUFFER_MAX - 1, 0);
+        if (receiveResult == -1) {
+            auto errorCode = getLastError();
+            if (errorCode != EAGAIN) {
+                throw std::runtime_error("CppSerialPort::TcpClient::read(): recv(int, void *, size_t, int): error code " + toStdString(errorCode) + " (" + getErrorString(errorCode) + ')');
+            }
+            return 0;
+        } else if (strlen(readBuffer) != 0) {
+            this->m_readBuffer += std::string{readBuffer};
+            char returnValue{this->m_readBuffer.front()};
+            this->m_readBuffer = this->m_readBuffer.substr(1);
+            return returnValue;
+        } else if (receiveResult == 0) {
+            this->closePort();
+            throw std::runtime_error("CppSerialPort::TcpClient::read(): Server [" + this->m_hostName + ':' + toStdString(this->m_portNumber) + "] hung up unexpectedly");
         }
-        return 0;
-    } else if (strlen(buffer) != 0) {
-        this->m_readBuffer += std::string{buffer};
-        return this->m_readBuffer[0];
-    } else if (receiveResult == 0) {
-        throw std::runtime_error("CppSerialPort::TcpClient::read(): Server [" + this->m_hostName + ':' + toStdString(this->m_portNumber) + "] hung up unexpectedly");
     }
     return 0;
 }
@@ -205,11 +226,7 @@ ssize_t TcpClient::write(char c)
     if (!this->isConnected()) {
         throw std::runtime_error("CppSerialPort::TcpClient::write(char): Cannot write on closed socket (call connect first)");
     }
-#if defined(_WIN32)
-	return send(this->m_socketDescriptor, &c, 1, 0);
-#else
-	return send(this->m_socketDescriptor, &c, 1, 0);
-#endif //defined(_WIN32)
+    return this->write(&c, 1);
 }
 
 ssize_t TcpClient::write(const char *bytes, size_t numberOfBytes)

@@ -26,7 +26,7 @@ public:
 
     char read() override;
     ssize_t write(char i) override;
-	ssize_t write(const char *bytes, size_t numberOfBytes);
+	ssize_t write(const char *bytes, size_t numberOfBytes) override;
     std::string portName() const override;
     bool isOpen() const override;
     void openPort() override;
@@ -54,9 +54,9 @@ private:
     std::string m_readBuffer;
 
     static timeval toTimeVal(uint32_t totalTimeout);
-
 	static std::string getErrorString(int errorCode);
 	static int getLastError();
+
 };
 
 } //namespace CppSerialPort

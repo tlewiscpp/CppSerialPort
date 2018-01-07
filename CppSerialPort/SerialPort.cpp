@@ -39,7 +39,7 @@
     #include <climits>
     #include <sys/file.h>
     #include <cerrno>
-
+    #include <sys/signal.h>
 #endif
 
 #include "SerialPort.h"
@@ -293,7 +293,8 @@ char SerialPort::read()
         return returnValue;
     }
 
-    // Initialize file descriptor sets
+    //Use select() to wait for data to arrive
+    //At socket, then read and return
     fd_set read_fds{0, 0, 0};
     fd_set write_fds{0, 0, 0};
     fd_set except_fds{0, 0, 0};
@@ -308,13 +309,11 @@ char SerialPort::read()
     static char readStuff[SERIAL_PORT_BUFFER_MAX];
     memset(readStuff, '\0', SERIAL_PORT_BUFFER_MAX);
 
-    // Wait for input to become ready or until the time out; the first parameter is
-    // 1 more than the largest file descriptor in any of the sets
     if (select(this->getFileDescriptor() + 1, &read_fds, &write_fds, &except_fds, &timeout) == 1) {
         int bytesAvailable{0};
         ioctl(this->getFileDescriptor(), FIONREAD, &bytesAvailable);
-        auto returnedBytes = fread(readStuff, sizeof(char), static_cast<size_t>(bytesAvailable), this->m_fileStream);
-        //auto returnedBytes = fread(&readValue, sizeof(char), 1, this->m_fileStream);
+        auto returnedBytes = fread(readStuff, sizeof(char), static_cast<size_t>(bytesAvailable),
+                                   this->m_fileStream);
         if ((returnedBytes <= 0) || (readStuff[0] == '\0')) {
             return 0;
         }
@@ -324,7 +323,7 @@ char SerialPort::read()
         return returnValue;
     }
     return 0;
-#endif
+#endif //defined(_WIN32)
 }
 
 ssize_t SerialPort::write(char c)
@@ -375,6 +374,8 @@ void SerialPort::closePort()
 	CancelIo(this->m_serialPortHandle);
     CloseHandle(this->m_serialPortHandle);
 #else
+    //TODO: Check error codes for these functions
+    std::memcpy(&this->m_portSettings, &this->m_oldPortSettings, sizeof(this->m_portSettings));
     this->m_portSettings = this->m_oldPortSettings;
     this->applyPortSettings();
     flock(this->getFileDescriptor(), LOCK_UN);
@@ -903,9 +904,10 @@ std::pair<int, std::string> SerialPort::getPortNameAndNumber(const std::string &
 #endif
 }
 
-SerialPort::~SerialPort() 
-{
-	this->closePort();
+SerialPort::~SerialPort() {
+    this->closePort();
 }
 
-} //namespace CppSerialPort
+}
+
+//namespace CppSerialPort
