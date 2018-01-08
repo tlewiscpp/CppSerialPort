@@ -19,7 +19,7 @@ using namespace CppSerialPort;
 std::future<std::string> *asyncGetlineFuture{nullptr};
 std::future<std::string> *asyncReadlineFuture{ nullptr };
 
-SerialPort serialPort{ SERIAL_PORT_NAME, BaudRate::Baud115200, DataBits::DataEight, StopBits::StopOne, Parity::ParityNone };
+SerialPort serialPort{ SERIAL_PORT_NAME, BaudRate::Baud115200, DataBits::DataEight, StopBits::StopOne, Parity::ParityNone, FlowControl::FlowOff, "\n"};
 
 std::string asyncGetlineTask() {
     std::string returnString{ "" };
