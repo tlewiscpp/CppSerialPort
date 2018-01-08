@@ -49,8 +49,8 @@ private:
 #else
 	int m_socketDescriptor;
 #endif //defined(_WIN32)
-    uint16_t m_portNumber;
     std::string m_hostName;
+    uint16_t m_portNumber;
     std::string m_readBuffer;
 
     static timeval toTimeVal(uint32_t totalTimeout);
