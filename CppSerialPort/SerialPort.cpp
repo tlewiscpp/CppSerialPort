@@ -156,6 +156,7 @@ void SerialPort::openPort()
     this->m_portSettings.c_cflag |= (CLOCAL | CREAD);
 #endif
 
+	this->m_isOpen = true;
     this->setBaudRate(this->m_baudRate);
     this->setDataBits(this->m_dataBits);
     this->setStopBits(this->m_stopBits);
@@ -165,7 +166,6 @@ void SerialPort::openPort()
 
     this->enableDTR();
     this->enableRTS();
-	this->m_isOpen = true;
 }
 
 void SerialPort::setReadTimeout(int timeout)
