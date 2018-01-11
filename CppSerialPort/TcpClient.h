@@ -14,11 +14,11 @@
 
 #include <sys/types.h>
 #include <memory>
-#include "IByteStream.h"
+#include "ITextStream.h"
 
 namespace CppSerialPort {
 
-class TcpClient : public IByteStream
+class TcpClient : public ITextStream
 {
 public:
     TcpClient(const std::string &hostName, uint16_t portNumber);

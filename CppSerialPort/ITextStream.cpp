@@ -1,6 +1,6 @@
 /***********************************************************************
-*    IByteStream.cpp:                                                  *
-*    IByteStream, base class for simple read and write operations      *
+*    ITextStream.cpp:                                                  *
+*    ITextStream, base class for simple read and write operations      *
 *    Copyright (c) 2017 Tyler Lewis                                    *
 ************************************************************************
 *    This is a header file for CppSerialPort:                          *
@@ -8,7 +8,7 @@
 *    This file may be distributed with the CppSerialPort library,      *
 *    but may also be distributed as a standalone file                  *
 *    The source code is released under the GNU LGPL                    *
-*    This file holds the implementaiton for the methods used in        *
+*    This file holds the implementation for the methods used in        *
 *                                                                      *
 *    You should have received a copy of the GNU Lesser General         *
 *    Public license along with CppSerialPort                           *
@@ -16,24 +16,24 @@
 ***********************************************************************/
 
 #include <sstream>
-#include "IByteStream.h"
+#include "ITextStream.h"
 #include <fstream>
 
 namespace CppSerialPort {
 
 #if defined(_WIN32)
-const char *IByteStream::DEFAULT_LINE_ENDING{"\r\n"};
+const char *ITextStream::DEFAULT_LINE_ENDING{"\r\n"};
 #    include <Windows.h>
 #    include <shlwapi.h>
 #else
 #    include <unistd.h>
-const char *IByteStream::DEFAULT_LINE_ENDING{"\n"};
+const char *ITextStream::DEFAULT_LINE_ENDING{"\n"};
 #endif //defined(_WIN32)
 
-const int IByteStream::DEFAULT_READ_TIMEOUT{1000};
-const int IByteStream::DEFAULT_WRITE_TIMEOUT{1000};
+const int ITextStream::DEFAULT_READ_TIMEOUT{1000};
+const int ITextStream::DEFAULT_WRITE_TIMEOUT{1000};
 
-IByteStream::IByteStream() :
+ITextStream::ITextStream() :
 	m_readTimeout{ DEFAULT_READ_TIMEOUT },
 	m_writeTimeout{ DEFAULT_WRITE_TIMEOUT },
 	m_lineEnding{ DEFAULT_LINE_ENDING },
@@ -43,75 +43,75 @@ IByteStream::IByteStream() :
 
 }
 
-void IByteStream::setReadTimeout(int timeout)
+void ITextStream::setReadTimeout(int timeout)
 {
     if (timeout < 0) {
-        throw std::runtime_error("CppSerialPort::IByteStream::setReadTimeout(int): invariant failure (read timeout cannot be less than 0, " + toStdString(timeout) + " < 0)");
+        throw std::runtime_error("CppSerialPort::ITextStream::setReadTimeout(int): invariant failure (read timeout cannot be less than 0, " + toStdString(timeout) + " < 0)");
     }
     this->m_readTimeout = timeout;
 }
 
-int IByteStream::readTimeout() const
+int ITextStream::readTimeout() const
 {
     return this->m_readTimeout;
 
 }
-void IByteStream::setWriteTimeout(int timeout)
+void ITextStream::setWriteTimeout(int timeout)
 {
     if (timeout < 0) {
-        throw std::runtime_error("CppSerialPort::IByteStream::setWriteTimeout(int): invariant failure (write timeout cannot be less than 0, " + toStdString(timeout) + " < 0)");
+        throw std::runtime_error("CppSerialPort::ITextStream::setWriteTimeout(int): invariant failure (write timeout cannot be less than 0, " + toStdString(timeout) + " < 0)");
     }
     this->m_writeTimeout = timeout;
 }
 
-int IByteStream::writeTimeout() const
+int ITextStream::writeTimeout() const
 {
     return this->m_writeTimeout;
 }
 
-std::string IByteStream::lineEnding() const
+std::string ITextStream::lineEnding() const
 {
     return this->m_lineEnding;
 }
 
-void IByteStream::setLineEnding(const std::string &str)
+void ITextStream::setLineEnding(const std::string &str)
 {
     if (str.length() == 0) {
-        throw std::runtime_error("CppSerialPort::IByteStream::setLineEnding str.length() == 0 (invariant failure)");
+        throw std::runtime_error("CppSerialPort::ITextStream::setLineEnding str.length() == 0 (invariant failure)");
     }
     this->m_lineEnding = str;
 }
 
-void IByteStream::setLineEnding(char chr)
+void ITextStream::setLineEnding(char chr)
 {
     if (chr == '\0') {
-        throw std::runtime_error("CppSerialPort::IByteStream::setLineEnding chr == '\\0' (invariant failure)");
+        throw std::runtime_error("CppSerialPort::ITextStream::setLineEnding chr == '\\0' (invariant failure)");
     }
     this->m_lineEnding = std::string(1, chr);
 }
 
-ssize_t IByteStream::writeLine(const std::string &str)
+ssize_t ITextStream::writeLine(const std::string &str)
 {
     std::lock_guard<std::mutex> writeLock{this->m_writeMutex};
 	std::string toWrite{ str + this->lineEnding() };
 	return this->write(toWrite.c_str(), toWrite.length());
 }
 
-ssize_t IByteStream::write(const std::string &str)
+ssize_t ITextStream::write(const std::string &str)
 {
     std::lock_guard<std::mutex> writeLock{this->m_writeMutex};
 	return this->write(str.c_str(), str.length());
 }
 
-std::string IByteStream::readLine(bool *timeout)
+std::string ITextStream::readLine(bool *timeout)
 {
     return this->readUntil(this->m_lineEnding, timeout);
 }
 
-std::string IByteStream::readUntil(const std::string &until, bool *timeout)
+std::string ITextStream::readUntil(const std::string &until, bool *timeout)
 {
 	std::lock_guard<std::mutex> readLock{ this->m_readMutex };
-    uint64_t startTime{IByteStream::getEpoch()};
+    uint64_t startTime{ITextStream::getEpoch()};
     std::string returnString{""};
     if (timeout) {
         *timeout = false;
@@ -125,19 +125,19 @@ std::string IByteStream::readUntil(const std::string &until, bool *timeout)
         if (endsWith(returnString, until)) {
             return returnString.substr(0, returnString.length() - until.length());
         }
-    } while ((IByteStream::getEpoch() - startTime) <= static_cast<unsigned long>(this->m_readTimeout));
+    } while ((ITextStream::getEpoch() - startTime) <= static_cast<unsigned long>(this->m_readTimeout));
     if (timeout) {
         *timeout = true;
     }
     return returnString;
 }
 
-std::string IByteStream::readUntil(char until, bool *timeout)
+std::string ITextStream::readUntil(char until, bool *timeout)
 {
     return this->readUntil(std::string(1, until), timeout);
 }
 
-int IByteStream::peek()
+int ITextStream::peek()
 {
     int readChar{this->read()};
     this->putBack(readChar);
@@ -145,12 +145,12 @@ int IByteStream::peek()
 }
 
 
-bool IByteStream::available()
+bool ITextStream::available()
 {
     return (this->peek() != '\0');
 }
 
-bool IByteStream::fileExists(const std::string &fileToCheck)
+bool ITextStream::fileExists(const std::string &fileToCheck)
 {
 #if defined(_WIN32)
     std::ifstream readFromFile{};
@@ -164,7 +164,7 @@ bool IByteStream::fileExists(const std::string &fileToCheck)
 
 #if defined(_MSC_VER)
 #include <Windows.h>
-uint64_t IByteStream::getEpoch()
+uint64_t ITextStream::getEpoch()
 {
     /*
      * Are you fucking kidding me Windows?
@@ -178,7 +178,7 @@ uint64_t IByteStream::getEpoch()
 }
 #else
 #include <sys/time.h>
-uint64_t IByteStream::getEpoch()
+uint64_t ITextStream::getEpoch()
 {
     struct timeval tv{};
     gettimeofday(&tv, NULL);
