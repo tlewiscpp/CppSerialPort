@@ -16,8 +16,8 @@
 *    If not, see <http://www.gnu.org/licenses/>                        *
 ***********************************************************************/
 
-#ifndef CPPSERIALPORT_ITEXTSTREAM_H
-#define CPPSERIALPORT_ITEXTSTREAM_H
+#ifndef CPPSERIALPORT_IBYTESTREAM_H
+#define CPPSERIALPORT_IBYTESTREAM_H
 
 #if defined(_MSC_VER)
 #    if defined(SHARED_LIBRARY_BUILD)
@@ -135,4 +135,4 @@ private:
 
 } //namespace CppSerialPort
 
-#endif //CPPSERIALPORT_ITEXTSTREAM_H
+#endif //CPPSERIALPORT_IBYTESTREAM_H
