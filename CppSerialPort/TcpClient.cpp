@@ -236,7 +236,7 @@ ssize_t TcpClient::write(const char *bytes, size_t numberOfBytes)
     }
     unsigned sentBytes{0};
     //Make sure all bytes are sent
-	auto startTime = ITextStream::getEpoch();
+	auto startTime = IByteStream::getEpoch();
     while (sentBytes < numberOfBytes)  {
         auto sendResult = send(this->m_socketDescriptor, bytes + sentBytes, numberOfBytes - sentBytes, 0);
         if (sendResult == -1) {

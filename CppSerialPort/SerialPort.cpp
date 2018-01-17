@@ -170,7 +170,7 @@ void SerialPort::openPort()
 
 void SerialPort::setReadTimeout(int timeout)
 {
-    ITextStream::setReadTimeout(timeout);
+    IByteStream::setReadTimeout(timeout);
     if (!this->isOpen()) {
         return;
     }
@@ -233,7 +233,7 @@ std::string SerialPort::getErrorString(int errorCode) {
         return "";
     }
 #endif //defined(_WIN32)
-	return ITextStream::stripLineEndings(errorString);
+	return IByteStream::stripLineEndings(errorString);
 }
 
 char SerialPort::read()
@@ -801,7 +801,7 @@ std::unordered_set<std::string> SerialPort::availableSerialPorts()
     }
 #else
     for (auto &it : SerialPort::SERIAL_PORT_NAMES) {
-        if (ITextStream::fileExists(std::string{it})) {
+        if (IByteStream::fileExists(std::string{it})) {
             returnSet.emplace(it);
         }
     }

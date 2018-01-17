@@ -22,12 +22,12 @@ endif()
 set (SOURCE_ROOT CppSerialPort)
 
 set (${PROJECT_NAME}_SOURCE_FILES
-        ${SOURCE_ROOT}/ITextStream.cpp
+        ${SOURCE_ROOT}/IByteStream.cpp
         ${SOURCE_ROOT}/SerialPort.cpp
         ${SOURCE_ROOT}/TcpClient.cpp)
 
 set (${PROJECT_NAME}_HEADER_FILES
-        ${SOURCE_ROOT}/ITextStream.h
+        ${SOURCE_ROOT}/IByteStream.h
         ${SOURCE_ROOT}/SerialPort.h
         ${SOURCE_ROOT}/TcpClient.h)
 

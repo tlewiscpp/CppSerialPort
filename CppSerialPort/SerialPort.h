@@ -23,7 +23,7 @@
 #include <vector>
 #include <sstream>
 
-#include "ITextStream.h"
+#include "IByteStream.h"
 #include <unordered_set>
 
 #include <type_traits>
@@ -192,7 +192,7 @@ enum class BaudRate {
 };
 #endif
 
-class SerialPort : public ITextStream
+class SerialPort : public IByteStream
 {
 public:
     explicit SerialPort(const std::string &name,
@@ -229,7 +229,7 @@ public:
     SerialPort(const SerialPort &other) = delete;
 	~SerialPort() override;
 
-    //ITextStream interface
+    //IByteStream interface
 	void openPort() override;
     void closePort() override;
     char read() override;

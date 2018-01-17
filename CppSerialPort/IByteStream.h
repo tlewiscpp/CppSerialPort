@@ -1,6 +1,6 @@
 /***********************************************************************
-*    ITextStream.h:                                                    *
-*    ITextStream, base class for simple read and write operations      *
+*    IByteStream.h:                                                    *
+*    IByteStream, base class for simple read and write operations      *
 *    Copyright (c) 2017 Tyler Lewis                                    *
 ************************************************************************
 *    This is a header file for CppSerialPort:                          *
@@ -8,7 +8,7 @@
 *    This file may be distributed with the CppSerialPort library,      *
 *    but may also be distributed as a standalone file                  *
 *    The source code is released under the GNU LGPL                    *
-*    This file holds the declarations of an base class ITextStream     *
+*    This file holds the declarations of an base class IByteStream     *
 *    It includes very basic IO operations like read and write          *
 *                                                                      *
 *    You should have received a copy of the GNU Lesser General         *
@@ -45,11 +45,11 @@
 
 namespace CppSerialPort {
 
-class ITextStream
+class IByteStream
 {
 public:
-    ITextStream();
-    virtual ~ITextStream() = default;
+    IByteStream();
+    virtual ~IByteStream() = default;
 
 	virtual char read() = 0;
 	virtual ssize_t write(char) = 0;
