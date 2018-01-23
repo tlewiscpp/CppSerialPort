@@ -3,6 +3,7 @@
 #include <future>
 #include <mutex>
 #include <cstring>
+#include <memory>
 
 #if defined(_WIN32)
 #    define SERIAL_PORT_NAME "COM3"
@@ -19,7 +20,7 @@ using namespace CppSerialPort;
 std::future<std::string> *asyncGetlineFuture{nullptr};
 std::future<std::string> *asyncReadlineFuture{ nullptr };
 
-SerialPort serialPort{ SERIAL_PORT_NAME, BaudRate::Baud115200, DataBits::DataEight, StopBits::StopOne, Parity::ParityNone, FlowControl::FlowOff, "\n"};
+std::shared_ptr<SerialPort> serialPort{nullptr};
 
 std::string asyncGetlineTask() {
     std::string returnString{ "" };
@@ -32,7 +33,7 @@ std::string asyncGetlineTask() {
 std::string asyncReadlineTask() {
     bool timeout{ false };
     while (true) {
-        std::string returnString{ serialPort.readLine(&timeout) };
+        std::string returnString{ serialPort->readLine(&timeout) };
         if (returnString.length() > 0) {
             return returnString;
         }
@@ -42,10 +43,11 @@ std::string asyncReadlineTask() {
 
 int main()
 {
-    serialPort.setLineEnding("\r\n");
-    serialPort.setReadTimeout(1000);
-    serialPort.openPort();
-    serialPort.flushRx();
+    serialPort = std::make_shared<SerialPort>( SERIAL_PORT_NAME, BaudRate::Baud115200, DataBits::DataEight, StopBits::StopOne, Parity::ParityNone, FlowControl::FlowOff, "\n" );
+    serialPort->setLineEnding("\r\n");
+    serialPort->setReadTimeout(1000);
+    serialPort->openPort();
+    serialPort->flushRx();
     std::string sendString{""};
     std::string receivedString{""};
     asyncGetlineFuture = new std::future<std::string>{std::async(std::launch::async, asyncGetlineTask)};
@@ -54,7 +56,7 @@ int main()
         if (asyncGetlineFuture->wait_for(std::chrono::milliseconds(0)) == std::future_status::ready) {
             sendString = asyncGetlineFuture->get();
             std::cout << "Sending string \"" << sendString << "\" to serial port" << std::endl;
-            serialPort.writeLine(sendString);
+            serialPort->writeLine(sendString);
             delete asyncGetlineFuture;
             asyncGetlineFuture = new std::future<std::string>{std::async(std::launch::async, asyncGetlineTask)};
         }

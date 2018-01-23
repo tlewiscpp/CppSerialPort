@@ -69,7 +69,7 @@ int IByteStream::writeTimeout() const
     return this->m_writeTimeout;
 }
 
-std::string IByteStream::lineEnding() const
+ByteArray IByteStream::lineEnding() const
 {
     return this->m_lineEnding;
 }
@@ -77,15 +77,23 @@ std::string IByteStream::lineEnding() const
 void IByteStream::setLineEnding(const std::string &str)
 {
     if (str.length() == 0) {
-        throw std::runtime_error("CppSerialPort::IByteStream::setLineEnding str.length() == 0 (invariant failure)");
+        throw std::runtime_error("CppSerialPort::IByteStream::setLineEnding(const std::string &): str.length() == 0 (invariant failure)");
     }
     this->m_lineEnding = str;
+}
+
+void IByteStream::setLineEnding(const ByteArray &byteArray)
+{
+    if (byteArray.length() == 0) {
+        throw std::runtime_error("CppSerialPort::IByteStream::setLineEnding(const ByteArray &): byteArray.length() == 0 (invariant failure)");
+    }
+    this->m_lineEnding = byteArray;
 }
 
 void IByteStream::setLineEnding(char chr)
 {
     if (chr == '\0') {
-        throw std::runtime_error("CppSerialPort::IByteStream::setLineEnding chr == '\\0' (invariant failure)");
+        throw std::runtime_error("CppSerialPort::IByteStream::setLineEnding(char): chr == '\\0' (invariant failure)");
     }
     this->m_lineEnding = std::string(1, chr);
 }
@@ -93,8 +101,10 @@ void IByteStream::setLineEnding(char chr)
 ssize_t IByteStream::writeLine(const std::string &str)
 {
     std::lock_guard<std::mutex> writeLock{this->m_writeMutex};
-	std::string toWrite{ str + this->lineEnding() };
-	return this->write(toWrite.c_str(), toWrite.length());
+	ByteArray toWrite{};
+    toWrite += str;
+    toWrite += this->lineEnding();
+	return this->write(toWrite.data(), toWrite.length());
 }
 
 ssize_t IByteStream::write(const std::string &str)
@@ -103,38 +113,53 @@ ssize_t IByteStream::write(const std::string &str)
 	return this->write(str.c_str(), str.length());
 }
 
-std::string IByteStream::readLine(bool *timeout)
+ssize_t IByteStream::writeLine(const ByteArray &byteArray)
+{
+    std::lock_guard<std::mutex> writeLock{this->m_writeMutex};
+    ByteArray toWrite{};
+    toWrite += byteArray;
+    toWrite += this->lineEnding();
+    return this->write(toWrite.data(), toWrite.length());
+}
+
+ssize_t IByteStream::write(const ByteArray &byteArray)
+{
+    std::lock_guard<std::mutex> writeLock{this->m_writeMutex};
+    return this->write(byteArray.data(), byteArray.length());
+}
+
+ByteArray IByteStream::readLine(bool *timeout)
 {
     return this->readUntil(this->m_lineEnding, timeout);
 }
 
-std::string IByteStream::readUntil(const std::string &until, bool *timeout)
+ByteArray IByteStream::readUntil(const ByteArray &until, bool *timeout)
 {
 	std::lock_guard<std::mutex> readLock{ this->m_readMutex };
     uint64_t startTime{IByteStream::getEpoch()};
-    std::string returnString{""};
+    ByteArray returnArray{""};
     if (timeout) {
         *timeout = false;
     }
     do {
-        int maybeChar{this->read()};
-        if (maybeChar == 0) {
+        char maybeChar{this->read()};
+        if (maybeChar == -1) {
             continue;
         }
-        returnString += static_cast<char>(maybeChar);
-        if (endsWith(returnString, until)) {
-            return returnString.substr(0, returnString.length() - until.length());
+        returnArray += maybeChar;
+        if (returnArray.endsWith(until)) {
+            return returnArray.subsequence(0, returnArray.length() - until.length());
         }
     } while ((IByteStream::getEpoch() - startTime) <= static_cast<unsigned long>(this->m_readTimeout));
     if (timeout) {
         *timeout = true;
     }
-    return returnString;
+    return returnArray;
 }
 
-std::string IByteStream::readUntil(char until, bool *timeout)
+ByteArray IByteStream::readUntil(char until, bool *timeout)
 {
-    return this->readUntil(std::string(1, until), timeout);
+    return this->readUntil(ByteArray{until}, timeout);
 }
 
 int IByteStream::peek()
@@ -181,7 +206,7 @@ uint64_t IByteStream::getEpoch()
 uint64_t IByteStream::getEpoch()
 {
     struct timeval tv{};
-    gettimeofday(&tv, NULL);
+    gettimeofday(&tv, nullptr);
     return (static_cast<unsigned long long>(tv.tv_sec) * 1000) +
            (static_cast<unsigned long long>(tv.tv_usec) / 1000);
 }

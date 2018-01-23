@@ -1,0 +1,76 @@
+#ifndef CPPSERIALPORT_BYTEARRAY_H
+#define CPPSERIALPORT_BYTEARRAY_H
+
+#include <string>
+#include <vector>
+#include <algorithm>
+
+namespace CppSerialPort {
+
+class ByteArray {
+public:
+    explicit ByteArray() = default;
+    explicit ByteArray(char c);
+    explicit ByteArray(const char *cStr);
+    explicit ByteArray(const std::string &str);
+    explicit ByteArray(char *buffer, size_t length);
+    explicit ByteArray(const std::vector<char> &byteArray);
+    ByteArray &operator=(const ByteArray &rhs);
+    ByteArray &operator=(const std::vector<char> &rhs);
+    ByteArray &operator=(const std::string &rhs);
+    ByteArray &operator=(char c);
+    ByteArray &operator=(ByteArray &&rhs);
+    ByteArray &operator=(std::vector<char> &&rhs);
+    ByteArray(const ByteArray &other) = default;
+    ByteArray(ByteArray &&other) = default;
+    template <typename InputIterator> explicit ByteArray(InputIterator begin, InputIterator end) :
+            m_buffer{begin, end} { }
+
+    ByteArray &append(char c);
+    ByteArray &append(const ByteArray &rhs);
+    ByteArray &append(const std::string &rhs);
+    ByteArray &append(const std::vector<char> &rhs);
+    ByteArray &operator+=(char c);
+    ByteArray &operator+=(const ByteArray &rhs);
+    ByteArray &operator+=(const std::string &rhs);
+    ByteArray &operator+=(const std::vector<char> &rhs);
+
+    ByteArray &clear();
+    size_t size() const;
+    size_t length() const;
+    bool empty() const;
+    const char *data() const;
+    char *data();
+
+    ByteArray &popBack();
+
+    char &operator[](size_t index);
+
+    char &at(size_t index);
+
+    ByteArray subsequence(size_t index, size_t length = 0) const;
+
+    friend bool operator==(const ByteArray &lhs, const ByteArray &rhs) { return std::equal(lhs.m_buffer.begin(), lhs.m_buffer.end(), rhs.m_buffer.begin()); }
+    explicit operator std::string() const;
+    std::string toString() const;
+
+    bool endsWith(char *buffer, size_t length) const;
+    bool endsWith(const char *cStr) const;
+    bool endsWith(const std::string &str) const;
+    bool endsWith(const ByteArray &byteArray) const;
+
+    bool startsWith(const ByteArray &byteArray) const;
+    bool startsWith(char *buffer, size_t length) const;
+    bool startsWith(const char *cStr) const;
+    bool startsWith(const std::string &str) const;
+private:
+    std::vector<char> m_buffer;
+
+    bool endsWith(const std::vector<char> &ending) const;
+    bool startsWith(const std::vector<char> &start) const;
+};
+
+}
+
+
+#endif //CPPSERIALPORT_BYTEARRAY_H
