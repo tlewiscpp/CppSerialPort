@@ -34,6 +34,20 @@ public:
     ByteArray &operator+=(const ByteArray &rhs);
     ByteArray &operator+=(const std::string &rhs);
     ByteArray &operator+=(const std::vector<char> &rhs);
+    ByteArray &operator+(char c);
+    ByteArray &operator+(const ByteArray &rhs);
+    ByteArray &operator+(const std::string &rhs);
+    ByteArray &operator+(const std::vector<char> &rhs);
+
+
+    friend ByteArray operator+(char c, const ByteArray &rhs);
+    friend ByteArray operator+(const ByteArray &lhs, const ByteArray &rhs);
+    friend ByteArray operator+(const std::string &lhs, const ByteArray &rhs);
+    friend ByteArray operator+(const std::vector<char> &lhs, const ByteArray &rhs);
+    friend ByteArray operator+(const ByteArray &lhs, char c);
+    friend ByteArray operator+(const ByteArray &lhs, const std::string &rhs);
+    friend ByteArray operator+(const ByteArray &lhs, const std::vector<char> &rhs);
+
 
     ByteArray &clear();
     size_t size() const;
@@ -69,6 +83,7 @@ private:
     bool endsWith(const std::vector<char> &ending) const;
     bool startsWith(const std::vector<char> &start) const;
 };
+
 
 }
 

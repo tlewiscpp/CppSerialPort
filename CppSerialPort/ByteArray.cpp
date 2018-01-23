@@ -218,20 +218,66 @@ ByteArray &ByteArray::popBack() {
     return *this;
 }
 
+ByteArray &ByteArray::operator+(char c) {
+    this->append(c);
+    return *this;
+}
 
-/*
-static inline bool endsWith (const std::string &fullString, const std::string &ending) {
-    return ( (fullString.length() < ending.length()) ? false : std::equal(ending.rbegin(), ending.rend(), fullString.rbegin()) );
+ByteArray &ByteArray::operator+(const ByteArray &rhs) {
+    this->append(rhs);
+    return *this;
 }
-static inline bool endsWith(const std::string &fullString, char ending) {
-    return ((fullString.length() > 0) && (fullString.back() == ending));
+
+ByteArray &ByteArray::operator+(const std::string &rhs) {
+    this->append(rhs);
+    return *this;
 }
-static inline bool startsWith(const std::string &fullString, const std::string &start) {
-    return ((fullString.length() < start.length()) ? false : std::equal(start.begin(), start.end(), fullString.begin()));
+
+ByteArray &ByteArray::operator+(const std::vector<char> &rhs) {
+    this->append(rhs);
+    return *this;
 }
-static inline bool startsWith(const std::string &fullString, char start) {
-    return ((fullString.length() > 0) && (fullString.front() == start));
+
+ByteArray operator+(char c, const ByteArray &rhs) {
+    ByteArray returnArray{c};
+    returnArray += rhs;
+    return returnArray;
 }
- */
+
+ByteArray operator+(const ByteArray &lhs, const ByteArray &rhs) {
+    ByteArray returnArray{lhs};
+    returnArray += rhs;
+    return returnArray;
+}
+
+ByteArray operator+(const std::string &lhs, const ByteArray &rhs) {
+    ByteArray returnArray{lhs};
+    returnArray += rhs;
+    return returnArray;
+}
+
+ByteArray operator+(const std::vector<char> &lhs, const ByteArray &rhs) {
+    ByteArray returnArray{lhs};
+    returnArray += rhs;
+    return returnArray;
+}
+
+ByteArray operator+(const ByteArray &lhs, char c) {
+    ByteArray returnArray{lhs};
+    returnArray.append(c);
+    return returnArray;
+}
+
+ByteArray operator+(const ByteArray &lhs, const std::string &rhs) {
+    ByteArray returnArray{lhs};
+    returnArray.append(rhs);
+    return returnArray;
+}
+
+ByteArray operator+(const ByteArray &lhs, const std::vector<char> &rhs) {
+    ByteArray returnArray{lhs};
+    returnArray.append(rhs);
+    return returnArray;
+}
 
 }
