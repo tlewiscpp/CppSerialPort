@@ -48,6 +48,14 @@ public:
     friend ByteArray operator+(const ByteArray &lhs, const std::string &rhs);
     friend ByteArray operator+(const ByteArray &lhs, const std::vector<char> &rhs);
 
+    std::vector<char>::iterator begin();
+    const std::vector<char>::const_iterator cbegin() const;
+    std::vector<char>::reverse_iterator rbegin();
+    std::vector<char>::const_reverse_iterator crbegin() const;
+    std::vector<char>::iterator end();
+    const std::vector<char>::const_iterator cend() const;
+    std::vector<char>::reverse_iterator rend();
+    std::vector<char>::const_reverse_iterator crend() const;
 
     ByteArray &clear();
     size_t size() const;

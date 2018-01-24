@@ -280,4 +280,36 @@ ByteArray operator+(const ByteArray &lhs, const std::vector<char> &rhs) {
     return returnArray;
 }
 
+const std::vector<char>::const_iterator ByteArray::cbegin() const {
+    return this->m_buffer.cbegin();
+}
+
+std::vector<char>::iterator ByteArray::begin() {
+    return this->m_buffer.begin();
+}
+
+std::vector<char>::reverse_iterator ByteArray::rbegin() {
+    return this->m_buffer.rbegin();
+}
+
+std::vector<char>::const_reverse_iterator ByteArray::crbegin() const {
+    return this->m_buffer.crbegin();
+}
+
+std::vector<char>::iterator ByteArray::end() {
+    return this->m_buffer.end();
+}
+
+const std::vector<char>::const_iterator ByteArray::cend() const {
+    return this->m_buffer.cend();
+}
+
+std::vector<char>::reverse_iterator ByteArray::rend() {
+    return this->m_buffer.rend();
+}
+
+std::vector<char>::const_reverse_iterator ByteArray::crend() const {
+    return this->m_buffer.crend();
+}
+
 }
