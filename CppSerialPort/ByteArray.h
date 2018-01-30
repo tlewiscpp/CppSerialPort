@@ -92,7 +92,6 @@ private:
     bool startsWith(const std::vector<char> &start) const;
 };
 
-
 }
 
 

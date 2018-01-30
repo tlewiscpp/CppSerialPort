@@ -236,7 +236,7 @@ std::string SerialPort::getErrorString(int errorCode) {
 	return IByteStream::stripLineEndings(errorString);
 }
 
-char SerialPort::read()
+char SerialPort::read(bool *readTimeout)
 {
 #if defined(_WIN32)
     if (!this->m_readBuffer.empty()) {
@@ -290,6 +290,9 @@ char SerialPort::read()
     if (!this->m_readBuffer.empty()) {
         char returnValue{this->m_readBuffer.front()};
         this->m_readBuffer = this->m_readBuffer.substr(1);
+        if (readTimeout) {
+            *readTimeout = false;
+        }
         return returnValue;
     }
 
@@ -315,12 +318,21 @@ char SerialPort::read()
         auto returnedBytes = fread(readStuff, sizeof(char), static_cast<size_t>(bytesAvailable),
                                    this->m_fileStream);
         if ((returnedBytes <= 0) || (readStuff[0] == '\0')) {
+            if (readTimeout) {
+                *readTimeout = true;
+            }
             return 0;
         }
         this->m_readBuffer += std::string{readStuff};
         char returnValue{this->m_readBuffer.front()};
         this->m_readBuffer = this->m_readBuffer.substr(1);
+        if (readTimeout) {
+            *readTimeout = false;
+        }
         return returnValue;
+    }
+    if (readTimeout) {
+        *readTimeout = true;
     }
     return 0;
 #endif //defined(_WIN32)

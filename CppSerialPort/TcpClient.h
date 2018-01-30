@@ -24,7 +24,7 @@ public:
     TcpClient(const std::string &hostName, uint16_t portNumber);
     ~TcpClient() override;
 
-    char read() override;
+	char read(bool *readTimeout) override;
     ssize_t write(char i) override;
 	ssize_t write(const char *bytes, size_t numberOfBytes) override;
     std::string portName() const override;

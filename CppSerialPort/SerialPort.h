@@ -232,7 +232,7 @@ public:
     //IByteStream interface
 	void openPort() override;
     void closePort() override;
-    char read() override;
+    char read(bool *readTimeout) override;
     void setReadTimeout(int timeout) override;
 
     std::string portName() const override;

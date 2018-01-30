@@ -142,8 +142,9 @@ ByteArray IByteStream::readUntil(const ByteArray &until, bool *timeout)
         *timeout = false;
     }
     do {
-        char maybeChar{this->read()};
-        if (maybeChar == -1) {
+        bool readTimeout{false};
+        char maybeChar{this->read(&readTimeout)};
+        if (readTimeout) {
             continue;
         }
         returnArray += maybeChar;

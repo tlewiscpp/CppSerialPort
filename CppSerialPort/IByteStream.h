@@ -52,7 +52,7 @@ public:
     IByteStream();
     virtual ~IByteStream() = default;
 
-	virtual char read() = 0;
+	virtual char read(bool *timeout = nullptr) = 0;
 	virtual ssize_t write(char) = 0;
 	virtual ssize_t write(const char *, size_t) = 0;
 
