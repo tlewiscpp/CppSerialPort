@@ -147,11 +147,13 @@ bool ByteArray::startsWith(const std::vector<char> &start) const {
 ByteArray &ByteArray::operator=(const ByteArray &rhs) {
     this->m_buffer.clear();
     std::copy(rhs.m_buffer.begin(), rhs.m_buffer.end(), std::back_inserter(this->m_buffer));
+    return *this;
 }
 
 ByteArray &ByteArray::operator=(const std::vector<char> &rhs) {
     this->m_buffer.clear();
     std::copy(rhs.begin(), rhs.end(), std::back_inserter(this->m_buffer));
+    return *this;
 }
 
 ByteArray &ByteArray::operator=(const std::string &rhs) {
