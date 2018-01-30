@@ -220,6 +220,11 @@ ByteArray &ByteArray::popBack() {
     return *this;
 }
 
+ByteArray &ByteArray::popFront() {
+    this->m_buffer.erase(this->m_buffer.begin());
+    return *this;
+}
+
 ByteArray &ByteArray::operator+(char c) {
     this->append(c);
     return *this;

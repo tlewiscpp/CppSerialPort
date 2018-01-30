@@ -65,6 +65,7 @@ public:
     char *data();
 
     ByteArray &popBack();
+    ByteArray &popFront();
 
     char &operator[](size_t index);
 

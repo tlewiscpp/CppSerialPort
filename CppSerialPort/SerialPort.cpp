@@ -289,7 +289,7 @@ char SerialPort::read(bool *readTimeout)
 #else
     if (!this->m_readBuffer.empty()) {
         char returnValue{this->m_readBuffer[0]};
-        this->m_readBuffer = this->m_readBuffer.subsequence(1);
+        this->m_readBuffer.popFront();
         if (readTimeout) {
             *readTimeout = false;
         }
@@ -326,7 +326,7 @@ char SerialPort::read(bool *readTimeout)
             this->m_readBuffer += readStuff[i];
         }
         char returnValue{this->m_readBuffer[0]};
-        this->m_readBuffer = this->m_readBuffer.subsequence(1);
+        this->m_readBuffer.popFront();
         if (readTimeout) {
             *readTimeout = false;
         }
