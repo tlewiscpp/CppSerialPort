@@ -274,7 +274,7 @@ public:
     static const long DEFAULT_RETRY_COUNT;
 
 private:
-    std::string m_readBuffer;
+    ByteArray m_readBuffer;
     std::string m_portName;
     int m_portNumber{};
     BaudRate m_baudRate;

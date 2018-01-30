@@ -288,8 +288,8 @@ char SerialPort::read(bool *readTimeout)
     return static_cast<int>(returnValue);
 #else
     if (!this->m_readBuffer.empty()) {
-        char returnValue{this->m_readBuffer.front()};
-        this->m_readBuffer = this->m_readBuffer.substr(1);
+        char returnValue{this->m_readBuffer[0]};
+        this->m_readBuffer = this->m_readBuffer.subsequence(1);
         if (readTimeout) {
             *readTimeout = false;
         }
@@ -315,17 +315,18 @@ char SerialPort::read(bool *readTimeout)
     if (select(this->getFileDescriptor() + 1, &read_fds, &write_fds, &except_fds, &timeout) == 1) {
         int bytesAvailable{0};
         ioctl(this->getFileDescriptor(), FIONREAD, &bytesAvailable);
-        auto returnedBytes = fread(readStuff, sizeof(char), static_cast<size_t>(bytesAvailable),
-                                   this->m_fileStream);
-        if ((returnedBytes <= 0) || (readStuff[0] == '\0')) {
+        auto returnedBytes = fread(readStuff, sizeof(char), static_cast<size_t>(bytesAvailable), this->m_fileStream);
+        if (returnedBytes <= 0) {
             if (readTimeout) {
                 *readTimeout = true;
             }
             return 0;
         }
-        this->m_readBuffer += std::string{readStuff};
-        char returnValue{this->m_readBuffer.front()};
-        this->m_readBuffer = this->m_readBuffer.substr(1);
+        for (size_t i = 0; i < returnedBytes; i++) {
+            this->m_readBuffer += readStuff[i];
+        }
+        char returnValue{this->m_readBuffer[0]};
+        this->m_readBuffer = this->m_readBuffer.subsequence(1);
         if (readTimeout) {
             *readTimeout = false;
         }
@@ -867,7 +868,7 @@ bool SerialPort::isValidSerialPortName(const std::string &serialPortName)
 void SerialPort::putBack(char c)
 {
     if (this->m_readBuffer.length() > 0) {
-        this->m_readBuffer.insert(this->m_readBuffer.begin(), static_cast<char>(c));
+        this->m_readBuffer = c + this->m_readBuffer;
     } else {
 #if !defined(_WIN32)
         ungetc(c, this->m_fileStream);
