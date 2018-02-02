@@ -30,16 +30,16 @@
 #    include <io.h>
 #    include <Fcntl.h>
 #else
-#   include <termios.h>
-#   include <sys/ioctl.h>
-#   include <unistd.h>
-#   include <fcntl.h>
-#   include <sys/types.h>
-#   include <sys/stat.h>
-#   include <climits>
-#   include <sys/file.h>
-#   include <cerrno>
-#   include <sys/signal.h>
+    #include <termios.h>
+    #include <sys/ioctl.h>
+    #include <unistd.h>
+    #include <fcntl.h>
+    #include <sys/types.h>
+    #include <sys/stat.h>
+    #include <climits>
+    #include <sys/file.h>
+    #include <cerrno>
+    #include <sys/signal.h>
 #endif
 
 #include "SerialPort.h"
@@ -198,26 +198,6 @@ void SerialPort::setReadTimeout(int timeout)
 #endif //defined(_WIN32)
 }
 
-
-size_t SerialPort::available() {
-    if (!this->m_readBuffer.empty()) {
-        return static_cast<size_t>(this->m_readBuffer.size());
-    }
-#if defined(_WIN32)
-	DWORD commErrors{};
-	COMSTAT commStatus{};
-	auto clearErrorsResult = ClearCommError(this->m_serialPortHandle, &commErrors, &commStatus);
-	if (clearErrorsResult == 0) {
-		const auto errorCode = getLastError();
-		std::cout << "ClearCommError(HANDLE, LPDWORD, LPCOMSTAT) error: " << toStdString(errorCode) << " (" << getErrorString(errorCode) << ")" << std::endl;
-	}
-    return static_cast<size_t>(commStatus.cbInQue);
-#else
-    int bytesAvailable{0};
-    ioctl(this->getFileDescriptor(), FIONREAD, &bytesAvailable);
-    return static_cast<size_t>(bytesAvailable);
-#endif //defined(_WIN32)
-}
 
 int SerialPort::getLastError() {
 #if defined(_WIN32)
@@ -403,18 +383,22 @@ void SerialPort::closePort()
     if (!this->isOpen()) {
         return;
     }
+    try {
 #if defined(_WIN32)
-	CancelIo(this->m_serialPortHandle);
-    CloseHandle(this->m_serialPortHandle);
+        CancelIo(this->m_serialPortHandle);
+        CloseHandle(this->m_serialPortHandle);
 #else
-    //TODO: Check error codes for these functions
-    std::memcpy(&this->m_portSettings, &this->m_oldPortSettings, sizeof(this->m_portSettings));
-    this->m_portSettings = this->m_oldPortSettings;
-    this->applyPortSettings();
-    flock(this->getFileDescriptor(), LOCK_UN);
-    fclose(this->m_fileStream);
+        //TODO: Check error codes for these functions
+        std::memcpy(&this->m_portSettings, &this->m_oldPortSettings, sizeof(this->m_portSettings));
+        this->m_portSettings = this->m_oldPortSettings;
+        this->applyPortSettings();
+        flock(this->getFileDescriptor(), LOCK_UN);
+        fclose(this->m_fileStream);
 #endif
-	this->m_isOpen = false;
+        this->m_isOpen = false;
+    } catch (std::exception &e) {
+        this->m_isOpen = false;
+    }
 }
 
 modem_status_t SerialPort::getModemStatus() const

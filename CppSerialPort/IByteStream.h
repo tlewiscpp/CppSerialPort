@@ -19,6 +19,17 @@
 #ifndef CPPSERIALPORT_IBYTESTREAM_H
 #define CPPSERIALPORT_IBYTESTREAM_H
 
+#if defined(_MSC_VER)
+#    if defined(SHARED_LIBRARY_BUILD)
+	    /* define DLLBUILD when building the DLL */
+#        define CPPSERIALPORT_API __declspec(dllexport)
+#    else
+#        define CPPSERIALPORT_API __declspec(dllimport)
+#    endif
+#else
+#    define CPPSERIALPORT_API
+#endif
+
 #include <string>
 #include <sstream>
 #include <mutex>
@@ -52,7 +63,7 @@ public:
 	virtual void flushRx() = 0;
 	virtual void flushTx() = 0;
 
-	virtual size_t available() = 0;
+	bool available();
 	int peek();
 	virtual void setReadTimeout(int timeout);
 	int readTimeout() const;

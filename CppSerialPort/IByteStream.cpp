@@ -171,6 +171,11 @@ int IByteStream::peek()
 }
 
 
+bool IByteStream::available()
+{
+    return (this->peek() != '\0');
+}
+
 bool IByteStream::fileExists(const std::string &fileToCheck)
 {
 #if defined(_WIN32)
