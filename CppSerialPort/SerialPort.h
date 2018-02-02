@@ -234,6 +234,7 @@ public:
     void closePort() override;
     char read(bool *readTimeout) override;
     void setReadTimeout(int timeout) override;
+    size_t available() override;
 
     std::string portName() const override;
     bool isOpen() const override;

@@ -49,6 +49,13 @@ int TcpClient::getLastError()
 #endif //defined(_WIN32)
 }
 
+size_t TcpClient::available() {
+    if (!this->m_readBuffer.empty()) {
+        return static_cast<size_t>(this->m_readBuffer.size());
+    }
+    return 0;
+}
+
 std::string TcpClient::getErrorString(int errorCode)
 {
 	char errorString[PATH_MAX];

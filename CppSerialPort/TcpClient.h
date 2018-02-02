@@ -34,6 +34,7 @@ public:
     void flushRx() override;
     void flushTx() override;
     void putBack(char c) override;
+    size_t available() override;
 
     void connect(const std::string &hostName, uint16_t portNumber);
     void connect();
