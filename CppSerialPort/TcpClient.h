@@ -51,7 +51,7 @@ private:
 #endif //defined(_WIN32)
     std::string m_hostName;
     uint16_t m_portNumber;
-    std::string m_readBuffer;
+    ByteArray m_readBuffer;
 
     static timeval toTimeVal(uint32_t totalTimeout);
 	static std::string getErrorString(int errorCode);

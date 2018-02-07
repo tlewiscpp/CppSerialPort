@@ -39,6 +39,9 @@ public:
     ByteArray &operator+(const std::string &rhs);
     ByteArray &operator+(const std::vector<char> &rhs);
 
+    size_t find(const ByteArray &toFind);
+    size_t find(char c);
+
 
     friend ByteArray operator+(char c, const ByteArray &rhs);
     friend ByteArray operator+(const ByteArray &lhs, const ByteArray &rhs);
@@ -68,8 +71,9 @@ public:
     ByteArray &popFront();
 
     char &operator[](size_t index);
-
+    const char &operator[](size_t index) const;
     char &at(size_t index);
+    const char &at(size_t index) const;
 
     ByteArray subsequence(size_t index, size_t length = 0) const;
 

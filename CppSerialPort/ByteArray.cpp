@@ -66,9 +66,18 @@ char &ByteArray::operator[](size_t index) {
     return this->m_buffer.operator[](index);
 }
 
+const char &ByteArray::operator[](size_t index) const {
+    return this->m_buffer.operator[](index);
+}
+
+const char &ByteArray::at(size_t index) const {
+    return this->m_buffer.at(index);
+}
+
 char &ByteArray::at(size_t index) {
     return this->m_buffer.at(index);
 }
+
 
 const char *ByteArray::data() const {
     return this->m_buffer.data();
@@ -76,6 +85,25 @@ const char *ByteArray::data() const {
 
 char *ByteArray::data() {
     return this->m_buffer.data();
+}
+
+size_t ByteArray::find(const ByteArray &toFind) {
+    if ( (toFind.length() == 0) || (toFind.length() > this->length()) ) {
+        return std::string::npos;
+    }
+    for (size_t i = 0; i < this->length(); i++) {
+        if ( (toFind.at(i) == this->m_buffer[i]) && ( (i + toFind.length()) < this->length()) ) {
+            auto restEqual = std::equal(toFind.cbegin() + i, toFind.cbegin() + i + toFind.length(), this->begin() + i);
+            if (restEqual) {
+                return i;
+            }
+        }
+    }
+    return std::string::npos;
+}
+
+size_t ByteArray::find(char c) {
+    return static_cast<size_t>(std::distance(this->begin(), std::find(this->begin(), this->end(), c)));
 }
 
 
@@ -306,6 +334,7 @@ std::vector<char>::const_reverse_iterator ByteArray::crbegin() const {
 std::vector<char>::iterator ByteArray::end() {
     return this->m_buffer.end();
 }
+
 
 const std::vector<char>::const_iterator ByteArray::cend() const {
     return this->m_buffer.cend();

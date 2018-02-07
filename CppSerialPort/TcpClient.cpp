@@ -179,8 +179,8 @@ bool TcpClient::isConnected() const
 char TcpClient::read(bool *readTimeout)
 {
     if (!this->m_readBuffer.empty()) {
-        char returnValue{ this->m_readBuffer.front() };
-        this->m_readBuffer = this->m_readBuffer.substr(1);
+        char returnValue{ this->m_readBuffer[0] };
+        this->m_readBuffer.popFront();
         if (readTimeout) {
             *readTimeout = false;
         }
@@ -214,17 +214,19 @@ char TcpClient::read(bool *readTimeout)
                 *readTimeout = true;
             }
             return 0;
-        } else if (strlen(readBuffer) != 0) {
-            this->m_readBuffer += std::string{readBuffer};
-            char returnValue{this->m_readBuffer.front()};
-            this->m_readBuffer = this->m_readBuffer.substr(1);
+        } else if (receiveResult == 0) {
+            this->closePort();
+            throw std::runtime_error("CppSerialPort::TcpClient::read(): Server [" + this->m_hostName + ':' + toStdString(this->m_portNumber) + "] hung up unexpectedly");
+        } else {
+            for (int i = 0; i < receiveResult; i++) {
+                this->m_readBuffer.append(readBuffer[i]);
+            }
+            char returnValue{this->m_readBuffer[0]};
+            this->m_readBuffer.popFront();
             if (readTimeout) {
                 *readTimeout = false;
             }
             return returnValue;
-        } else if (receiveResult == 0) {
-            this->closePort();
-            throw std::runtime_error("CppSerialPort::TcpClient::read(): Server [" + this->m_hostName + ':' + toStdString(this->m_portNumber) + "] hung up unexpectedly");
         }
     }
     if (readTimeout) {
@@ -299,7 +301,7 @@ void TcpClient::flushTx()
 
 void TcpClient::putBack(char c)
 {
-    this->m_readBuffer.insert(this->m_readBuffer.begin(), c);
+    this->m_readBuffer = (c + this->m_readBuffer);
 }
 
 timeval TcpClient::toTimeVal(uint32_t totalTimeout)

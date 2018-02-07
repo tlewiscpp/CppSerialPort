@@ -383,18 +383,22 @@ void SerialPort::closePort()
     if (!this->isOpen()) {
         return;
     }
+    try {
 #if defined(_WIN32)
-	CancelIo(this->m_serialPortHandle);
-    CloseHandle(this->m_serialPortHandle);
+        CancelIo(this->m_serialPortHandle);
+        CloseHandle(this->m_serialPortHandle);
 #else
-    //TODO: Check error codes for these functions
-    std::memcpy(&this->m_portSettings, &this->m_oldPortSettings, sizeof(this->m_portSettings));
-    this->m_portSettings = this->m_oldPortSettings;
-    this->applyPortSettings();
-    flock(this->getFileDescriptor(), LOCK_UN);
-    fclose(this->m_fileStream);
+        //TODO: Check error codes for these functions
+        std::memcpy(&this->m_portSettings, &this->m_oldPortSettings, sizeof(this->m_portSettings));
+        this->m_portSettings = this->m_oldPortSettings;
+        this->applyPortSettings();
+        flock(this->getFileDescriptor(), LOCK_UN);
+        fclose(this->m_fileStream);
 #endif
-	this->m_isOpen = false;
+        this->m_isOpen = false;
+    } catch (std::exception &e) {
+        this->m_isOpen = false;
+    }
 }
 
 modem_status_t SerialPort::getModemStatus() const
