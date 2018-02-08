@@ -92,7 +92,7 @@ size_t ByteArray::find(const ByteArray &toFind) {
         return std::string::npos;
     }
     for (size_t i = 0; i < this->length(); i++) {
-        if ( (toFind.at(i) == this->m_buffer[i]) && ( (i + toFind.length()) < this->length()) ) {
+        if ( (toFind.at(0) == this->m_buffer[i]) && ( (i + toFind.length()) < this->length()) ) {
             auto restEqual = std::equal(toFind.cbegin() + i, toFind.cbegin() + i + toFind.length(), this->begin() + i);
             if (restEqual) {
                 return i;
@@ -327,7 +327,7 @@ std::vector<char>::reverse_iterator ByteArray::rbegin() {
     return this->m_buffer.rbegin();
 }
 
-std::vector<char>::const_reverse_iterator ByteArray::crbegin() const {
+const std::vector<char>::const_reverse_iterator ByteArray::crbegin() const {
     return this->m_buffer.crbegin();
 }
 
@@ -344,7 +344,7 @@ std::vector<char>::reverse_iterator ByteArray::rend() {
     return this->m_buffer.rend();
 }
 
-std::vector<char>::const_reverse_iterator ByteArray::crend() const {
+const std::vector<char>::const_reverse_iterator ByteArray::crend() const {
     return this->m_buffer.crend();
 }
 

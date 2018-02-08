@@ -42,7 +42,6 @@ public:
     size_t find(const ByteArray &toFind);
     size_t find(char c);
 
-
     friend ByteArray operator+(char c, const ByteArray &rhs);
     friend ByteArray operator+(const ByteArray &lhs, const ByteArray &rhs);
     friend ByteArray operator+(const std::string &lhs, const ByteArray &rhs);
@@ -54,11 +53,11 @@ public:
     std::vector<char>::iterator begin();
     const std::vector<char>::const_iterator cbegin() const;
     std::vector<char>::reverse_iterator rbegin();
-    std::vector<char>::const_reverse_iterator crbegin() const;
+    const std::vector<char>::const_reverse_iterator crbegin() const;
     std::vector<char>::iterator end();
     const std::vector<char>::const_iterator cend() const;
     std::vector<char>::reverse_iterator rend();
-    std::vector<char>::const_reverse_iterator crend() const;
+    const std::vector<char>::const_reverse_iterator crend() const;
 
     ByteArray &clear();
     size_t size() const;
