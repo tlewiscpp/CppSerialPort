@@ -15,6 +15,7 @@
 #include <sys/types.h>
 #include <memory>
 #include "IByteStream.h"
+#include "IPV4Address.h"
 
 namespace CppSerialPort {
 
@@ -22,7 +23,8 @@ class TcpClient : public IByteStream
 {
 public:
     TcpClient(const std::string &hostName, uint16_t portNumber);
-    ~TcpClient() override;
+	TcpClient(const IPV4Address &ipAddress, uint16_t portNumber);
+	~TcpClient() override;
 
 	char read(bool *readTimeout) override;
     ssize_t write(char i) override;

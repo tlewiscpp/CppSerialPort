@@ -40,6 +40,12 @@ TcpClient::TcpClient(const std::string &hostName, uint16_t portNumber) :
 	this->setReadTimeout(DEFAULT_READ_TIMEOUT);
 }
 
+TcpClient::TcpClient(const IPV4Address &ipAddress, uint16_t portNumber) :
+        TcpClient{ipAddress.toString(), portNumber}
+{
+
+}
+
 int TcpClient::getLastError()
 {
 #if defined(_WIN32)
