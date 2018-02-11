@@ -49,3 +49,22 @@ endif()
 
 add_subdirectory(Test/)
 
+
+if(${CMAKE_SYSTEM_NAME} MATCHES Linux|.*BSD|DragonFly)
+
+set_target_properties(${PROJECT_NAME} PROPERTIES PUBLIC_HEADER "${${PROJECT_NAME}_HEADER_FILES}")
+
+if (SHARED_LIB_BUILD)
+    install(TARGETS ${PROJECT_NAME}
+            LIBRARY DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/"
+            PUBLIC_HEADER DESTINATION "${CMAKE_INSTALL_PREFIX}/include/${PROJECT_NAME}/")
+else()
+    install(TARGETS ${PROJECT_NAME}
+            ARCHIVE DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/"
+            PUBLIC_HEADER DESTINATION "${CMAKE_INSTALL_PREFIX}/include/${PROJECT_NAME}/")
+endif()
+
+
+endif()
+
+
