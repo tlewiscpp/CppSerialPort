@@ -91,6 +91,28 @@ const T& get_or_default(const std::tuple<Ts...>& t,
 
 namespace CppSerialPort {
 
+class SerialPortDisconnectedException : public std::runtime_error
+{
+public:
+    explicit inline SerialPortDisconnectedException(const std::string &portName, const std::string &what) :
+        std::runtime_error{what},
+            m_portName{portName}
+    {
+
+    }
+
+    inline std::string portName() const {
+        return this->m_portName;
+    }
+
+    inline void setPortName(const std::string &portName) {
+        this->m_portName = portName;
+    }
+
+private:
+    std::string m_portName;
+};
+
 enum class FlowControl {
     FlowOff,
     FlowHardware,
@@ -313,8 +335,10 @@ private:
 	int getFileDescriptor() const;
 #endif
     void applyPortSettings();
-    modem_status_t getModemStatus() const; 
-};
+    modem_status_t getModemStatus() const;
+
+        bool isDisconnected();
+    };
 
 } //namespace CppSerialPort
 

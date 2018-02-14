@@ -46,6 +46,10 @@ TcpClient::TcpClient(const IPV4Address &ipAddress, uint16_t portNumber) :
 
 }
 
+bool TcpClient::isDisconnected() const {
+    return false;
+}
+
 int TcpClient::getLastError()
 {
 #if defined(_WIN32)
@@ -192,6 +196,10 @@ char TcpClient::read(bool *readTimeout)
         }
         return returnValue;
     }
+    if (this->isDisconnected()) {
+        this->closePort();
+        throw SocketDisconnectedException{this->portName(), "CppSerialPort::TcpClient::read(): The server hung up unexpectedly"};
+    }
 
     //Use select() to wait for data to arrive
     //At socket, then read and return
@@ -222,7 +230,10 @@ char TcpClient::read(bool *readTimeout)
             return 0;
         } else if (receiveResult == 0) {
             this->closePort();
-            throw std::runtime_error("CppSerialPort::TcpClient::read(): Server [" + this->m_hostName + ':' + toStdString(this->m_portNumber) + "] hung up unexpectedly");
+            if (this->isDisconnected()) {
+                this->closePort();
+                throw SocketDisconnectedException{this->portName(), "CppSerialPort::TcpClient::read(): The server hung up unexpectedly"};
+            }
         } else {
             for (int i = 0; i < receiveResult; i++) {
                 this->m_readBuffer.append(readBuffer[i]);

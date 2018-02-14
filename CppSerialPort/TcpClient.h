@@ -19,7 +19,30 @@
 
 namespace CppSerialPort {
 
-class TcpClient : public IByteStream
+class SocketDisconnectedException : public std::runtime_error
+{
+public:
+	explicit inline SocketDisconnectedException(const std::string &portName, const std::string &what) :
+		std::runtime_error{what},
+		m_portName{portName}
+	{
+
+	}
+
+	inline std::string portName() const {
+		return this->m_portName;
+	}
+
+	inline void setPortName(const std::string &portName) {
+		this->m_portName = portName;
+	}
+
+private:
+	std::string m_portName;
+};
+
+
+	class TcpClient : public IByteStream
 {
 public:
     TcpClient(const std::string &hostName, uint16_t portNumber);
@@ -59,7 +82,8 @@ private:
 	static std::string getErrorString(int errorCode);
 	static int getLastError();
 
-};
+		bool isDisconnected() const;
+	};
 
 } //namespace CppSerialPort
 

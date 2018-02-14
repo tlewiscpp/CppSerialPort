@@ -295,6 +295,10 @@ char SerialPort::read(bool *readTimeout)
         }
         return returnValue;
     }
+    if (this->isDisconnected()) {
+        this->closePort();
+        throw SerialPortDisconnectedException{this->m_portName, "CppSerialPort::SerialPort::read(): The serial port has been disconnected from the system"};
+    }
 
     //Use select() to wait for data to arrive
     //At socket, then read and return
@@ -320,6 +324,10 @@ char SerialPort::read(bool *readTimeout)
             if (readTimeout) {
                 *readTimeout = true;
             }
+            if (this->isDisconnected()) {
+                this->closePort();
+                throw SerialPortDisconnectedException{this->m_portName, "CppSerialPort::SerialPort::read(): The serial port has been disconnected from the system"};
+            }
             return 0;
         }
         for (size_t i = 0; i < returnedBytes; i++) {
@@ -337,6 +345,11 @@ char SerialPort::read(bool *readTimeout)
     }
     return 0;
 #endif //defined(_WIN32)
+}
+
+bool SerialPort::isDisconnected() {
+    auto availablePorts = SerialPort::availableSerialPorts();
+    return (std::find(availablePorts.begin(), availablePorts.end(), this->m_portName) == availablePorts.end());
 }
 
 ssize_t SerialPort::write(char c)
