@@ -240,8 +240,9 @@ char SerialPort::read(bool *readTimeout)
 {
 #if defined(_WIN32)
     if (!this->m_readBuffer.empty()) {
-        char returnValue{this->m_readBuffer.front()};
-        this->m_readBuffer = this->m_readBuffer.substr(1);
+        if (readTimeout) *readTimeout = false;
+        char returnValue{this->m_readBuffer[0]};
+        this->m_readBuffer = this->m_readBuffer.popFront();
         return returnValue;
     }
 
@@ -258,34 +259,28 @@ char SerialPort::read(bool *readTimeout)
 
     DWORD readBytes{0};
 	DWORD maxBytes{ commStatus.cbInQue };
-    bool firstByte{false};
     if (commStatus.cbInQue == 0) {
         maxBytes = 1;
-        firstByte = true;
     }
 
     auto readResult = ReadFile(this->m_serialPortHandle, readStuff, maxBytes, &readBytes, nullptr);
     if (readResult == 0) {
 		const auto errorCode = getLastError();
 		std::cout << "ReadFile(HANDLE, LPVOID, DWORD, LPDWORD, LPDWORD) error: " << toStdString(errorCode) << " (" << getErrorString(errorCode) << ")" << std::endl;
-		return 0;
+		if (readTimeout) *readTimeout = true;
+        return 0;
 	}
 	if ( ( readBytes <= 0 ) || (readStuff[0] == '\0') ) {
+        if (readTimeout) *readTimeout = true;
 		return 0;
     }
-    this->m_readBuffer += std::string{readStuff};
-    if (firstByte) {
-        clearErrorsResult = ClearCommError(this->m_serialPortHandle, &commErrors, &commStatus);
-        if ( (clearErrorsResult != 0) && (commStatus.cbInQue != 0) ) {
-            readResult = ReadFile(this->m_serialPortHandle, readStuff, commStatus.cbInQue, &readBytes, nullptr);
-            if ((readResult != 0) && (readBytes > 0)) {
-                this->m_readBuffer += readStuff;
-            }
-        }
+    for (size_t i = 0; i < readBytes; i++) {
+        this->m_readBuffer += readStuff[i];
     }
-    char returnValue{this->m_readBuffer.front()};
-    this->m_readBuffer = this->m_readBuffer.substr(1);
-    return static_cast<int>(returnValue);
+    if (readTimeout) *readTimeout = false;
+    char returnValue{this->m_readBuffer[0]};
+    this->m_readBuffer = this->m_readBuffer.popFront();
+    return returnValue;
 #else
     if (!this->m_readBuffer.empty()) {
         char returnValue{this->m_readBuffer[0]};
