@@ -9,13 +9,9 @@ endif()
 
 if (NOT STATIC_BUILD)
     set (SHARED_LIB_BUILD)
-else()
-    unset(SHARED_LIB_BUILD)
-endif()
-
-if (SHARED_LIB_BUILD)
     set(LIBRARY_TYPE SHARED)
 else()
+    unset(SHARED_LIB_BUILD)
     set (LIBRARY_TYPE STATIC)
 endif()
 
@@ -44,20 +40,19 @@ target_include_directories(${PROJECT_NAME}
         PUBLIC ${SOURCE_ROOT}/)
 
 if (WIN32)
-target_link_libraries(${PROJECT_NAME} shlwapi Ws2_32)
+    target_link_libraries(${PROJECT_NAME} shlwapi Ws2_32)
 endif()
 
 add_subdirectory(Test/)
-
 
 if(${CMAKE_SYSTEM_NAME} MATCHES Linux|.*BSD|DragonFly)
 
 set_target_properties(${PROJECT_NAME} PROPERTIES PUBLIC_HEADER "${${PROJECT_NAME}_HEADER_FILES}")
 
-    install(TARGETS ${PROJECT_NAME}
-            ARCHIVE DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/"
-            LIBRARY DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/"
-            PUBLIC_HEADER DESTINATION "${CMAKE_INSTALL_PREFIX}/include/${PROJECT_NAME}/")
+install(TARGETS ${PROJECT_NAME}
+        ARCHIVE DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/"
+        LIBRARY DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/"
+        PUBLIC_HEADER DESTINATION "${CMAKE_INSTALL_PREFIX}/include/${PROJECT_NAME}/")
 
 endif()
 
