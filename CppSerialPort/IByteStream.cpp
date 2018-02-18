@@ -18,16 +18,17 @@
 #include "IByteStream.h"
 #include <fstream>
 
-namespace CppSerialPort {
-
 #if defined(_WIN32)
-const char *IByteStream::DEFAULT_LINE_ENDING{"\r\n"};
+const char *CppSerialPort::IByteStream::DEFAULT_LINE_ENDING{"\r\n"};
 #    include <Windows.h>
 #    include <shlwapi.h>
 #else
 #    include <unistd.h>
-const char *IByteStream::DEFAULT_LINE_ENDING{"\n"};
+const char *CppSerialPort::IByteStream::DEFAULT_LINE_ENDING{"\n"};
 #endif //defined(_WIN32)
+
+namespace CppSerialPort {
+
 
 const int IByteStream::DEFAULT_READ_TIMEOUT{1000};
 const int IByteStream::DEFAULT_WRITE_TIMEOUT{1000};
