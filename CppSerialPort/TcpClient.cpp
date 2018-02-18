@@ -74,10 +74,11 @@ std::string TcpClient::getErrorString(int errorCode)
 		0,
 		nullptr
 	);
-	size_t converted{ 0 };
-	auto conversionResult = wcstombs_s(&converted, errorString, PATH_MAX, wideErrorString, PATH_MAX);
-	(void)conversionResult;
-	//wcstombs(errorString, wideErrorString, PATH_MAX);
+	//size_t converted{ 0 };
+	//auto conversionResult = wcstombs_s(&converted, errorString, PATH_MAX, wideErrorString, PATH_MAX);
+	//(void)conversionResult;
+
+    (void)wcstombs(errorString, wideErrorString, PATH_MAX);
 	LocalFree(wideErrorString);
 #else
     auto strerrorCode = strerror_r(errorCode, errorString, PATH_MAX);

@@ -222,9 +222,9 @@ std::string SerialPort::getErrorString(int errorCode) {
 		nullptr
 	);
 	size_t converted{ 0 };
-	auto conversionResult = wcstombs_s(&converted, errorString, PATH_MAX, wideErrorString, PATH_MAX);
-	(void)conversionResult;
-	//wcstombs(errorString, wideErrorString, PATH_MAX);
+	//auto conversionResult = wcstombs_s(&converted, errorString, PATH_MAX, wideErrorString, PATH_MAX);
+	//(void)conversionResult;
+    (void)wcstombs(errorString, wideErrorString, PATH_MAX);
 	LocalFree(wideErrorString);
 #else
     auto strerrorCode = strerror_r(errorCode, errorString, PATH_MAX);
@@ -577,7 +577,7 @@ bool SerialPort::isAvailableSerialPort(const std::string &name)
 #if defined(_WIN32)
     std::string copyName{name};
     copyName.erase(std::remove_if(copyName.begin(), copyName.end(), [](char c) { return ( (c == '.') || (c == '\\') ); }), copyName.end());
-	return (availablePorts.find(copyName) != availablePorts.end());
+    return (availablePorts.find(copyName) != availablePorts.end());
 #else
 	return (availablePorts.find(name) != availablePorts.end());
 #endif //defined(_WIN32)
@@ -587,7 +587,6 @@ bool SerialPort::isOpen() const
 {
     return this->m_isOpen;
 }
-
 
 
 void SerialPort::setDataBits(DataBits dataBits)

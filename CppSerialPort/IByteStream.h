@@ -19,20 +19,9 @@
 #ifndef CPPSERIALPORT_IBYTESTREAM_H
 #define CPPSERIALPORT_IBYTESTREAM_H
 
-#if defined(_MSC_VER)
-#    if defined(SHARED_LIBRARY_BUILD)
-	    /* define DLLBUILD when building the DLL */
-#        define CPPSERIALPORT_API __declspec(dllexport)
-#    else
-#        define CPPSERIALPORT_API __declspec(dllimport)
-#    endif
-#else
-#    define CPPSERIALPORT_API
-#endif
-
+#include <mutex>
 #include <string>
 #include <sstream>
-#include <mutex>
 #include "ByteArray.h"
 
 #if defined(_WIN32)

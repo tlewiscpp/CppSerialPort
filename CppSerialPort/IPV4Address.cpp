@@ -4,6 +4,8 @@
 #include <sstream>
 #include <cstdint>
 #include <algorithm>
+#include <exception>
+#include <stdexcept>
 
 namespace {
     template <typename T> inline std::string toStdString(const T &t) { return dynamic_cast<std::ostringstream &>(std::ostringstream{} << t).str(); }

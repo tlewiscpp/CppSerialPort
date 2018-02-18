@@ -96,7 +96,7 @@ private:
     bool startsWith(const std::vector<char> &start) const;
 };
 
-}
+} //namespace CppSerialPort
 
 
 #endif //CPPSERIALPORT_BYTEARRAY_H

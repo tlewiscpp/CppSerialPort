@@ -15,7 +15,6 @@
 *    If not, see <http://www.gnu.org/licenses/>                        *
 ***********************************************************************/
 
-#include <sstream>
 #include "IByteStream.h"
 #include <fstream>
 
