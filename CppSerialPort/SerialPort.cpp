@@ -236,7 +236,7 @@ std::string SerialPort::getErrorString(int errorCode) {
 	return IByteStream::stripLineEndings(errorString);
 }
 
-
+#if defined(_WIN32)
 ByteArray SerialPort::readLine(bool *timeout)
 {
     return this->readUntil(this->lineEnding(), timeout);
@@ -266,12 +266,14 @@ ByteArray SerialPort::readUntil(const ByteArray &until, bool *timeout)
     }
     //Put it all back in if timeout occurs
     this->m_readBuffer = returnArray + this->m_readBuffer;
+    return ByteArray{};
 }
 
 ByteArray SerialPort::readUntil(char until, bool *timeout)
 {
     return this->readUntil(ByteArray{until}, timeout);
 }
+#endif //defined(_WIN32)
 
 char SerialPort::read(bool *readTimeout)
 {
