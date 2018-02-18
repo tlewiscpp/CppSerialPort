@@ -822,7 +822,7 @@ std::unordered_set<std::string> SerialPort::availableSerialPorts()
                 hRegistryKeyByteValue[cbData] = '\0';
             }
             std::string tempString{""};
-            for (unsigned int i = 0; i < cbData; i++) {
+            for (unsigned int i = 0; i < cbData - 1; i++) {
                 tempString += *reinterpret_cast<char *>(&(hRegistryKeyByteValue[i]));
             }
             returnSet.emplace(tempString);
