@@ -799,24 +799,33 @@ std::unordered_set<std::string> SerialPort::availableSerialPorts()
 #if defined(_WIN32)
     try {
         HKEY hRegistryKey;
-        LONG operationResult{ RegOpenKeyExA(HKEY_LOCAL_MACHINE, SERIAL_PORT_REGISTRY_PATH, 0, KEY_READ, &hRegistryKey) };
+        LONG operationResult{ RegOpenKeyExA(HKEY_LOCAL_MACHINE, SERIAL_PORT_REGISTRY_PATH, 0, KEY_READ|KEY_WOW64_64KEY, &hRegistryKey) };
         if (operationResult != ERROR_SUCCESS) {
             return returnSet;
         }
         for (DWORD index = 0; ; index++) {
-            char SubKeyName[PATH_MAX];
-            DWORD cName{ PATH_MAX };
+            char subKeyName[PATH_MAX];
+            DWORD cbName{ PATH_MAX };
+            operationResult = RegEnumValueA(hRegistryKey, index, subKeyName, &cbName, nullptr, nullptr, nullptr, nullptr);
+            if (operationResult != ERROR_SUCCESS) {
+                break;
+            }
+            BYTE hRegistryKeyByteValue[PATH_MAX];
+            DWORD cbType{};
             DWORD cbData{ PATH_MAX };
-            char hRegistryKeyValue[PATH_MAX];
-            operationResult = RegEnumValueA(hRegistryKey, index, SubKeyName, &cName, nullptr, nullptr, nullptr, nullptr);
+            operationResult = RegQueryValueExA(hRegistryKey, subKeyName, nullptr, &cbType, hRegistryKeyByteValue, &cbData);
             if (operationResult != ERROR_SUCCESS) {
+                std::cerr << "CppSerialPort::SerialPort::availableSerialPorts(): RegQueryValueExA returned " << operationResult << " (" << getErrorString(operationResult) << ")" << std::endl;
                 break;
             }
-            operationResult = RegGetValueA(HKEY_LOCAL_MACHINE, SERIAL_PORT_REGISTRY_PATH, SubKeyName, RRF_RT_REG_SZ, nullptr, hRegistryKeyValue, &cbData);
-            if (operationResult != ERROR_SUCCESS) {
-                break;
+            if ( (cbType == REG_SZ) || (cbType == REG_MULTI_SZ) || (REG_EXPAND_SZ) ) {
+                hRegistryKeyByteValue[cbData] = '\0';
             }
-            returnSet.emplace(hRegistryKeyValue);
+            std::string tempString{""};
+            for (unsigned int i = 0; i < cbData; i++) {
+                tempString += *reinterpret_cast<char *>(&(hRegistryKeyByteValue[i]));
+            }
+            returnSet.emplace(tempString);
         }
         RegCloseKey(hRegistryKey);
         return returnSet;

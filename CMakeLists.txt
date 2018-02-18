@@ -43,7 +43,7 @@ if (WIN32)
     target_link_libraries(${PROJECT_NAME} shlwapi Ws2_32)
 endif()
 
-add_subdirectory(Test/)
+#add_subdirectory(Test/)
 
 if(${CMAKE_SYSTEM_NAME} MATCHES Linux|.*BSD|DragonFly)
 
