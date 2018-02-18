@@ -221,7 +221,7 @@ std::string SerialPort::getErrorString(int errorCode) {
 		0,
 		nullptr
 	);
-	size_t converted{ 0 };
+	//size_t converted{ 0 };
 	//auto conversionResult = wcstombs_s(&converted, errorString, PATH_MAX, wideErrorString, PATH_MAX);
 	//(void)conversionResult;
     (void)wcstombs(errorString, wideErrorString, PATH_MAX);
@@ -234,6 +234,43 @@ std::string SerialPort::getErrorString(int errorCode) {
     }
 #endif //defined(_WIN32)
 	return IByteStream::stripLineEndings(errorString);
+}
+
+
+ByteArray SerialPort::readLine(bool *timeout)
+{
+    return this->readUntil(this->lineEnding(), timeout);
+}
+
+ByteArray SerialPort::readUntil(const ByteArray &until, bool *timeout)
+{
+    std::lock_guard<std::mutex> readLock{ this->m_readMutex };
+    uint64_t startTime{IByteStream::getEpoch()};
+    ByteArray returnArray{""};
+    if (timeout) {
+        *timeout = false;
+    }
+    do {
+        bool readTimeout{false};
+        char maybeChar{this->read(&readTimeout)};
+        if (readTimeout) {
+            continue;
+        }
+        returnArray += maybeChar;
+        if (returnArray.endsWith(until)) {
+            return returnArray.subsequence(0, returnArray.length() - until.length());
+        }
+    } while ((IByteStream::getEpoch() - startTime) <= static_cast<unsigned long>(this->readTimeout()));
+    if (timeout) {
+        *timeout = true;
+    }
+    //Put it all back in if timeout occurs
+    this->m_readBuffer = returnArray + this->m_readBuffer;
+}
+
+ByteArray SerialPort::readUntil(char until, bool *timeout)
+{
+    return this->readUntil(ByteArray{until}, timeout);
 }
 
 char SerialPort::read(bool *readTimeout)

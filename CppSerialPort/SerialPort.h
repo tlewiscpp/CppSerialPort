@@ -19,6 +19,10 @@
 #ifndef CPPSERIALPORT_SERIALPORT_H
 #define CPPSERIALPORT_SERIALPORT_H
 
+#if defined(_WIN32)
+#     undef MINGW_HAS_SECURE_API
+#endif
+
 #include <string>
 #include <vector>
 #include <sstream>
@@ -255,6 +259,12 @@ public:
 	void openPort() override;
     void closePort() override;
     char read(bool *readTimeout) override;
+
+#if defined(_WIN32)
+    ByteArray readLine(bool *timeout = nullptr) override;
+    ByteArray readUntil(const ByteArray &until, bool *timeout = nullptr) override;
+    ByteArray readUntil(char until, bool *timeout = nullptr) override;
+#endif
     void setReadTimeout(int timeout) override;
 
     std::string portName() const override;
@@ -305,6 +315,9 @@ private:
     Parity m_parity;
     FlowControl m_flowControl;
     bool m_isOpen;
+#if defined(_WIN32)
+    std::mutex m_readMutex;
+#endif
 
     static const long constexpr SERIAL_PORT_BUFFER_MAX{4096};
     static const long constexpr SINGLE_MESSAGE_BUFFER_MAX{4096};

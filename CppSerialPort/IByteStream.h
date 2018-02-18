@@ -69,9 +69,9 @@ public:
     virtual ssize_t writeLine(const ByteArray &byteArray);
     virtual ssize_t write(const ByteArray &byteArray);
 
-    ByteArray readLine(bool *timeout = nullptr);
-	ByteArray readUntil(const ByteArray &until, bool *timeout = nullptr);
-    ByteArray readUntil(char until, bool *timeout = nullptr);
+    virtual ByteArray readLine(bool *timeout = nullptr);
+	virtual ByteArray readUntil(const ByteArray &until, bool *timeout = nullptr);
+	virtual ByteArray readUntil(char until, bool *timeout = nullptr);
 
 protected:
 	virtual void putBack(char c) = 0;
