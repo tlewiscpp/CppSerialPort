@@ -20,8 +20,7 @@
 #define CPPSERIALPORT_SERIALPORT_H
 
 #if defined(_WIN32)
-//#     undef MINGW_HAS_SECURE_API
-#include <Windows.h>
+#     undef MINGW_HAS_SECURE_API
 #endif
 
 #include <string>
@@ -126,6 +125,7 @@ enum class FlowControl {
 
 
 #if defined(_WIN32)
+#include <Windows.h>
 using modem_status_t = DWORD;
 
 enum class StopBits {

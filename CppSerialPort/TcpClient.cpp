@@ -80,14 +80,15 @@ std::string TcpClient::getErrorString(int errorCode)
 
     (void)wcstombs(errorString, wideErrorString, PATH_MAX);
 	LocalFree(wideErrorString);
+    return stripLineEndings(errorString);
 #else
     auto strerrorCode = strerror_r(errorCode, errorString, PATH_MAX);
     if (strerrorCode == nullptr) {
         std::cerr << "strerror_r(int, char *, int): error occurred" << std::endl;
         return "";
     }
+	return stripLineEndings(strerrorCode);
 #endif //defined(_WIN32)
-	return stripLineEndings(errorString);
 }
 
 TcpClient::~TcpClient()
