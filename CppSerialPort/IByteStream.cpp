@@ -19,7 +19,7 @@
 #include <fstream>
 
 #if defined(_WIN32)
-const char *IByteStream::DEFAULT_LINE_ENDING{"\r\n"};
+const char *CppSerialPort::IByteStream::DEFAULT_LINE_ENDING{"\r\n"};
 #    include <Windows.h>
 #    include <shlwapi.h>
 #else
