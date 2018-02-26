@@ -281,7 +281,6 @@ public:
     void flushTx() override;
     ssize_t write(char c) override;
 	ssize_t write(const char *bytes, size_t numberOfBytes) override;
-    void putBack(char c) override;
 
     void setBaudRate(BaudRate baudRate);
     void setStopBits(StopBits stopBits);
@@ -305,7 +304,10 @@ public:
     static std::unordered_set<std::string> availableSerialPorts();
     static bool isValidSerialPortName(const std::string &serialPortName);
     static const long DEFAULT_RETRY_COUNT;
-        static bool isAvailableSerialPort(const std::string &name);
+    static bool isAvailableSerialPort(const std::string &name);
+
+protected:
+    void putBack(char c) override;
 
 private:
     ByteArray m_readBuffer;
