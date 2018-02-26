@@ -281,6 +281,7 @@ public:
     void flushTx() override;
     ssize_t write(char c) override;
 	ssize_t write(const char *bytes, size_t numberOfBytes) override;
+    void putBack(char c) override;
 
     void setBaudRate(BaudRate baudRate);
     void setStopBits(StopBits stopBits);
@@ -327,7 +328,6 @@ private:
     static std::vector<std::string> generateSerialPortNames();
 
     static const std::vector<std::string> SERIAL_PORT_NAMES;
-    void putBack(char c) override;
 
 	static int getLastError();
 	static std::string getErrorString(int errorCode);
