@@ -54,15 +54,15 @@ public:
 
 	virtual size_t available() = 0;
 	virtual void setReadTimeout(int timeout);
-	virtual int readTimeout() const;
+	int readTimeout() const;
 
 	virtual void setWriteTimeout(int timeout);
-    virtual int writeTimeout() const;
+	int writeTimeout() const;
 
-    virtual ByteArray lineEnding() const;
-    virtual void setLineEnding(const std::string &str);
-    virtual void setLineEnding(const ByteArray &str);
-    virtual void setLineEnding(char chr);
+	ByteArray lineEnding() const;
+	void setLineEnding(const std::string &str);
+    void setLineEnding(const ByteArray &str);
+    void setLineEnding(char chr);
 
 	virtual ssize_t writeLine(const std::string &str);
     virtual ssize_t writeLine(const ByteArray &byteArray);
