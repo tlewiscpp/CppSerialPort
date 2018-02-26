@@ -24,7 +24,7 @@ const char *CppSerialPort::IByteStream::DEFAULT_LINE_ENDING{"\r\n"};
 #    include <shlwapi.h>
 #else
 #    include <unistd.h>
-const char *IByteStream::DEFAULT_LINE_ENDING{"\n"};
+const char *CppSerialPort::IByteStream::DEFAULT_LINE_ENDING{"\n"};
 #endif //defined(_WIN32)
 
 namespace CppSerialPort {
