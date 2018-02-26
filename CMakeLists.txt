@@ -23,6 +23,7 @@ set (${PROJECT_NAME}_SOURCE_FILES
         ${SOURCE_ROOT}/SerialPort.cpp
         ${SOURCE_ROOT}/TcpClient.cpp
         ${SOURCE_ROOT}/UdpClient.cpp
+        ${SOURCE_ROOT}/AbstractSocket.cpp
         ${SOURCE_ROOT}/ByteArray.cpp)
 
 set (${PROJECT_NAME}_HEADER_FILES
@@ -31,6 +32,7 @@ set (${PROJECT_NAME}_HEADER_FILES
         ${SOURCE_ROOT}/SerialPort.h
         ${SOURCE_ROOT}/TcpClient.h
         ${SOURCE_ROOT}/UdpClient.h
+        ${SOURCE_ROOT}/AbstractSocket.h
         ${SOURCE_ROOT}/ByteArray.h)
 
 add_library(${PROJECT_NAME} ${LIBRARY_TYPE} 
