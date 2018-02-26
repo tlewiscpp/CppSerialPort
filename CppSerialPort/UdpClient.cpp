@@ -2,11 +2,11 @@
 
 #if defined(_WIN32)
 #    include "Ws2udpip.h"
-using accept_reuse_t = int;
+using accept_reuse_t = char;
 #else
 #    include <unistd.h>
 #    define INVALID_SOCKET -1
-using accept_reuse_t = char;
+using accept_reuse_t = int;
 #endif //defined(_WIN32)
 
 #include <cstring>
@@ -36,7 +36,7 @@ void UdpClient::connect()
     addrinfo hints{};
     memset(reinterpret_cast<void *>(&hints), 0, sizeof(addrinfo));
     hints.ai_family = AF_UNSPEC; //IPV4 or IPV6
-    hints.ai_socktype = SOCK_STREAM; //Udp
+    hints.ai_socktype = SOCK_DGRAM; //UDP
     auto returnStatus = getaddrinfo(
             this->hostName().c_str(), //IP Address or hostname
             toStdString(this->portNumber()).c_str(), //Service (HTTP, port, etc)

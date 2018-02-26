@@ -2,11 +2,11 @@
 
 #if defined(_WIN32)
 #    include "Ws2tcpip.h"
-using accept_reuse_t = int;
+using accept_reuse_t = char;
 #else
 #    include <unistd.h>
 #    define INVALID_SOCKET -1
-using accept_reuse_t = char;
+using accept_reuse_t = int;
 #endif //defined(_WIN32)
 
 #include <cstring>
