@@ -305,6 +305,7 @@ public:
     static std::unordered_set<std::string> availableSerialPorts();
     static bool isValidSerialPortName(const std::string &serialPortName);
     static const long DEFAULT_RETRY_COUNT;
+        static bool isAvailableSerialPort(const std::string &name);
 
 private:
     ByteArray m_readBuffer;
@@ -323,7 +324,6 @@ private:
     static const long constexpr SERIAL_PORT_BUFFER_MAX{4096};
     static const long constexpr SINGLE_MESSAGE_BUFFER_MAX{4096};
 
-    static bool isAvailableSerialPort(const std::string &name);
     static std::pair<int, std::string> getPortNameAndNumber(const std::string &name);
     static std::vector<std::string> generateSerialPortNames();
 
