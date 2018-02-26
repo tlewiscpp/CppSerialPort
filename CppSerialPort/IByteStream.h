@@ -71,7 +71,8 @@ public:
 
     virtual ByteArray readLine(bool *timeout = nullptr);
 	virtual ByteArray readUntil(const ByteArray &until, bool *timeout = nullptr);
-	virtual ByteArray readUntil(char until, bool *timeout = nullptr);
+    virtual ByteArray readUntil(const std::string &until, bool *timeout);
+    virtual ByteArray readUntil(char until, bool *timeout = nullptr);
 
 protected:
 	virtual void putBack(char c) = 0;

@@ -132,6 +132,10 @@ ByteArray IByteStream::readLine(bool *timeout)
     return this->readUntil(this->m_lineEnding, timeout);
 }
 
+ByteArray IByteStream::readUntil(const std::string &until, bool *timeout) {
+    return this->readUntil(ByteArray{until}, timeout);
+}
+
 ByteArray IByteStream::readUntil(const ByteArray &until, bool *timeout)
 {
 	std::lock_guard<std::mutex> readLock{ this->m_readMutex };
