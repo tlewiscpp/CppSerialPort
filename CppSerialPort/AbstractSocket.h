@@ -60,7 +60,7 @@ namespace CppSerialPort {
         void closePort() override;
         void flushRx() override;
         void flushTx() override;
-        void putBack(char c) override;
+        size_t available() override;
 
         void connect(const std::string &hostName, uint16_t portNumber);
         virtual void connect() = 0;

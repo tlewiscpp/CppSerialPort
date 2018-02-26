@@ -924,17 +924,6 @@ bool SerialPort::isValidSerialPortName(const std::string &serialPortName)
 #endif
 }
 
-void SerialPort::putBack(char c)
-{
-    if (this->m_readBuffer.length() > 0) {
-        this->m_readBuffer = c + this->m_readBuffer;
-    } else {
-#if !defined(_WIN32)
-        ungetc(c, this->m_fileStream);
-#endif //!defined(_WIN32)
-    }
-}
-
 std::pair<int, std::string> SerialPort::getPortNameAndNumber(const std::string &name)
 {
 #if defined(_WIN32)
@@ -976,9 +965,15 @@ std::pair<int, std::string> SerialPort::getPortNameAndNumber(const std::string &
 #endif
 }
 
+
+size_t SerialPort::available() {
+    return this->m_readBuffer.size();
+}
+
 SerialPort::~SerialPort() {
     this->closePort();
 }
+
 
 }
 

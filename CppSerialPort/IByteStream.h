@@ -52,8 +52,7 @@ public:
 	virtual void flushRx() = 0;
 	virtual void flushTx() = 0;
 
-	bool available();
-	int peek();
+	virtual size_t available() = 0;
 	virtual void setReadTimeout(int timeout);
 	int readTimeout() const;
 
@@ -75,8 +74,6 @@ public:
     virtual ByteArray readUntil(char until, bool *timeout = nullptr);
 
 protected:
-	virtual void putBack(char c) = 0;
-
 	static bool fileExists(const std::string &filePath);
 
 	template<typename T> static inline std::string toStdString(const T &t) {

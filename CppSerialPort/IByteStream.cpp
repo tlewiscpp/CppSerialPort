@@ -166,19 +166,6 @@ ByteArray IByteStream::readUntil(char until, bool *timeout)
     return this->readUntil(ByteArray{until}, timeout);
 }
 
-int IByteStream::peek()
-{
-    int readChar{this->read()};
-    this->putBack(readChar);
-    return readChar;
-}
-
-
-bool IByteStream::available()
-{
-    return (this->peek() != '\0');
-}
-
 bool IByteStream::fileExists(const std::string &fileToCheck)
 {
 #if defined(_WIN32)
