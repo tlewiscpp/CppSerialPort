@@ -15,6 +15,18 @@ using accept_reuse_t = char;
 
 namespace CppSerialPort {
 
+TcpClient::TcpClient(const IPV4Address &ipAddress, uint16_t portNumber) :
+        AbstractSocket(ipAddress, portNumber)
+{
+
+}
+
+TcpClient::TcpClient(const std::string &hostName, uint16_t portNumber) :
+        AbstractSocket(hostName, portNumber)
+{
+
+}
+
 void TcpClient::connect()
 {
     if (this->isConnected()) {
@@ -43,12 +55,12 @@ void TcpClient::connect()
     }
     this->setSocketDescriptor(socketDescriptor);
 
-	accept_reuse_t acceptReuse{ 1 };
+	accept_reuse_t acceptReuse{1};
     auto reuseSocketResult = setsockopt(this->socketDescriptor(), SOL_SOCKET,  SO_REUSEADDR, &acceptReuse, sizeof(decltype(acceptReuse)));
     if (reuseSocketResult == -1) {
         freeaddrinfo(addressInfo);
 		auto errorCode = getLastError();
-        throw std::runtime_error("CppSerialPort::TcpClient::connect(): setsockopt(int, int, int, const void *, socklen_t): error code " + toStdString(errorCode) + " (" + getErrorString(errorCode) + ')');
+        throw std::runtime_error("CppSerialPort::TcpClient::connect(): Setting reuse of socket: setsockopt(int, int, int, const void *, socklen_t): error code " + toStdString(errorCode) + " (" + getErrorString(errorCode) + ')');
     }
 
     auto connectResult = ::connect(this->socketDescriptor(), addressInfo->ai_addr, addressInfo->ai_addrlen);
@@ -64,29 +76,17 @@ void TcpClient::connect()
     auto readTimeoutResult = setsockopt(this->socketDescriptor(), SOL_SOCKET, SO_RCVTIMEO, reinterpret_cast<const char *>(&tv), sizeof(struct timeval));
     if (readTimeoutResult == -1) {
         auto errorCode = getLastError();
-        throw std::runtime_error("CppSerialPort::TcpClient::connect(): setsockopt(int, int, int, const void *, int) set read timeout failed: error code " + toStdString(errorCode) + " (" + getErrorString(errorCode) + ')');
+        throw std::runtime_error("CppSerialPort::TcpClient::connect(): Setting read timeout (" + toStdString(this->readTimeout()) + "): setsockopt(int, int, int, const void *, int) set read timeout failed: error code " + toStdString(errorCode) + " (" + getErrorString(errorCode) + ')');
     }
 
     tv = toTimeVal(static_cast<uint32_t>(this->writeTimeout()));
     auto writeTimeoutResult = setsockopt(this->socketDescriptor(), SOL_SOCKET, SO_SNDTIMEO, reinterpret_cast<const char *>(&tv), sizeof(struct timeval));
     if (writeTimeoutResult == -1) {
         auto errorCode = getLastError();
-        throw std::runtime_error("CppSerialPort::TcpClient::connect(): setsockopt(int, int, int, const void *, int) set write timeout failed: error code " + toStdString(errorCode) + " (" + getErrorString(errorCode) + ')');
+
+        throw std::runtime_error("CppSerialPort::TcpClient::connect(): Setting write timeout(" + toStdString(this->writeTimeout())  + "): setsockopt(int, int, int, const void *, int) set write timeout failed: error code " + toStdString(errorCode) + " (" + getErrorString(errorCode) + ')');
     }
 }
-
-
-    TcpClient::TcpClient(const IPV4Address &ipAddress, uint16_t portNumber) :
-            AbstractSocket(ipAddress, portNumber)
-    {
-
-    }
-
-    TcpClient::TcpClient(const std::string &hostName, uint16_t portNumber) :
-            AbstractSocket(hostName, portNumber)
-    {
-
-    }
 
 
 } //namespace CppSerialPort

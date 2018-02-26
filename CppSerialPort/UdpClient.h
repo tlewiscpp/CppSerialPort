@@ -5,12 +5,12 @@
 
 namespace CppSerialPort {
 
-    class UdpClient : public AbstractSocket {
-    public:
-        UdpClient(const std::string &hostName, uint16_t portNumber);
-        UdpClient(const IPV4Address &ipAddress, uint16_t portNumber);
-        void connect() override;
-    };
+class UdpClient : public AbstractSocket {
+public:
+    UdpClient(const std::string &hostName, uint16_t portNumber);
+    UdpClient(const IPV4Address &ipAddress, uint16_t portNumber);
+    void connect() override;
+};
 
 } //namespace CppSerialPort
 

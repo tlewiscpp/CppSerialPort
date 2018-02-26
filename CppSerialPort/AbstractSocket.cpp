@@ -21,6 +21,7 @@ const uint16_t AbstractSocket::MAXIMUM_PORT_NUMBER{std::numeric_limits<uint16_t>
 #define ABSTRACT_SOCKET_BUFFER_MAX 8192
 
 AbstractSocket::AbstractSocket(const std::string &hostName, uint16_t portNumber) :
+    IByteStream{},
     m_socketDescriptor{INVALID_SOCKET},
     m_hostName{hostName},
     m_portNumber{portNumber},
