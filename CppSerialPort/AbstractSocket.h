@@ -70,6 +70,9 @@ namespace CppSerialPort {
         void setHostName(const std::string &hostName);
         uint16_t portNumber() const;
         std::string hostName() const;
+
+        static const uint16_t MINIMUM_PORT_NUMBER;
+        static const uint16_t MAXIMUM_PORT_NUMBER;
 private:
         socket_t m_socketDescriptor;
         std::string m_hostName;

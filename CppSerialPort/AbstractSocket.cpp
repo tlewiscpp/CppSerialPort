@@ -15,8 +15,10 @@ using accept_reuse_t = char;
 
 namespace CppSerialPort {
 
-#define MINIMUM_PORT_NUMBER 1024
-#define TCP_CLIENT_BUFFER_MAX 8192
+const uint16_t AbstractSocket::MINIMUM_PORT_NUMBER{1024};
+const uint16_t AbstractSocket::MAXIMUM_PORT_NUMBER{std::numeric_limits<uint16_t>::max()};
+
+#define ABSTRACT_SOCKET_BUFFER_MAX 8192
 
 AbstractSocket::AbstractSocket(const std::string &hostName, uint16_t portNumber) :
         m_socketDescriptor{INVALID_SOCKET},
@@ -147,11 +149,11 @@ AbstractSocket::AbstractSocket(const std::string &hostName, uint16_t portNumber)
         struct timeval timeout{0, 0};
         timeout.tv_sec = 0;
         timeout.tv_usec = (this->readTimeout() * 1000);
-        static char readBuffer[TCP_CLIENT_BUFFER_MAX];
-        memset(readBuffer, '\0', TCP_CLIENT_BUFFER_MAX);
+        static char readBuffer[ABSTRACT_SOCKET_BUFFER_MAX];
+        memset(readBuffer, '\0', ABSTRACT_SOCKET_BUFFER_MAX);
 
         if (select(this->m_socketDescriptor + 1, &read_fds, &write_fds, &except_fds, &timeout) == 1) {
-            auto receiveResult = recv(this->m_socketDescriptor, readBuffer, TCP_CLIENT_BUFFER_MAX - 1, 0);
+            auto receiveResult = recv(this->m_socketDescriptor, readBuffer, ABSTRACT_SOCKET_BUFFER_MAX - 1, 0);
             if (receiveResult == -1) {
                 auto errorCode = getLastError();
                 if (errorCode != EAGAIN) {
