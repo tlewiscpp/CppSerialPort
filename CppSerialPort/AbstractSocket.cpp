@@ -2,11 +2,11 @@
 
 #if defined(_WIN32)
 #    include "Ws2tcpip.h"
-using accept_reuse_t = int;
+using accept_reuse_t = char;
 #else
 #    include <unistd.h>
 #    define INVALID_SOCKET -1
-using accept_reuse_t = char;
+using accept_reuse_t = int;
 #endif //defined(_WIN32)
 
 #include <cstring>
@@ -194,28 +194,6 @@ ssize_t AbstractSocket::write(char c)
         throw std::runtime_error("CppSerialPort::AbstractSocket::write(char): Cannot write on closed socket (call connect first)");
     }
     return this->write(&c, 1);
-}
-
-ssize_t AbstractSocket::write(const char *bytes, size_t numberOfBytes)
-{
-    if (!this->isConnected()) {
-        throw std::runtime_error("CppSerialPort::AbstractSocket::write(const char *, size_t): Cannot write on closed socket (call connect first)");
-    }
-    unsigned sentBytes{0};
-    //Make sure all bytes are sent
-    auto startTime = IByteStream::getEpoch();
-    while (sentBytes < numberOfBytes)  {
-        auto sendResult = send(this->m_socketDescriptor, bytes + sentBytes, numberOfBytes - sentBytes, 0);
-        if (sendResult == -1) {
-            auto errorCode = getLastError();
-            throw std::runtime_error("CppSerialPort::AbstractSocket::write(const char *bytes, size_t): send(int, const void *, int, int): error code " + toStdString(errorCode) + " (" + getErrorString(errorCode) + ')');
-        }
-        sentBytes += sendResult;
-        if ( (getEpoch() - startTime) >= static_cast<unsigned int>(this->writeTimeout()) ) {
-            break;
-        }
-    }
-    return sentBytes;
 }
 
 std::string AbstractSocket::portName() const

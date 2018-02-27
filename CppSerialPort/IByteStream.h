@@ -41,7 +41,7 @@ public:
     IByteStream();
     virtual ~IByteStream() = default;
 
-	virtual char read(bool *timeout = nullptr) = 0;
+	virtual char read(bool *timeout) = 0;
 	virtual ssize_t write(char) = 0;
 	virtual ssize_t write(const char *, size_t) = 0;
 
@@ -68,10 +68,10 @@ public:
     virtual ssize_t writeLine(const ByteArray &byteArray);
     virtual ssize_t write(const ByteArray &byteArray);
 
-    virtual ByteArray readLine(bool *timeout = nullptr);
-	virtual ByteArray readUntil(const ByteArray &until, bool *timeout = nullptr);
+    virtual ByteArray readLine(bool *timeout);
+	virtual ByteArray readUntil(const ByteArray &until, bool *timeout);
     virtual ByteArray readUntil(const std::string &until, bool *timeout);
-    virtual ByteArray readUntil(char until, bool *timeout = nullptr);
+    virtual ByteArray readUntil(char until, bool *timeout);
 
 protected:
 	static bool fileExists(const std::string &filePath);

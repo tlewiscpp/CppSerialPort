@@ -27,6 +27,28 @@ TcpClient::TcpClient(const std::string &hostName, uint16_t portNumber) :
 
 }
 
+ssize_t TcpClient::write(const char *bytes, size_t byteCount) {
+
+    if (!this->isConnected()) {
+        throw std::runtime_error("CppSerialPort::AbstractSocket::write(const char *, size_t): Cannot write on closed socket (call connect first)");
+    }
+    unsigned sentBytes{0};
+    //Make sure all bytes are sent
+    auto startTime = IByteStream::getEpoch();
+    while (sentBytes < numberOfBytes)  {
+        auto sendResult = send(this->m_socketDescriptor, bytes + sentBytes, numberOfBytes - sentBytes, 0);
+        if (sendResult == -1) {
+        auto errorCode = getLastError();
+            throw std::runtime_error("CppSerialPort::AbstractSocket::write(const char *bytes, size_t): send(int, const void *, int, int): error code " + toStdString(errorCode) + " (" + getErrorString(errorCode) + ')');
+        }
+        sentBytes += sendResult;
+        if ( (getEpoch() - startTime) >= static_cast<unsigned int>(this->writeTimeout()) ) {
+            break;
+        }
+    }
+    return sentBytes;
+}
+
 void TcpClient::connect()
 {
     if (this->isConnected()) {

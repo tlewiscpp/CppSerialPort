@@ -53,7 +53,6 @@ namespace CppSerialPort {
 
         char read(bool *readTimeout) override;
         ssize_t write(char i) override;
-        ssize_t write(const char *bytes, size_t numberOfBytes) override;
         std::string portName() const override;
         bool isOpen() const override;
         void openPort() override;
