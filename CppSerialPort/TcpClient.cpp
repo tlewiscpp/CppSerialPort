@@ -15,6 +15,8 @@ using accept_reuse_t = int;
 
 namespace CppSerialPort {
 
+#define TCP_CLIENT_BUFFER_MAX 8192
+
 TcpClient::TcpClient(const IPV4Address &ipAddress, uint16_t portNumber) :
         AbstractSocket(ipAddress, portNumber)
 {
@@ -27,87 +29,31 @@ TcpClient::TcpClient(const std::string &hostName, uint16_t portNumber) :
 
 }
 
-ssize_t TcpClient::write(const char *bytes, size_t byteCount) {
-
-    if (!this->isConnected()) {
-        throw std::runtime_error("CppSerialPort::AbstractSocket::write(const char *, size_t): Cannot write on closed socket (call connect first)");
+void TcpClient::doConnect(addrinfo *addressInfo) {
+    auto connectResult = ::connect(this->socketDescriptor(), addressInfo->ai_addr, addressInfo->ai_addrlen);
+    if (connectResult == -1) {
+        freeaddrinfo(addressInfo);
+        auto errorCode = this->getLastError();
+        throw std::runtime_error("CppSerialPort::TcpClient::connect(): connect(int, const sockaddr *addr, socklen_t): error code " + toStdString(errorCode) +  " (" + getErrorString(errorCode) + ')');
     }
-    unsigned sentBytes{0};
-    //Make sure all bytes are sent
-    auto startTime = IByteStream::getEpoch();
-    while (sentBytes < numberOfBytes)  {
-        auto sendResult = send(this->m_socketDescriptor, bytes + sentBytes, numberOfBytes - sentBytes, 0);
-        if (sendResult == -1) {
-        auto errorCode = getLastError();
-            throw std::runtime_error("CppSerialPort::AbstractSocket::write(const char *bytes, size_t): send(int, const void *, int, int): error code " + toStdString(errorCode) + " (" + getErrorString(errorCode) + ')');
-        }
-        sentBytes += sendResult;
-        if ( (getEpoch() - startTime) >= static_cast<unsigned int>(this->writeTimeout()) ) {
-            break;
-        }
-    }
-    return sentBytes;
 }
 
-void TcpClient::connect()
-{
-    if (this->isConnected()) {
-        throw std::runtime_error("CppSerialPort::TcpClient::connect(): Cannot connect to new host when already connected (call disconnect() first)");
-    }
-    addrinfo *addressInfo{nullptr};
+addrinfo TcpClient::getAddressInfoHints() {
     addrinfo hints{};
     memset(reinterpret_cast<void *>(&hints), 0, sizeof(addrinfo));
     hints.ai_family = AF_UNSPEC; //IPV4 or IPV6
     hints.ai_socktype = SOCK_STREAM; //TCP
-    auto returnStatus = getaddrinfo(
-            this->hostName().c_str(), //IP Address or hostname
-            toStdString(this->portNumber()).c_str(), //Service (HTTP, port, etc)
-            &hints, //Use the hints specified above
-            &addressInfo //Pointer to linked list to be filled in by getaddrinfo
-    );
-    if (returnStatus != 0) {
-        freeaddrinfo(addressInfo);
-        throw std::runtime_error("CppSerialPort::TcpClient::connect(): getaddrinfo(const char *, const char *, constr addrinfo *, addrinfo **): error code " + toStdString(returnStatus) + " (" + gai_strerror(returnStatus) + ')');
-    }
-    auto socketDescriptor = socket(addressInfo->ai_family, addressInfo->ai_socktype, addressInfo->ai_protocol);
-    if (socketDescriptor == INVALID_SOCKET) {
-        freeaddrinfo(addressInfo);
-		auto errorCode = getLastError();
-		throw std::runtime_error("CppSerialPort::TcpClient::connect(): socket(int, int, int): error code " + toStdString(errorCode) + " (" + getErrorString(errorCode) + ')');
-    }
-    this->setSocketDescriptor(socketDescriptor);
+    hints.ai_flags = AI_PASSIVE; //Fill in my IP for me
+    return hints;
+}
 
-	accept_reuse_t acceptReuse{1};
-    auto reuseSocketResult = setsockopt(this->socketDescriptor(), SOL_SOCKET,  SO_REUSEADDR, &acceptReuse, sizeof(decltype(acceptReuse)));
-    if (reuseSocketResult == -1) {
-        freeaddrinfo(addressInfo);
-		auto errorCode = getLastError();
-        throw std::runtime_error("CppSerialPort::TcpClient::connect(): Setting reuse of socket: setsockopt(int, int, int, const void *, socklen_t): error code " + toStdString(errorCode) + " (" + getErrorString(errorCode) + ')');
-    }
 
-    auto connectResult = ::connect(this->socketDescriptor(), addressInfo->ai_addr, addressInfo->ai_addrlen);
-    if (connectResult == -1) {
-        freeaddrinfo(addressInfo);
-		auto errorCode = getLastError();
-        throw std::runtime_error("CppSerialPort::TcpClient::connect(): connect(int, const sockaddr *addr, socklen_t): error code " + toStdString(errorCode) +  " (" + getErrorString(errorCode) + ')');
-    }
-    freeaddrinfo(addressInfo);
-    this->flushRx();
+ssize_t TcpClient::doWrite(const char *bytes, size_t byteCount) {
+    return send(this->socketDescriptor(), bytes, byteCount, 0);
+}
 
-    auto tv = toTimeVal(static_cast<uint32_t>(this->readTimeout()));
-    auto readTimeoutResult = setsockopt(this->socketDescriptor(), SOL_SOCKET, SO_RCVTIMEO, reinterpret_cast<const char *>(&tv), sizeof(struct timeval));
-    if (readTimeoutResult == -1) {
-        auto errorCode = getLastError();
-        throw std::runtime_error("CppSerialPort::TcpClient::connect(): Setting read timeout (" + toStdString(this->readTimeout()) + "): setsockopt(int, int, int, const void *, int) set read timeout failed: error code " + toStdString(errorCode) + " (" + getErrorString(errorCode) + ')');
-    }
-
-    tv = toTimeVal(static_cast<uint32_t>(this->writeTimeout()));
-    auto writeTimeoutResult = setsockopt(this->socketDescriptor(), SOL_SOCKET, SO_SNDTIMEO, reinterpret_cast<const char *>(&tv), sizeof(struct timeval));
-    if (writeTimeoutResult == -1) {
-        auto errorCode = getLastError();
-
-        throw std::runtime_error("CppSerialPort::TcpClient::connect(): Setting write timeout(" + toStdString(this->writeTimeout())  + "): setsockopt(int, int, int, const void *, int) set write timeout failed: error code " + toStdString(errorCode) + " (" + getErrorString(errorCode) + ')');
-    }
+ssize_t TcpClient::doRead(char *buffer, size_t bufferMax) {
+    return recv(this->socketDescriptor(), buffer, bufferMax, 0);
 }
 
 

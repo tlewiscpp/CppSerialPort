@@ -122,72 +122,6 @@ bool AbstractSocket::isConnected() const
     return this->m_socketDescriptor != INVALID_SOCKET;
 }
 
-char AbstractSocket::read(bool *readTimeout)
-{
-    if (!this->m_readBuffer.empty()) {
-        char returnValue{ this->m_readBuffer[0] };
-        this->m_readBuffer.popFront();
-        if (readTimeout) {
-            *readTimeout = false;
-        }
-        return returnValue;
-    }
-    if (this->isDisconnected()) {
-        this->closePort();
-        throw SocketDisconnectedException{this->portName(), "CppSerialPort::AbstractSocket::read(): The server hung up unexpectedly"};
-    }
-
-    //Use select() to wait for data to arrive
-    //At socket, then read and return
-    fd_set read_fds{0, 0, 0};
-    fd_set write_fds{0, 0, 0};
-    fd_set except_fds{0, 0, 0};
-    FD_ZERO(&read_fds);
-    FD_ZERO(&write_fds);
-    FD_ZERO(&except_fds);
-    FD_SET(this->m_socketDescriptor, &read_fds);
-
-    struct timeval timeout{0, 0};
-    timeout.tv_sec = 0;
-    timeout.tv_usec = (this->readTimeout() * 1000);
-    static char readBuffer[ABSTRACT_SOCKET_BUFFER_MAX];
-    memset(readBuffer, '\0', ABSTRACT_SOCKET_BUFFER_MAX);
-
-    if (select(this->m_socketDescriptor + 1, &read_fds, &write_fds, &except_fds, &timeout) == 1) {
-        auto receiveResult = recv(this->m_socketDescriptor, readBuffer, ABSTRACT_SOCKET_BUFFER_MAX - 1, 0);
-        if (receiveResult == -1) {
-            auto errorCode = getLastError();
-            if (errorCode != EAGAIN) {
-                throw std::runtime_error("CppSerialPort::AbstractSocket::read(): recv(int, void *, size_t, int): error code " + toStdString(errorCode) + " (" + getErrorString(errorCode) + ')');
-            }
-            if (readTimeout) {
-                *readTimeout = true;
-            }
-            return 0;
-        } else if (receiveResult == 0) {
-            this->closePort();
-            if (this->isDisconnected()) {
-                this->closePort();
-                throw SocketDisconnectedException{this->portName(), "CppSerialPort::AbstractSocket::read(): The server hung up unexpectedly"};
-            }
-        } else {
-            for (int i = 0; i < receiveResult; i++) {
-                this->m_readBuffer.append(readBuffer[i]);
-            }
-            char returnValue{this->m_readBuffer[0]};
-            this->m_readBuffer.popFront();
-            if (readTimeout) {
-                *readTimeout = false;
-            }
-            return returnValue;
-        }
-    }
-    if (readTimeout) {
-        *readTimeout = true;
-    }
-    return 0;
-}
-
 ssize_t AbstractSocket::write(char c)
 {
     if (!this->isConnected()) {
@@ -234,6 +168,93 @@ size_t AbstractSocket::available() {
     return this->m_readBuffer.size();
 }
 
+char AbstractSocket::read(bool *readTimeout)
+{
+    if (!this->m_readBuffer.empty()) {
+        char returnValue{ this->m_readBuffer[0] };
+        this->m_readBuffer.popFront();
+        if (readTimeout) {
+            *readTimeout = false;
+        }
+        return returnValue;
+    }
+    if (this->isDisconnected()) {
+        this->closePort();
+        throw SocketDisconnectedException{this->portName(), "CppSerialPort::AbstractSocket::read(): The server hung up unexpectedly"};
+    }
+
+    //Use select() to wait for data to arrive
+    //At socket, then read and return
+    fd_set read_fds{0, 0, 0};
+    fd_set write_fds{0, 0, 0};
+    fd_set except_fds{0, 0, 0};
+    FD_ZERO(&read_fds);
+    FD_ZERO(&write_fds);
+    FD_ZERO(&except_fds);
+    FD_SET(this->m_socketDescriptor, &read_fds);
+
+    struct timeval timeout{0, 0};
+    timeout.tv_sec = 0;
+    timeout.tv_usec = (this->readTimeout() * 1000);
+    static char readBuffer[ABSTRACT_SOCKET_BUFFER_MAX];
+    memset(readBuffer, '\0', ABSTRACT_SOCKET_BUFFER_MAX);
+
+    if (select(this->socketDescriptor() + 1, &read_fds, &write_fds, &except_fds, &timeout) == 1) {
+        auto receiveResult = this->doRead(readBuffer, ABSTRACT_SOCKET_BUFFER_MAX - 1);
+        if (receiveResult == -1) {
+            auto errorCode = getLastError();
+            if (errorCode != EAGAIN) {
+                throw std::runtime_error("CppSerialPort::AbstractSocket::read(): recv(int, void *, size_t, int): error code " + toStdString(errorCode) + " (" + getErrorString(errorCode) + ')');
+            }
+            if (readTimeout) {
+                *readTimeout = true;
+            }
+            return 0;
+        } else if (receiveResult == 0) {
+            this->closePort();
+            if (this->isDisconnected()) {
+                this->closePort();
+                throw SocketDisconnectedException{this->portName(), "CppSerialPort::AbstractSocket::read(): The server hung up unexpectedly"};
+            }
+        } else {
+            for (int i = 0; i < receiveResult; i++) {
+                this->m_readBuffer.append(readBuffer[i]);
+            }
+            char returnValue{this->m_readBuffer[0]};
+            this->m_readBuffer.popFront();
+            if (readTimeout) {
+                *readTimeout = false;
+            }
+            return returnValue;
+        }
+    }
+    if (readTimeout) {
+        *readTimeout = true;
+    }
+    return 0;
+}
+
+ssize_t AbstractSocket::write(const char *bytes, size_t byteCount) {
+    if (!this->isConnected()) {
+        throw std::runtime_error("CppSerialPort::AbstractSocket::write(const char *, size_t): Cannot write on closed socket (call connect first)");
+    }
+    unsigned sentBytes{0};
+    //Make sure all bytes are sent
+    auto startTime = IByteStream::getEpoch();
+    while (sentBytes < byteCount)  {
+    auto sendResult = this->doWrite(bytes + sentBytes, byteCount - sentBytes);
+        if (sendResult == -1) {
+            auto errorCode = getLastError();
+            throw std::runtime_error("CppSerialPort::AbstractSocket::write(const char *bytes, size_t): send(int, const void *, int, int): error code " + toStdString(errorCode) + " (" + getErrorString(errorCode) + ')');
+        }
+        sentBytes += sendResult;
+        if ( (getEpoch() - startTime) >= static_cast<unsigned int>(this->writeTimeout()) ) {
+            break;
+        }
+    }
+    return sentBytes;
+}
+
 timeval AbstractSocket::toTimeVal(uint32_t totalTimeout)
 {
     timeval tv{};
@@ -277,6 +298,66 @@ AbstractSocket::~AbstractSocket()
 {
     if (this->isConnected()) {
         this->disconnect();
+    }
+}
+
+void AbstractSocket::connect() {
+    if (this->isConnected()) {
+        throw std::runtime_error("CppSerialPort::UdpClient::connect(): Cannot connect to new host when already connected (call disconnect() first)");
+    }
+
+    //Get address info from inheriting class (UDP, TCP, raw socket, etc)
+    addrinfo *addressInfo{nullptr};
+    addrinfo hints{this->getAddressInfoHints()};
+    auto returnStatus = getaddrinfo(
+            this->hostName().c_str(), //IP Address or hostname
+            toStdString(this->portNumber()).c_str(), //Service (HTTP, port, etc)
+            &hints, //Use the hints specified above
+            &addressInfo //Pointer to linked list to be filled in by getaddrinfo
+    );
+    if (returnStatus != 0) {
+        freeaddrinfo(addressInfo);
+        throw std::runtime_error("CppSerialPort::AbstractSocket::connect(): getaddrinfo(const char *, const char *, constr addrinfo *, addrinfo **): error code " + toStdString(returnStatus) + " (" + gai_strerror(returnStatus) + ')');
+    }
+
+    //Create a socket
+    auto socketDescriptor = socket(addressInfo->ai_family, addressInfo->ai_socktype, addressInfo->ai_protocol);
+    if (socketDescriptor == INVALID_SOCKET) {
+        freeaddrinfo(addressInfo);
+        auto errorCode = getLastError();
+        throw std::runtime_error("CppSerialPort::AbstractSocket::connect(): socket(int, int, int): error code " + toStdString(errorCode) + " (" + getErrorString(errorCode) + ')');
+    }
+    this->m_socketDescriptor = socketDescriptor;
+
+    //Let the kernel reuse the socket if I close it
+    accept_reuse_t acceptReuse{1};
+    auto reuseSocketResult = setsockopt(this->m_socketDescriptor, SOL_SOCKET,  SO_REUSEADDR, &acceptReuse, sizeof(decltype(acceptReuse)));
+    if (reuseSocketResult == -1) {
+        freeaddrinfo(addressInfo);
+        auto errorCode = getLastError();
+        throw std::runtime_error("CppSerialPort::AbstractSocket::connect(): Setting reuse of socket: setsockopt(int, int, int, const void *, socklen_t): error code " + toStdString(errorCode) + " (" + getErrorString(errorCode) + ')');
+    }
+    this->doConnect(addressInfo);
+    
+    //Free address info
+    freeaddrinfo(addressInfo);
+    this->flushRx();
+
+
+    //Socket read timeout
+    auto tv = toTimeVal(static_cast<uint32_t>(this->readTimeout()));
+    auto readTimeoutResult = setsockopt(this->m_socketDescriptor, SOL_SOCKET, SO_RCVTIMEO, reinterpret_cast<const char *>(&tv), sizeof(struct timeval));
+    if (readTimeoutResult == -1) {
+        auto errorCode = getLastError();
+        throw std::runtime_error("CppSerialPort::AbstractSocket::connect(): Setting read timeout (" + toStdString(this->readTimeout()) + "): setsockopt(int, int, int, const void *, int) set read timeout failed: error code " + toStdString(errorCode) + " (" + getErrorString(errorCode) + ')');
+    }
+
+    //Socket write timeout
+    tv = toTimeVal(static_cast<uint32_t>(this->writeTimeout()));
+    auto writeTimeoutResult = setsockopt(this->m_socketDescriptor, SOL_SOCKET, SO_SNDTIMEO, reinterpret_cast<const char *>(&tv), sizeof(struct timeval));
+    if (writeTimeoutResult == -1) {
+        auto errorCode = getLastError();
+        throw std::runtime_error("CppSerialPort::AbstractSocket::connect(): Setting write timeout(" + toStdString(this->writeTimeout())  + "): setsockopt(int, int, int, const void *, int) set write timeout failed: error code " + toStdString(errorCode) + " (" + getErrorString(errorCode) + ')');
     }
 }
 

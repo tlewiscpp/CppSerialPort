@@ -51,6 +51,7 @@ namespace CppSerialPort {
         AbstractSocket(const IPV4Address &ipAddress, uint16_t portNumber);
         ~AbstractSocket() override;
 
+        ssize_t write(const char *bytes, size_t byteCount) override;
         char read(bool *readTimeout) override;
         ssize_t write(char i) override;
         std::string portName() const override;
@@ -62,7 +63,7 @@ namespace CppSerialPort {
         size_t available() override;
 
         void connect(const std::string &hostName, uint16_t portNumber);
-        virtual void connect() = 0;
+        void connect();
         bool disconnect();
         bool isConnected() const;
         void setPortNumber(uint16_t portNumber);
@@ -77,14 +78,19 @@ private:
         std::string m_hostName;
         uint16_t m_portNumber;
         ByteArray m_readBuffer;
-    protected:
+
+protected:
+        virtual ssize_t doRead(char *buffer, size_t bufferMax) = 0;
+        virtual ssize_t doWrite(const char *bytes, size_t numberOfBytes) = 0;
+        virtual void doConnect(addrinfo *addressInfo) = 0;
+        virtual addrinfo getAddressInfoHints() = 0;
+
         static timeval toTimeVal(uint32_t totalTimeout);
         static std::string getErrorString(int errorCode);
         static int getLastError();
         bool isDisconnected() const;
         socket_t socketDescriptor() const;
         void setSocketDescriptor(socket_t socketDescriptor);
-
     };
 
 } //namespace CppSerialPor
