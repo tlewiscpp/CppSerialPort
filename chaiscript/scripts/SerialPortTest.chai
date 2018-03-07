@@ -1,0 +1,8 @@
+
+serialPort.setReadTimeout(5)
+serialPort.openPort();
+delay(5000);
+var str = "wAllWorkAndNoPlayMakesTylerADullBoy";
+serialPort.writeLine(str);
+    
+

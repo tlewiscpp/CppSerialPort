@@ -1,0 +1,11 @@
+
+networkClient.openPort();
+
+while (true) {
+    networkClient.writeLine("Hello, World!");
+    delay(500);
+    var timeout = false;
+    var readString = networkClient.readLine(timeout);
+    print("Read: " + readString.toString());
+}
+
