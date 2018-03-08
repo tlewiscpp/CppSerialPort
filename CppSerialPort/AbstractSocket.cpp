@@ -341,7 +341,7 @@ void AbstractSocket::connect() {
         this->doConnect(addressInfo);
     } catch (std::exception &e) {
         freeaddrinfo(addressInfo);
-        throw e;
+        std::rethrow_exception(std::current_exception());
     }
 
     //Free address info

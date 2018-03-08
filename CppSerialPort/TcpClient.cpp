@@ -43,7 +43,6 @@ void TcpClient::doConnect(addrinfo *addressInfo) {
         socklen_t socketErrorLength{sizeof(socketError)};
         auto getSockOptResult = getsockopt(this->socketDescriptor(), SOL_SOCKET, SO_ERROR, &socketError, &socketErrorLength);
         if (getSockOptResult == -1) {
-
             auto errorCode = this->getLastError();
             throw std::runtime_error("CppSerialPort::TcpClient::doConnect(): doConnect(addrinfo *): error code " + toStdString(errorCode) +  " (" + getErrorString(errorCode) + ')');
         }
