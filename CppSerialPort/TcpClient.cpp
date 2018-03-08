@@ -28,7 +28,16 @@ TcpClient::TcpClient(const std::string &hostName, uint16_t portNumber) :
 }
 
 void TcpClient::doConnect(addrinfo *addressInfo) {
-    fcntl(this->socketDescriptor(), F_SETFL, O_NONBLOCK);
+    auto functionControlFlags = fcntl(this->socketDescriptor(), F_GETFL);
+    if (functionControlFlags == -1) {
+        auto errorCode = this->getLastError();
+        throw std::runtime_error("CppSerialPort::TcpClient::doConnect(): doConnect(addrinfo *): error code " + toStdString(errorCode) +  " (" + getErrorString(errorCode) + ')');
+    }
+    auto functionControlResult = fcntl(this->socketDescriptor(), F_SETFL, O_NONBLOCK);
+    if (functionControlResult == -1) {
+        auto errorCode = this->getLastError();
+        throw std::runtime_error("CppSerialPort::TcpClient::doConnect(): doConnect(addrinfo *): error code " + toStdString(errorCode) +  " (" + getErrorString(errorCode) + ')');
+    }
     auto connectResult = ::connect(this->socketDescriptor(), addressInfo->ai_addr, addressInfo->ai_addrlen);
 
     fd_set fdset{};
@@ -57,6 +66,13 @@ void TcpClient::doConnect(addrinfo *addressInfo) {
 
 
     if (connectResult == -1) {
+        auto errorCode = this->getLastError();
+        throw std::runtime_error("CppSerialPort::TcpClient::doConnect(): doConnect(addrinfo *): error code " + toStdString(errorCode) +  " (" + getErrorString(errorCode) + ')');
+    }
+
+    //Reset old flags
+    functionControlResult = fcntl(this->socketDescriptor(), F_SETFL, functionControlFlags);
+    if (functionControlResult == -1) {
         auto errorCode = this->getLastError();
         throw std::runtime_error("CppSerialPort::TcpClient::doConnect(): doConnect(addrinfo *): error code " + toStdString(errorCode) +  " (" + getErrorString(errorCode) + ')');
     }
