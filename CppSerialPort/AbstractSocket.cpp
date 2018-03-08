@@ -337,8 +337,13 @@ void AbstractSocket::connect() {
         auto errorCode = getLastError();
         throw std::runtime_error("CppSerialPort::AbstractSocket::connect(): Setting reuse of socket: setsockopt(int, int, int, const void *, socklen_t): error code " + toStdString(errorCode) + " (" + getErrorString(errorCode) + ')');
     }
-    this->doConnect(addressInfo);
-    
+    try {
+        this->doConnect(addressInfo);
+    } catch (std::exception &e) {
+        freeaddrinfo(addressInfo);
+        throw e;
+    }
+
     //Free address info
     freeaddrinfo(addressInfo);
     this->flushRx();
