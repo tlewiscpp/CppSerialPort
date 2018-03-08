@@ -13,8 +13,7 @@
 .repo-init
 .vs/
 .vscode/
-.idea/
-cmake-build-debug/
+cmake-build-*
 
 # Qt-es
 
