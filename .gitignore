@@ -10,6 +10,7 @@
 *.dll
 *.dylib
 
+docs
 .repo-init
 .vs/
 .vscode/
