@@ -62,4 +62,3 @@ endif()
 if (WITH_CHAISCRIPT)
 add_subdirectory(chaiscript)
 endif()
-

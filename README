@@ -6,3 +6,6 @@ It can be built by specifying:
     -DWITH_CHAISCRIPT:BOOL=ON
 as an argument to install.sh or CMakeLists.txt directly.
 
+Documentation is currently made with Doxygen, and can be built by running:
+    doxygen Doxyfile
+
