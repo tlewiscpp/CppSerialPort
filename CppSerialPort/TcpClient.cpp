@@ -33,7 +33,7 @@ void TcpClient::doConnect(addrinfo *addressInfo) {
 
     fd_set fdset{};
     struct timeval connectTimeout{};
-    connectTimeout.tv_sec = 3; //3 second timeout
+    connectTimeout.tv_sec = 5; //3 second timeout
     connectTimeout.tv_usec = 0; //0 extra microseconds
     FD_ZERO(&fdset);
     FD_SET(this->socketDescriptor(), &fdset);

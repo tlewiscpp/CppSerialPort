@@ -242,7 +242,7 @@ ssize_t AbstractSocket::write(const char *bytes, size_t byteCount) {
     //Make sure all bytes are sent
     auto startTime = IByteStream::getEpoch();
     while (sentBytes < byteCount)  {
-    auto sendResult = this->doWrite(bytes + sentBytes, byteCount - sentBytes);
+        auto sendResult = this->doWrite(bytes + sentBytes, byteCount - sentBytes);
         if (sendResult == -1) {
             auto errorCode = getLastError();
             throw std::runtime_error("CppSerialPort::AbstractSocket::write(const char *bytes, size_t): send(int, const void *, int, int): error code " + toStdString(errorCode) + " (" + getErrorString(errorCode) + ')');
@@ -303,7 +303,7 @@ AbstractSocket::~AbstractSocket()
 
 void AbstractSocket::connect() {
     if (this->isConnected()) {
-        throw std::runtime_error("CppSerialPort::UdpClient::connect(): Cannot connect to new host when already connected (call disconnect() first)");
+        throw std::runtime_error("CppSerialPort::AbstractSocket::connect(): Cannot connect to new host when already connected (call disconnect() first)");
     }
 
     //Get address info from inheriting class (UDP, TCP, raw socket, etc)
