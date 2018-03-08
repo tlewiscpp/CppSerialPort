@@ -45,9 +45,7 @@ ssize_t UdpClient::doWrite(const char *bytes, size_t byteCount) {
 }
 
 ssize_t UdpClient::doRead(char *buffer, size_t bufferMax) {
-    struct sockaddr from{};
-    socklen_t fromLength{};
-    return recvfrom(this->socketDescriptor(), buffer, bufferMax, 0, &from, &fromLength);
+    return recvfrom(this->socketDescriptor(), buffer, bufferMax, 0, nullptr, nullptr);
 }
 
 
