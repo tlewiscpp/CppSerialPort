@@ -1,0 +1,123 @@
+\hypertarget{class_cpp_serial_port_1_1_abstract_socket}{}\section{Cpp\+Serial\+Port\+:\+:Abstract\+Socket Class Reference}
+\label{class_cpp_serial_port_1_1_abstract_socket}\index{Cpp\+Serial\+Port\+::\+Abstract\+Socket@{Cpp\+Serial\+Port\+::\+Abstract\+Socket}}
+Inheritance diagram for Cpp\+Serial\+Port\+:\+:Abstract\+Socket\+:\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=3.000000cm]{class_cpp_serial_port_1_1_abstract_socket}
+\end{center}
+\end{figure}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_cpp_serial_port_1_1_abstract_socket_ac3340a5cd4a238884257e01f7127763c}\label{class_cpp_serial_port_1_1_abstract_socket_ac3340a5cd4a238884257e01f7127763c}} 
+{\bfseries Abstract\+Socket} (const std\+::string \&host\+Name, uint16\+\_\+t port\+Number)
+\item 
+\mbox{\Hypertarget{class_cpp_serial_port_1_1_abstract_socket_acc4873d15c4ee4d515900032cede1894}\label{class_cpp_serial_port_1_1_abstract_socket_acc4873d15c4ee4d515900032cede1894}} 
+{\bfseries Abstract\+Socket} (const \mbox{\hyperlink{class_cpp_serial_port_1_1_i_p_v4_address}{I\+P\+V4\+Address}} \&ip\+Address, uint16\+\_\+t port\+Number)
+\item 
+\mbox{\Hypertarget{class_cpp_serial_port_1_1_abstract_socket_abba42cee89e034f7b6639bd801f2dda8}\label{class_cpp_serial_port_1_1_abstract_socket_abba42cee89e034f7b6639bd801f2dda8}} 
+ssize\+\_\+t {\bfseries write} (const char $\ast$bytes, size\+\_\+t byte\+Count) override
+\item 
+\mbox{\Hypertarget{class_cpp_serial_port_1_1_abstract_socket_aff33e9fac306ac5b1d0df9ecb1606e57}\label{class_cpp_serial_port_1_1_abstract_socket_aff33e9fac306ac5b1d0df9ecb1606e57}} 
+char {\bfseries read} (bool $\ast$read\+Timeout) override
+\item 
+\mbox{\Hypertarget{class_cpp_serial_port_1_1_abstract_socket_a13755c32e2e461471598be620043873c}\label{class_cpp_serial_port_1_1_abstract_socket_a13755c32e2e461471598be620043873c}} 
+ssize\+\_\+t {\bfseries write} (char i) override
+\item 
+\mbox{\Hypertarget{class_cpp_serial_port_1_1_abstract_socket_a75e83f0faaad092131daa537b34a2626}\label{class_cpp_serial_port_1_1_abstract_socket_a75e83f0faaad092131daa537b34a2626}} 
+std\+::string {\bfseries port\+Name} () const override
+\item 
+\mbox{\Hypertarget{class_cpp_serial_port_1_1_abstract_socket_abb4b4e7f5a17c0bea04065674a31eb2b}\label{class_cpp_serial_port_1_1_abstract_socket_abb4b4e7f5a17c0bea04065674a31eb2b}} 
+bool {\bfseries is\+Open} () const override
+\item 
+\mbox{\Hypertarget{class_cpp_serial_port_1_1_abstract_socket_a5f23188c33b3e610c263248ad99773a0}\label{class_cpp_serial_port_1_1_abstract_socket_a5f23188c33b3e610c263248ad99773a0}} 
+void {\bfseries open\+Port} () override
+\item 
+\mbox{\Hypertarget{class_cpp_serial_port_1_1_abstract_socket_a8aadacd13b08fc39f964bc57dc3e520d}\label{class_cpp_serial_port_1_1_abstract_socket_a8aadacd13b08fc39f964bc57dc3e520d}} 
+void {\bfseries close\+Port} () override
+\item 
+\mbox{\Hypertarget{class_cpp_serial_port_1_1_abstract_socket_a3270290451ac61f4ed4499d35d28a97c}\label{class_cpp_serial_port_1_1_abstract_socket_a3270290451ac61f4ed4499d35d28a97c}} 
+void {\bfseries flush\+Rx} () override
+\item 
+\mbox{\Hypertarget{class_cpp_serial_port_1_1_abstract_socket_a56c572096cf20273e1a005914f138c9f}\label{class_cpp_serial_port_1_1_abstract_socket_a56c572096cf20273e1a005914f138c9f}} 
+void {\bfseries flush\+Tx} () override
+\item 
+\mbox{\Hypertarget{class_cpp_serial_port_1_1_abstract_socket_a63ed2eb01fb5612329e0d59168eb952e}\label{class_cpp_serial_port_1_1_abstract_socket_a63ed2eb01fb5612329e0d59168eb952e}} 
+size\+\_\+t {\bfseries available} () override
+\item 
+\mbox{\Hypertarget{class_cpp_serial_port_1_1_abstract_socket_a91f8b676933e2e28553fdc2ec9d704c0}\label{class_cpp_serial_port_1_1_abstract_socket_a91f8b676933e2e28553fdc2ec9d704c0}} 
+void {\bfseries connect} (const std\+::string \&host\+Name, uint16\+\_\+t port\+Number)
+\item 
+\mbox{\Hypertarget{class_cpp_serial_port_1_1_abstract_socket_a8598bbc22576ba36d2fb17f959d0b4af}\label{class_cpp_serial_port_1_1_abstract_socket_a8598bbc22576ba36d2fb17f959d0b4af}} 
+void {\bfseries connect} ()
+\item 
+\mbox{\Hypertarget{class_cpp_serial_port_1_1_abstract_socket_a45cb0952ab5cdc8ffe0af83731e2a521}\label{class_cpp_serial_port_1_1_abstract_socket_a45cb0952ab5cdc8ffe0af83731e2a521}} 
+bool {\bfseries disconnect} ()
+\item 
+\mbox{\Hypertarget{class_cpp_serial_port_1_1_abstract_socket_adddb888722410a5c80ca31598d78bdf0}\label{class_cpp_serial_port_1_1_abstract_socket_adddb888722410a5c80ca31598d78bdf0}} 
+bool {\bfseries is\+Connected} () const
+\item 
+\mbox{\Hypertarget{class_cpp_serial_port_1_1_abstract_socket_a8f9e2bab08e06124eb94e853254b0e4b}\label{class_cpp_serial_port_1_1_abstract_socket_a8f9e2bab08e06124eb94e853254b0e4b}} 
+void {\bfseries set\+Port\+Number} (uint16\+\_\+t port\+Number)
+\item 
+\mbox{\Hypertarget{class_cpp_serial_port_1_1_abstract_socket_ac281aef8c2f339f750406b3b45987e9b}\label{class_cpp_serial_port_1_1_abstract_socket_ac281aef8c2f339f750406b3b45987e9b}} 
+void {\bfseries set\+Host\+Name} (const std\+::string \&host\+Name)
+\item 
+\mbox{\Hypertarget{class_cpp_serial_port_1_1_abstract_socket_ad1f6b4e04382235f57d89559f028d7d0}\label{class_cpp_serial_port_1_1_abstract_socket_ad1f6b4e04382235f57d89559f028d7d0}} 
+uint16\+\_\+t {\bfseries port\+Number} () const
+\item 
+\mbox{\Hypertarget{class_cpp_serial_port_1_1_abstract_socket_a30b403222e2b77cc4fd0a2b31d442a08}\label{class_cpp_serial_port_1_1_abstract_socket_a30b403222e2b77cc4fd0a2b31d442a08}} 
+std\+::string {\bfseries host\+Name} () const
+\end{DoxyCompactItemize}
+\subsection*{Static Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_cpp_serial_port_1_1_abstract_socket_ac4c8c7c03a7c7d08a13f9091cf0c4db2}\label{class_cpp_serial_port_1_1_abstract_socket_ac4c8c7c03a7c7d08a13f9091cf0c4db2}} 
+static const uint16\+\_\+t {\bfseries M\+I\+N\+I\+M\+U\+M\+\_\+\+P\+O\+R\+T\+\_\+\+N\+U\+M\+B\+ER} \{1024\}
+\item 
+\mbox{\Hypertarget{class_cpp_serial_port_1_1_abstract_socket_ae629cbdbf6a2e08eb529ea6e598f61da}\label{class_cpp_serial_port_1_1_abstract_socket_ae629cbdbf6a2e08eb529ea6e598f61da}} 
+static const uint16\+\_\+t {\bfseries M\+A\+X\+I\+M\+U\+M\+\_\+\+P\+O\+R\+T\+\_\+\+N\+U\+M\+B\+ER} \{std\+::numeric\+\_\+limits$<$uint16\+\_\+t$>$\+::max()\}
+\end{DoxyCompactItemize}
+\subsection*{Protected Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_cpp_serial_port_1_1_abstract_socket_a81a8ada743d774b537f77bcee7868cc8}\label{class_cpp_serial_port_1_1_abstract_socket_a81a8ada743d774b537f77bcee7868cc8}} 
+virtual ssize\+\_\+t {\bfseries do\+Read} (char $\ast$buffer, size\+\_\+t buffer\+Max)=0
+\item 
+\mbox{\Hypertarget{class_cpp_serial_port_1_1_abstract_socket_ad617d4ecc652d53cffea1bf1f47579b3}\label{class_cpp_serial_port_1_1_abstract_socket_ad617d4ecc652d53cffea1bf1f47579b3}} 
+virtual ssize\+\_\+t {\bfseries do\+Write} (const char $\ast$bytes, size\+\_\+t number\+Of\+Bytes)=0
+\item 
+\mbox{\Hypertarget{class_cpp_serial_port_1_1_abstract_socket_afff72ec26ca22c4d9bd6c6488b0ec066}\label{class_cpp_serial_port_1_1_abstract_socket_afff72ec26ca22c4d9bd6c6488b0ec066}} 
+virtual void {\bfseries do\+Connect} (addrinfo $\ast$address\+Info)=0
+\item 
+\mbox{\Hypertarget{class_cpp_serial_port_1_1_abstract_socket_a1f57b2412c2ac25a6b3394b7687d9bf6}\label{class_cpp_serial_port_1_1_abstract_socket_a1f57b2412c2ac25a6b3394b7687d9bf6}} 
+virtual addrinfo {\bfseries get\+Address\+Info\+Hints} ()=0
+\item 
+\mbox{\Hypertarget{class_cpp_serial_port_1_1_abstract_socket_a6a8f71f6ce1556c428f44628c19f8161}\label{class_cpp_serial_port_1_1_abstract_socket_a6a8f71f6ce1556c428f44628c19f8161}} 
+bool {\bfseries is\+Disconnected} () const
+\item 
+\mbox{\Hypertarget{class_cpp_serial_port_1_1_abstract_socket_ae1198d2be2aa6033abe0a7f90916a3c6}\label{class_cpp_serial_port_1_1_abstract_socket_ae1198d2be2aa6033abe0a7f90916a3c6}} 
+socket\+\_\+t {\bfseries socket\+Descriptor} () const
+\item 
+\mbox{\Hypertarget{class_cpp_serial_port_1_1_abstract_socket_a9dc9e64a56d7249d982cb074acb723a7}\label{class_cpp_serial_port_1_1_abstract_socket_a9dc9e64a56d7249d982cb074acb723a7}} 
+void {\bfseries set\+Socket\+Descriptor} (socket\+\_\+t socket\+Descriptor)
+\end{DoxyCompactItemize}
+\subsection*{Static Protected Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_cpp_serial_port_1_1_abstract_socket_a077628ef2ab2622d275b79f8ecaba765}\label{class_cpp_serial_port_1_1_abstract_socket_a077628ef2ab2622d275b79f8ecaba765}} 
+static timeval {\bfseries to\+Time\+Val} (uint32\+\_\+t total\+Timeout)
+\item 
+\mbox{\Hypertarget{class_cpp_serial_port_1_1_abstract_socket_a9233ef47772d6c091eb6951b86006f0d}\label{class_cpp_serial_port_1_1_abstract_socket_a9233ef47772d6c091eb6951b86006f0d}} 
+static std\+::string {\bfseries get\+Error\+String} (int error\+Code)
+\item 
+\mbox{\Hypertarget{class_cpp_serial_port_1_1_abstract_socket_a33c329aa73c8358c184c188dd80ddc6e}\label{class_cpp_serial_port_1_1_abstract_socket_a33c329aa73c8358c184c188dd80ddc6e}} 
+static int {\bfseries get\+Last\+Error} ()
+\end{DoxyCompactItemize}
+\subsection*{Additional Inherited Members}
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+Cpp\+Serial\+Port/Abstract\+Socket.\+h\item 
+Cpp\+Serial\+Port/Abstract\+Socket.\+cpp\end{DoxyCompactItemize}

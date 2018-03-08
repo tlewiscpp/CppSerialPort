@@ -1,5 +1,5 @@
 # CppSerialPort
-A simple cross platform class for accessing serial ports (COM1 or /dev/ttyACM0, etc) and network sockets (UDP, TCP)
+A simple cross platform library for accessing serial ports (COM1 or /dev/ttyACM0, etc) and network sockets (UDP, TCP)
 
 This repository includes two command line applications (CppSerialPortChaiScriptNetworkClient and CppSerialPortChaiScriptSerialPortClient) that exports the CppSerialPort namespace into ChaiScript (http://chaiscript.com).
 It can be built by specifying:
