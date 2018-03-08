@@ -1,14 +1,17 @@
-#ifndef TRMIDOUBLECHECKBOX_CPPSERIALPORTChaiScriptModuleFactory_H
-#define TRMIDOUBLECHECKBOX_CPPSERIALPORTChaiScriptModuleFactory_H
+#ifndef CPPSERIALPORT_CPPSERIALPORTCHAISCRIPTMODULEFACTORY_H
+#define CPPSERIALPORT_CPPSERIALPORTCHAISCRIPTMODULEFACTORY_H
 
 #include "ChaiScriptModuleFactory.h"
 
-class CppSerialPortChaiScriptModuleFactory : public CSP_ChaiScriptModuleFactory
-{
-public:
-    chaiscript::ModulePtr createModule() override;
+namespace CppSerialPort {
 
-};
+    class CppSerialPortChaiScriptModuleFactory : public ChaiScriptModuleFactory {
+    public:
+        chaiscript::ModulePtr createModule() override;
+
+    };
+
+} //namespace CppSerialPort
 
 
-#endif //TRMIDOUBLECHECKBOX_CPPSERIALPORTChaiScriptModuleFactory_H
+#endif //CPPSERIALPORT_CPPSERIALPORTCHAISCRIPTMODULEFACTORY_H

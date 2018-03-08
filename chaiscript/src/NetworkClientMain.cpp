@@ -146,7 +146,7 @@ int main(int argc, char *argv[])
     std::cout << "Using PortNumber " << portNumber << std::endl;
     chaiscript::ChaiScript chaiEngine{}; // loads stdlib from loadable module on file system
 
-    chaiEngine.add(CppSerialPortChaiScriptModuleFactory{}.createModule());
+    chaiEngine.add(CppSerialPort::CppSerialPortChaiScriptModuleFactory{}.createModule());
 
     std::shared_ptr<CppSerialPort::AbstractSocket> networkClient{nullptr};
     if (useUdp) {
