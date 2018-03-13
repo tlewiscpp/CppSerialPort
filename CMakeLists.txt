@@ -7,14 +7,6 @@ if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release)
 endif()
 
-if (STATIC_BUILD)
-    set(SHARED_LIB_BUILD FALSE)
-    set (LIBRARY_TYPE STATIC)
-else()
-    set (SHARED_LIB_BUILD TRUE)
-    set (LIBRARY_TYPE SHARED CppSerialPort/AbstractSocket.cpp CppSerialPort/AbstractSocket.h)
-endif()
-
 set (SOURCE_ROOT CppSerialPort)
 
 set (${PROJECT_NAME}_SOURCE_FILES
@@ -35,9 +27,15 @@ set (${PROJECT_NAME}_HEADER_FILES
         ${SOURCE_ROOT}/AbstractSocket.h
         ${SOURCE_ROOT}/ByteArray.h)
 
-add_library(${PROJECT_NAME} ${LIBRARY_TYPE} 
+add_library(${PROJECT_NAME} SHARED
     ${${PROJECT_NAME}_SOURCE_FILES}
     ${${PROJECT_NAME}_HEADER_FILES})
+
+add_library(${PROJECT_NAME}_STATIC STATIC
+    ${${PROJECT_NAME}_SOURCE_FILES}
+    ${${PROJECT_NAME}_HEADER_FILES})
+
+set_target_properties(${PROJECT_NAME}_STATIC PROPERTIES OUTPUT_NAME ${PROJECT_NAME})
 
 target_include_directories(${PROJECT_NAME}
         PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
