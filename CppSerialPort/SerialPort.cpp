@@ -226,6 +226,12 @@ std::string SerialPort::getErrorString(int errorCode) {
 	//(void)conversionResult;
     (void)wcstombs(errorString, wideErrorString, PATH_MAX);
 	LocalFree(wideErrorString);
+#elif defined(__ANDROID__)
+    auto strerrorCode = strerror_r(errorCode, errorString, PATH_MAX);
+    if (strerrorCode == -1) {
+        std::cerr << "strerror_r(int, char *, int): error occurred" << std::endl;
+        return "";
+    }
 #else
     auto strerrorCode = strerror_r(errorCode, errorString, PATH_MAX);
     if (strerrorCode == nullptr) {

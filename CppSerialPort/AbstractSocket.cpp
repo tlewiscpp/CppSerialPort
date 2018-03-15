@@ -85,15 +85,21 @@ FormatMessageW(
 
 (void)wcstombs(errorString, wideErrorString, PATH_MAX);
 LocalFree(wideErrorString);
-return stripLineEndings(errorString);
+#elif defined(__ANDROID__)
+    auto strerrorCode = strerror_r(errorCode, errorString, PATH_MAX);
+    if (strerrorCode == -1) {
+        std::cerr << "strerror_r(int, char *, int): error occurred" << std::endl;
+        return "";
+    }
 #else
     auto strerrorCode = strerror_r(errorCode, errorString, PATH_MAX);
     if (strerrorCode == nullptr) {
         std::cerr << "strerror_r(int, char *, int): error occurred" << std::endl;
         return "";
     }
-    return stripLineEndings(strerrorCode);
 #endif //defined(_WIN32)
+    return IByteStream::stripLineEndings(errorString);
+
 }
 
 void AbstractSocket::connect(const std::string &hostName, uint16_t portNumber)
@@ -308,7 +314,7 @@ void AbstractSocket::connect() {
 
     //Get address info from inheriting class (UDP, TCP, raw socket, etc)
     addrinfo *addressInfo{nullptr};
-    addrinfo hints{this->getAddressInfoHints()};
+    auto hints = this->getAddressInfoHints();
     auto returnStatus = getaddrinfo(
             this->hostName().c_str(), //IP Address or hostname
             toStdString(this->portNumber()).c_str(), //Service (HTTP, port, etc)

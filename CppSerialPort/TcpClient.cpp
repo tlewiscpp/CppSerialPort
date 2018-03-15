@@ -42,7 +42,11 @@ void TcpClient::doConnect(addrinfo *addressInfo) {
 
     fd_set fdset{};
     struct timeval connectTimeout{};
-    connectTimeout.tv_sec = 5; //3 second timeout
+#if defined(__ANDROID__)
+    connectTimeout.tv_sec = 30; //30 second timeout
+#else
+    connectTimeout.tv_sec = 5; //5 second timeout
+#endif //defined(__ANDROID__)
     connectTimeout.tv_usec = 0; //0 extra microseconds
     FD_ZERO(&fdset);
     FD_SET(this->socketDescriptor(), &fdset);
