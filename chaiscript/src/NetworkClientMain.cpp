@@ -157,7 +157,7 @@ int main(int argc, char *argv[])
 
     chaiEngine.add_global(chaiscript::var(networkClient), "networkClient");
     chaiEngine.add(chaiscript::fun(&delay), "delay");
-    
+    networkClient->openPort();   
     
     if (useStdin) {
         std::string tempBuffer{""};

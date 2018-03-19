@@ -94,7 +94,7 @@ int main(int argc, char *argv[])
     chaiscript::ChaiScript chaiEngine{}; // loads stdlib from loadable module on file system
 
     chaiEngine.add(CppSerialPort::CppSerialPortChaiScriptModuleFactory{}.createModule());
-
+    
     std::shared_ptr<CppSerialPort::SerialPort> serialPort{
             std::make_shared<CppSerialPort::SerialPort>(serialPortName,
                                                           CppSerialPort::BaudRate::Baud115200,
@@ -106,7 +106,8 @@ int main(int argc, char *argv[])
     };
     chaiEngine.add_global(chaiscript::var(serialPort), "serialPort");
     chaiEngine.add(chaiscript::fun(&delay), "delay");
-    
+    serialPort->openPort();
+
     if (useStdin) {
         std::string tempBuffer{""};
         std::string scriptBuffer{""};
