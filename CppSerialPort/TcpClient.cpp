@@ -28,55 +28,8 @@ TcpClient::TcpClient(const std::string &hostName, uint16_t portNumber) :
 }
 
 void TcpClient::doConnect(addrinfo *addressInfo) {
-    auto functionControlFlags = fcntl(this->socketDescriptor(), F_GETFL);
-    if (functionControlFlags == -1) {
-        auto errorCode = this->getLastError();
-        throw std::runtime_error("CppSerialPort::TcpClient::doConnect(): doConnect(addrinfo *): error code " + toStdString(errorCode) +  " (" + getErrorString(errorCode) + ')');
-    }
-    auto functionControlResult = fcntl(this->socketDescriptor(), F_SETFL, O_NONBLOCK);
-    if (functionControlResult == -1) {
-        auto errorCode = this->getLastError();
-        throw std::runtime_error("CppSerialPort::TcpClient::doConnect(): doConnect(addrinfo *): error code " + toStdString(errorCode) +  " (" + getErrorString(errorCode) + ')');
-    }
     auto connectResult = ::connect(this->socketDescriptor(), addressInfo->ai_addr, addressInfo->ai_addrlen);
-
-    fd_set fdset{};
-    struct timeval connectTimeout{};
-#if defined(__ANDROID__)
-    connectTimeout.tv_sec = 30; //30 second timeout
-#else
-    connectTimeout.tv_sec = 5; //5 second timeout
-#endif //defined(__ANDROID__)
-    connectTimeout.tv_usec = 0; //0 extra microseconds
-    FD_ZERO(&fdset);
-    FD_SET(this->socketDescriptor(), &fdset);
-
-    if (select(this->socketDescriptor() + 1, nullptr, &fdset, nullptr, &connectTimeout) == 1) {
-        int socketError{};
-        socklen_t socketErrorLength{sizeof(socketError)};
-        auto getSockOptResult = getsockopt(this->socketDescriptor(), SOL_SOCKET, SO_ERROR, &socketError, &socketErrorLength);
-        if (getSockOptResult == -1) {
-            auto errorCode = this->getLastError();
-            throw std::runtime_error("CppSerialPort::TcpClient::doConnect(): doConnect(addrinfo *): error code " + toStdString(errorCode) +  " (" + getErrorString(errorCode) + ')');
-        }
-        if (socketError != 0) {
-            errno = socketError;
-        } else {
-            connectResult = 0;
-        }
-    } else {
-        connectResult = -1;
-    }
-
-
     if (connectResult == -1) {
-        auto errorCode = this->getLastError();
-        throw std::runtime_error("CppSerialPort::TcpClient::doConnect(): doConnect(addrinfo *): error code " + toStdString(errorCode) +  " (" + getErrorString(errorCode) + ')');
-    }
-
-    //Reset old flags
-    functionControlResult = fcntl(this->socketDescriptor(), F_SETFL, functionControlFlags);
-    if (functionControlResult == -1) {
         auto errorCode = this->getLastError();
         throw std::runtime_error("CppSerialPort::TcpClient::doConnect(): doConnect(addrinfo *): error code " + toStdString(errorCode) +  " (" + getErrorString(errorCode) + ')');
     }
