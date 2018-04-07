@@ -86,8 +86,6 @@ protected:
         virtual addrinfo getAddressInfoHints() = 0;
 
         static timeval toTimeVal(uint32_t totalTimeout);
-        static std::string getErrorString(int errorCode);
-        static int getLastError();
         bool isDisconnected() const;
         socket_t socketDescriptor() const;
         void setSocketDescriptor(socket_t socketDescriptor);

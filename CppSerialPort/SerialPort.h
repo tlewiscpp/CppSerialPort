@@ -328,9 +328,6 @@ private:
 
     static const std::vector<std::string> SERIAL_PORT_NAMES;
 
-	static int getLastError();
-	static std::string getErrorString(int errorCode);
-
 #if (_WIN32)
 	static const char *AVAILABLE_PORT_NAMES_BASE;
     static const char *DTR_RTS_ON_IDENTIFIER;

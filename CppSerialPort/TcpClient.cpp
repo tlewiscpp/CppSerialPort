@@ -10,6 +10,10 @@
 #include <cstring>
 #include <climits>
 #include <iostream>
+#include "ErrorInformation.hpp"
+
+using NetworkErrorInformation::getLastError;
+using NetworkErrorInformation::getErrorString;
 
 namespace CppSerialPort {
 
@@ -30,7 +34,7 @@ TcpClient::TcpClient(const std::string &hostName, uint16_t portNumber) :
 void TcpClient::doConnect(addrinfo *addressInfo) {
     auto connectResult = ::connect(this->socketDescriptor(), addressInfo->ai_addr, addressInfo->ai_addrlen);
     if (connectResult == -1) {
-        auto errorCode = this->getLastError();
+        auto errorCode = getLastError();
         throw std::runtime_error("CppSerialPort::TcpClient::doConnect(): doConnect(addrinfo *): error code " + toStdString(errorCode) +  " (" + getErrorString(errorCode) + ')');
     }
 }

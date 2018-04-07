@@ -9,6 +9,10 @@
 #include <cstring>
 #include <climits>
 #include <iostream>
+#include "ErrorInformation.hpp"
+
+using NetworkErrorInformation::getLastError;
+using NetworkErrorInformation::getErrorString;
 
 namespace CppSerialPort {
 

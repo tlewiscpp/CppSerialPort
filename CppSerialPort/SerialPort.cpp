@@ -45,6 +45,10 @@
 #include "SerialPort.h"
 #include <iostream>
 #include <limits>
+#include "ErrorInformation.hpp"
+
+using ErrorInformation::getLastError;
+using ErrorInformation::getErrorString;
 
 namespace CppSerialPort {
 
@@ -196,50 +200,6 @@ void SerialPort::setReadTimeout(int timeout)
         tcsetattr(this->getFileDescriptor(), TCSANOW, &this->m_portSettings);
     }
 #endif //defined(_WIN32)
-}
-
-
-int SerialPort::getLastError() {
-#if defined(_WIN32)
-	return static_cast<int>(GetLastError());
-#else
-	return errno;
-#endif //defined(_WIN32)
-}
-
-std::string SerialPort::getErrorString(int errorCode) {
-	char errorString[PATH_MAX];
-	memset(errorString, '\0', PATH_MAX);
-#if defined(_WIN32)
-	wchar_t *wideErrorString{ nullptr };
-	FormatMessageW(
-		FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-		nullptr,
-        static_cast<DWORD>(errorCode),
-		MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-		reinterpret_cast<LPWSTR>(&wideErrorString),
-		0,
-		nullptr
-	);
-	//size_t converted{ 0 };
-	//auto conversionResult = wcstombs_s(&converted, errorString, PATH_MAX, wideErrorString, PATH_MAX);
-	//(void)conversionResult;
-    (void)wcstombs(errorString, wideErrorString, PATH_MAX);
-	LocalFree(wideErrorString);
-#elif defined(__ANDROID__)
-    auto strerrorCode = strerror_r(errorCode, errorString, PATH_MAX);
-    if (strerrorCode == -1) {
-        std::cerr << "strerror_r(int, char *, int): error occurred" << std::endl;
-        return "";
-    }
-#else
-    auto strerrorCode = strerror_r(errorCode, errorString, PATH_MAX);
-    if (strerrorCode == nullptr) {
-        std::cerr << "strerror_r(int, char *, int): error occurred" << std::endl;
-        return "";
-    }
-#endif //defined(_WIN32)
-	return IByteStream::stripLineEndings(errorString);
 }
 
 #if defined(_WIN32)
