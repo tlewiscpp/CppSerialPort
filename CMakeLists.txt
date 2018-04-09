@@ -7,27 +7,27 @@ if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release)
 endif()
 
-set (SOURCE_ROOT CppSerialPort)
-
 set (${PROJECT_NAME}_SOURCE_FILES
-    ${SOURCE_ROOT}/IPV4Address.cpp
-    ${SOURCE_ROOT}/IByteStream.cpp
-    ${SOURCE_ROOT}/SerialPort.cpp
-    ${SOURCE_ROOT}/TcpClient.cpp
-    ${SOURCE_ROOT}/UdpClient.cpp
-    ${SOURCE_ROOT}/AbstractSocket.cpp
-    ${SOURCE_ROOT}/ErrorInformation.cpp
-    ${SOURCE_ROOT}/ByteArray.cpp)
+    CppSerialPort/IPV4Address.cpp
+    CppSerialPort/IByteStream.cpp
+    CppSerialPort/SerialPort.cpp
+    CppSerialPort/TcpClient.cpp
+    CppSerialPort/UdpClient.cpp
+    CppSerialPort/AbstractSocket.cpp
+    CppSerialPort/ErrorInformation.cpp
+        CppSerialPort/BasicFile.cpp
+    CppSerialPort/ByteArray.cpp)
 
 set (${PROJECT_NAME}_HEADER_FILES
-    ${SOURCE_ROOT}/IPV4Address.h
-    ${SOURCE_ROOT}/IByteStream.h
-    ${SOURCE_ROOT}/SerialPort.h
-    ${SOURCE_ROOT}/TcpClient.h
-    ${SOURCE_ROOT}/UdpClient.h
-    ${SOURCE_ROOT}/AbstractSocket.h
-        ${SOURCE_ROOT}/ErrorInformation.hpp
-    ${SOURCE_ROOT}/ByteArray.h)
+    CppSerialPort/IPV4Address.h
+    CppSerialPort/IByteStream.h
+    CppSerialPort/SerialPort.h
+    CppSerialPort/TcpClient.h
+    CppSerialPort/UdpClient.h
+    CppSerialPort/AbstractSocket.h
+    CppSerialPort/ErrorInformation.hpp
+    CppSerialPort/BasicFile.hpp
+    CppSerialPort/ByteArray.h)
 
 add_library(${PROJECT_NAME} SHARED
     ${${PROJECT_NAME}_SOURCE_FILES}
