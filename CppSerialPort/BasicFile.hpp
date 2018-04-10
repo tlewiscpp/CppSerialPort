@@ -1,6 +1,8 @@
 #ifndef BASICFILE_BASICFILE_H
 #define BASICFILE_BASICFILE_H
 
+#include <cstdio>
+
 #if defined(_WIN32)
 typedef int fd_t
 typedef HANDLE file_handle_t;

@@ -59,8 +59,7 @@ bool AbstractSocket::isDisconnected() const {
     return false;
 }
 
-void AbstractSocket::connect(const std::string &hostName, uint16_t portNumber)
-{
+void AbstractSocket::connect(const std::string &hostName, uint16_t portNumber) {
     if (this->isConnected()) {
         throw std::runtime_error("CppSerialPort::AbstractSocket::connect(const std::string &, uint16_t): Cannot connect to new host when already connected (call disconnect() first)");
     }
@@ -69,8 +68,7 @@ void AbstractSocket::connect(const std::string &hostName, uint16_t portNumber)
     this->connect();
 }
 
-bool AbstractSocket::disconnect()
-{
+bool AbstractSocket::disconnect() {
 #if defined(_WIN32)
     closesocket(this->m_socketDescriptor);
 #else
@@ -80,50 +78,42 @@ bool AbstractSocket::disconnect()
     return true;
 }
 
-bool AbstractSocket::isConnected() const
-{
+bool AbstractSocket::isConnected() const {
     return this->m_socketDescriptor != INVALID_SOCKET;
 }
 
-ssize_t AbstractSocket::write(char c)
-{
+ssize_t AbstractSocket::write(char c) {
     if (!this->isConnected()) {
         throw std::runtime_error("CppSerialPort::AbstractSocket::write(char): Cannot write on closed socket (call connect first)");
     }
     return this->write(&c, 1);
 }
 
-std::string AbstractSocket::portName() const
-{
+std::string AbstractSocket::portName() const {
     return '[' + this->m_hostName + ':' + toStdString(this->m_portNumber) + ']';
 }
 
-bool AbstractSocket::isOpen() const
-{
+bool AbstractSocket::isOpen() const {
     return this->isConnected();
 }
 
-void AbstractSocket::openPort()
-{
+void AbstractSocket::openPort() {
     if (!this->isConnected()) {
         this->connect();
     }
 }
 
-void AbstractSocket::closePort()
-{
+void AbstractSocket::closePort() {
     if (this->isConnected()) {
         this->disconnect();
     }
 }
 
-void AbstractSocket::flushRx()
-{
+void AbstractSocket::flushRx() {
     this->m_readBuffer.clear();
 }
 
-void AbstractSocket::flushTx()
-{
+void AbstractSocket::flushTx() {
 
 }
 
@@ -131,8 +121,7 @@ size_t AbstractSocket::available() {
     return this->m_readBuffer.size();
 }
 
-char AbstractSocket::read(bool *readTimeout)
-{
+char AbstractSocket::read(bool *readTimeout) {
     if (!this->m_readBuffer.empty()) {
         char returnValue{ this->m_readBuffer[0] };
         this->m_readBuffer.popFront();
@@ -175,10 +164,7 @@ char AbstractSocket::read(bool *readTimeout)
             return 0;
         } else if (receiveResult == 0) {
             this->closePort();
-            if (this->isDisconnected()) {
-                this->closePort();
-                throw SocketDisconnectedException{this->portName(), "CppSerialPort::AbstractSocket::read(): The server hung up unexpectedly"};
-            }
+            throw SocketDisconnectedException{this->portName(), "CppSerialPort::AbstractSocket::read(): The server hung up unexpectedly"};
         } else {
             for (int i = 0; i < receiveResult; i++) {
                 this->m_readBuffer.append(readBuffer[i]);
@@ -208,6 +194,10 @@ ssize_t AbstractSocket::write(const char *bytes, size_t byteCount) {
         auto sendResult = this->doWrite(bytes + sentBytes, byteCount - sentBytes);
         if (sendResult == -1) {
             auto errorCode = getLastError();
+            if ( (errorCode == ENOTCONN) || (errorCode == EPIPE) || (errorCode == ECONNRESET) ) {
+                this->closePort();
+                throw SocketDisconnectedException{this->portName(), "CppSerialPort::AbstractSocket::write(): The server hung up unexpectedly"};
+            }
             throw std::runtime_error("CppSerialPort::AbstractSocket::write(const char *bytes, size_t): send(int, const void *, int, int): error code " + toStdString(errorCode) + " (" + getErrorString(errorCode) + ')');
         }
         sentBytes += sendResult;
@@ -218,8 +208,7 @@ ssize_t AbstractSocket::write(const char *bytes, size_t byteCount) {
     return sentBytes;
 }
 
-timeval AbstractSocket::toTimeVal(uint32_t totalTimeout)
-{
+timeval AbstractSocket::toTimeVal(uint32_t totalTimeout) {
     timeval tv{};
     tv.tv_sec = static_cast<long>(totalTimeout / 1000);
     tv.tv_usec = static_cast<long>((totalTimeout % 1000) * 1000);
@@ -254,14 +243,6 @@ socket_t AbstractSocket::socketDescriptor() const {
 
 void AbstractSocket::setSocketDescriptor(socket_t socketDescriptor) {
     this->m_socketDescriptor = socketDescriptor;
-}
-
-
-AbstractSocket::~AbstractSocket()
-{
-    if (this->isConnected()) {
-        this->disconnect();
-    }
 }
 
 void AbstractSocket::connect() {
@@ -326,6 +307,12 @@ void AbstractSocket::connect() {
     if (writeTimeoutResult == -1) {
         auto errorCode = getLastError();
         throw std::runtime_error("CppSerialPort::AbstractSocket::connect(): Setting write timeout(" + toStdString(this->writeTimeout())  + "): setsockopt(int, int, int, const void *, int) set write timeout failed: error code " + toStdString(errorCode) + " (" + getErrorString(errorCode) + ')');
+    }
+}
+
+AbstractSocket::~AbstractSocket() {
+    if (this->isConnected()) {
+        this->disconnect();
     }
 }
 

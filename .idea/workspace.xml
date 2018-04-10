@@ -16,10 +16,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="62da13de-3e13-4294-b90e-3df61a162417" name="Default" comment="">
-      <change afterPath="$PROJECT_DIR$/CppSerialPort/BufferedFile.cpp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/CppSerialPort/BufferedFile.hpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeLists.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CppSerialPort/AbstractSocket.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/CppSerialPort/AbstractSocket.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CppSerialPort/BasicFile.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/CppSerialPort/BasicFile.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CppSerialPort/BasicFile.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/CppSerialPort/BasicFile.hpp" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/cmake-build-debug/" />
     <ignored path="$PROJECT_DIR$/cmake-build-chaiscript/" />
@@ -33,105 +33,22 @@
   <component name="ExecutionTargetManager" SELECTED_TARGET="CMakeBuildProfile:ChaiScript" />
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="450">
-      <file leaf-file-name="SerialPort.h" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/CppSerialPort/SerialPort.h">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="5270">
-              <caret line="310" column="27" selection-start-line="310" selection-start-column="27" selection-end-line="310" selection-end-column="27" />
-              <folding>
-                <element signature="e#9979#10251#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="ByteArray.cpp" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/CppSerialPort/ByteArray.cpp">
-          <provider selected="true" editor-type-id="text-editor">
-            <state>
-              <folding>
-                <element signature="e#0#22#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="BasicFile.hpp" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/CppSerialPort/BasicFile.hpp">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="243">
-              <caret line="29" column="52" selection-start-line="29" selection-end-line="30" />
-            </state>
-          </provider>
-        </entry>
-      </file>
       <file leaf-file-name="BasicFile.cpp" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/CppSerialPort/BasicFile.cpp">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="322">
-              <caret line="141" column="41" lean-forward="true" selection-start-line="141" selection-start-column="41" selection-end-line="141" selection-end-column="41" />
+            <state relative-caret-position="324">
+              <caret line="122" column="1" selection-start-line="122" selection-start-column="1" selection-end-line="122" selection-end-column="1" />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="BufferedFile.cpp" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/CppSerialPort/BufferedFile.cpp">
+      <file leaf-file-name="AbstractSocket.cpp" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/CppSerialPort/AbstractSocket.cpp">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="68">
-              <caret line="4" column="25" lean-forward="true" selection-start-line="4" selection-start-column="25" selection-end-line="4" selection-end-column="25" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="BufferedFile.hpp" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/CppSerialPort/BufferedFile.hpp">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="204">
-              <caret line="12" column="21" selection-start-line="12" selection-start-column="17" selection-end-line="12" selection-end-column="21" />
+            <state relative-caret-position="217">
+              <caret line="207" column="21" selection-start-line="207" selection-start-column="21" selection-end-line="207" selection-end-column="21" />
               <folding>
-                <element signature="e#77#101#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="CMakeLists.txt" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/CMakeLists.txt">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="323">
-              <caret line="19" selection-start-line="19" selection-end-line="19" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="TcpClient.cpp" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/CppSerialPort/TcpClient.cpp">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="578">
-              <caret line="34" column="56" selection-start-line="34" selection-start-column="56" selection-end-line="34" selection-end-column="56" />
-              <folding>
-                <element signature="e#149#167#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="IByteStream.h" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/CppSerialPort/IByteStream.h">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="833">
-              <caret line="49" column="21" selection-start-line="49" selection-start-column="21" selection-end-line="49" selection-end-column="21" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="SerialPort.cpp" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/CppSerialPort/SerialPort.cpp">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="373">
-              <caret line="321" column="23" lean-forward="true" selection-start-line="321" selection-start-column="23" selection-end-line="321" selection-end-column="23" />
-              <folding>
-                <element signature="e#1746#1769#0" expanded="true" />
+                <element signature="e#220#238#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -179,17 +96,17 @@
         <option value="$PROJECT_DIR$/CppSerialPort/ErrorInformation.hpp" />
         <option value="$PROJECT_DIR$/CppSerialPort/SerialPort.h" />
         <option value="$PROJECT_DIR$/CppSerialPort/AbstractSocket.h" />
-        <option value="$PROJECT_DIR$/CppSerialPort/AbstractSocket.cpp" />
         <option value="$PROJECT_DIR$/CppSerialPort/UdpClient.cpp" />
         <option value="$PROJECT_DIR$/CppSerialPort/SerialPort.cpp" />
         <option value="$PROJECT_DIR$/CppSerialPort/TcpClient.cpp" />
         <option value="$PROJECT_DIR$/CppSerialPort/File.h" />
         <option value="$PROJECT_DIR$/CMakeLists.txt" />
-        <option value="$PROJECT_DIR$/CppSerialPort/BasicFile.hpp" />
-        <option value="$PROJECT_DIR$/CppSerialPort/BasicFile.cpp" />
         <option value="$PROJECT_DIR$/CppSerialPort/BufferedFile.h" />
         <option value="$PROJECT_DIR$/CppSerialPort/BufferedFile.hpp" />
         <option value="$PROJECT_DIR$/CppSerialPort/BufferedFile.cpp" />
+        <option value="$PROJECT_DIR$/CppSerialPort/BasicFile.cpp" />
+        <option value="$PROJECT_DIR$/CppSerialPort/BasicFile.hpp" />
+        <option value="$PROJECT_DIR$/CppSerialPort/AbstractSocket.cpp" />
       </list>
     </option>
   </component>
@@ -214,7 +131,6 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -231,11 +147,12 @@
           <select />
         </subPane>
       </pane>
+      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/../ArduinoCanController" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
     <property name="settings.editor.selected.configurable" value="CMakeSettings" />
   </component>
@@ -299,32 +216,33 @@
       <workItem from="1523043604865" duration="755000" />
       <workItem from="1523044445297" duration="520000" />
       <workItem from="1523274680922" duration="1096000" />
-      <workItem from="1523275884164" duration="2784000" />
+      <workItem from="1523275884164" duration="4179000" />
+      <workItem from="1523372368679" duration="831000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="25103000" />
+    <option name="totallyTimeSpent" value="27329000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="1280" y="27" width="1366" height="741" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.2226359" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.2226359" />
       <window_info anchor="bottom" id="TODO" order="6" />
+      <window_info active="true" anchor="bottom" id="Messages" order="7" sideWeight="0.49679488" visible="true" weight="0.33610648" />
       <window_info anchor="bottom" id="CMake" order="7" weight="0.327787" />
       <window_info anchor="bottom" id="Event Log" order="7" sideWeight="0.5032051" side_tool="true" weight="0.3376932" />
-      <window_info anchor="bottom" id="Version Control" order="7" />
       <window_info anchor="bottom" id="Run" order="2" />
+      <window_info anchor="bottom" id="Version Control" order="7" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
-      <window_info anchor="bottom" id="Terminal" order="7" weight="0.4825291" />
-      <window_info id="Favorites" order="2" side_tool="true" />
+      <window_info anchor="bottom" id="Terminal" order="7" weight="0.4808652" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.39952436" />
+      <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="right" id="Commander" order="0" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
-      <window_info anchor="bottom" id="Messages" order="7" sideWeight="0.49679488" visible="true" weight="0.33710408" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Find" order="1" />
@@ -332,19 +250,19 @@
     <layout-to-restore>
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="9" weight="0.4" />
+      <window_info anchor="bottom" id="Cvs" order="8" weight="0.25" />
       <window_info content_ui="combo" id="Project" order="1" visible="true" weight="0.25" />
       <window_info id="Structure" order="2" weight="0.25" />
       <window_info anchor="right" id="Commander" order="0" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
       <window_info anchor="bottom" id="TODO" order="10" />
-      <window_info anchor="bottom" id="Version Control" order="2" />
       <window_info anchor="bottom" id="Run" order="6" />
-      <window_info anchor="bottom" id="Message" order="4" />
+      <window_info anchor="bottom" id="Find" order="5" />
       <window_info anchor="bottom" id="Debug" order="7" weight="0.4" />
       <window_info anchor="bottom" id="Terminal" order="3" />
       <window_info anchor="bottom" id="Event Log" order="1" side_tool="true" />
-      <window_info anchor="bottom" id="Cvs" order="8" weight="0.25" />
-      <window_info anchor="bottom" id="Find" order="5" />
+      <window_info anchor="bottom" id="Version Control" order="2" />
+      <window_info anchor="bottom" id="Message" order="4" />
       <window_info anchor="bottom" id="CMake" order="0" />
       <window_info id="Favorites" order="0" side_tool="true" />
     </layout-to-restore>
@@ -604,23 +522,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/CppSerialPort/AbstractSocket.cpp">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="272">
-          <caret line="16" selection-start-line="16" selection-end-line="17" selection-end-column="46" />
-          <folding>
-            <element signature="e#220#238#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/CppSerialPort/UdpClient.cpp">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="238">
           <caret line="14" column="46" selection-start-line="14" selection-start-column="46" selection-end-line="14" selection-end-column="46" />
-          <folding>
-            <element signature="e#126#144#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -636,19 +541,13 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="578">
           <caret line="34" column="56" selection-start-line="34" selection-start-column="56" selection-end-line="34" selection-end-column="56" />
-          <folding>
-            <element signature="e#149#167#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/CppSerialPort/SerialPort.h">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="5270">
+        <state>
           <caret line="310" column="27" selection-start-line="310" selection-start-column="27" selection-end-line="310" selection-end-column="27" />
-          <folding>
-            <element signature="e#9979#10251#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -662,50 +561,39 @@
     <entry file="file://$PROJECT_DIR$/CppSerialPort/SerialPort.cpp">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="373">
-          <caret line="321" column="23" lean-forward="true" selection-start-line="321" selection-start-column="23" selection-end-line="321" selection-end-column="23" />
-          <folding>
-            <element signature="e#1746#1769#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/CppSerialPort/BasicFile.cpp">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="322">
-          <caret line="141" column="41" lean-forward="true" selection-start-line="141" selection-start-column="41" selection-end-line="141" selection-end-column="41" />
+          <caret line="321" column="23" selection-start-line="321" selection-start-column="23" selection-end-line="321" selection-end-column="23" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/CppSerialPort/ByteArray.cpp">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/CppSerialPort/BufferedFile.cpp" />
+    <entry file="file://$PROJECT_DIR$/CppSerialPort/BufferedFile.hpp" />
+    <entry file="file://$PROJECT_DIR$/CppSerialPort/BasicFile.cpp">
       <provider selected="true" editor-type-id="text-editor">
-        <state>
-          <folding>
-            <element signature="e#0#22#0" expanded="true" />
-          </folding>
+        <state relative-caret-position="324">
+          <caret line="122" column="1" selection-start-line="122" selection-start-column="1" selection-end-line="122" selection-end-column="1" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/CppSerialPort/BasicFile.hpp">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="243">
-          <caret line="29" column="52" selection-start-line="29" selection-end-line="30" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/CppSerialPort/BufferedFile.hpp">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="204">
-          <caret line="12" column="21" selection-start-line="12" selection-start-column="17" selection-end-line="12" selection-end-column="21" />
+        <state relative-caret-position="102">
+          <caret line="10" column="27" selection-start-line="10" selection-start-column="27" selection-end-line="10" selection-end-column="27" />
           <folding>
-            <element signature="e#77#101#0" expanded="true" />
+            <element signature="e#206#223#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/CppSerialPort/BufferedFile.cpp">
+    <entry file="file://$PROJECT_DIR$/CppSerialPort/AbstractSocket.cpp">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="68">
-          <caret line="4" column="25" lean-forward="true" selection-start-line="4" selection-start-column="25" selection-end-line="4" selection-end-column="25" />
+        <state relative-caret-position="217">
+          <caret line="207" column="21" selection-start-line="207" selection-start-column="21" selection-end-line="207" selection-end-column="21" />
+          <folding>
+            <element signature="e#220#238#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>

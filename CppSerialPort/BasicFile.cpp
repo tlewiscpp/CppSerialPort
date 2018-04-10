@@ -122,7 +122,6 @@ BasicFile &BasicFile::open(const std::string &mode) {
     return *this;
 }
 
-
 std::string BasicFile::fileName() const {
     return this->m_fileName;
 }
