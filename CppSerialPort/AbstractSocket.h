@@ -3,8 +3,9 @@
 
 #include <string>
 #if defined(_WIN32)
-#    include "WinSock2.h"
-#    include "Windows.h"
+#    include <WinSock2.h>
+#    include <ws2tcpip.h>
+#    include <Windows.h>
 typedef SOCKET socket_t;
 #else
 #    include <sys/socket.h>

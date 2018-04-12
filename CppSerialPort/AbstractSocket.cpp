@@ -33,14 +33,14 @@ AbstractSocket::AbstractSocket(const std::string &hostName, uint16_t portNumber)
 {
 #if defined(_WIN32)
     WSADATA wsaData{};
-// if this doesn't work
-//WSAData wsaData; // then try this instead
-// MAKEWORD(1,1) for Winsock 1.1, MAKEWORD(2,0) for Winsock 2.0:
+    // if this doesn't work
+    //WSAData wsaData; // then try this instead
+    // MAKEWORD(1,1) for Winsock 1.1, MAKEWORD(2,0) for Winsock 2.0:
 
-auto wsaStartupResult = WSAStartup(MAKEWORD(2, 0), &wsaData);
-if (wsaStartupResult != 0) {
-    throw std::runtime_error("CppSerialPort::AbstractSocket::AbstractSocket(const std::string &, uint16_t): WSAStartup failed: error code " + toStdString(wsaStartupResult) + " (" + this->getErrorString(wsaStartupResult) + ')');
-}
+    auto wsaStartupResult = WSAStartup(MAKEWORD(2, 0), &wsaData);
+    if (wsaStartupResult != 0) {
+        throw std::runtime_error("CppSerialPort::AbstractSocket::AbstractSocket(const std::string &, uint16_t): WSAStartup failed: error code " + toStdString(wsaStartupResult) + " (" + getErrorString(wsaStartupResult) + ')');
+    }
 #endif //defined(_WIN32)
     if (portNumber < MINIMUM_PORT_NUMBER) {
         this->m_portNumber = 0;

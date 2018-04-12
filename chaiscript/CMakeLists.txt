@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.1)
 project(CppSerialPortChaiScript CXX)
 
-set (THIRD_PARTY_ROOT ../third-party)
+set (THIRD_PARTY_ROOT "${CMAKE_SOURCE_DIR}/chaiscript/third-party")
 
 if (WIN32 OR WIN64)
     message(STATUS "Detected Windows compiler: ${CMAKE_CXX_COMPILER_ID}")

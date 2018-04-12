@@ -4,7 +4,7 @@
 #include <iostream>
 
 #if defined(_WIN32)
-
+#    include <Windows.h>
 #else
 #   include <cerrno>
 #endif //defined(_WIN32)

@@ -4,11 +4,12 @@
 #include <cstdio>
 
 #if defined(_WIN32)
-typedef int fd_t
-typedef HANDLE file_handle_t;
+#   include <Windows.h>
+    typedef int fd_t;
+    typedef HANDLE file_handle_t;
 #else
-typedef int fd_t;
-typedef FILE file_handle_t;
+    typedef int fd_t;
+    typedef FILE* file_handle_t;
 #endif //defined(_WIN32)
 
 #include <string>
@@ -40,11 +41,12 @@ public:
 
 protected:
     fd_t getFileDescriptor();
-    file_handle_t *getFileHandle();
+    file_handle_t getFileHandle();
 
 private:
     std::string m_fileName;
-    FILE *m_fileHandle;
+    file_handle_t m_fileHandle;
+    bool m_atEndOfFile;
 
     static bool checkMode(const std::string &mode);
 };
