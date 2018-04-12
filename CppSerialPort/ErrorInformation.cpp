@@ -20,10 +20,10 @@
 namespace {
     void stripLineEndings(std::string &str) {
         if (str.length() >= 2) {
-            str.erase(str.back());
-            str.erase(str.back());
+            str.pop_back();
+            str.pop_back();
         } else if (str.length() > 0) {
-            str.erase(str.back());
+            str.pop_back();
         }
     }
 }
