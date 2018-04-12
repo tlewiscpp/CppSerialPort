@@ -17,11 +17,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="62da13de-3e13-4294-b90e-3df61a162417" name="Default" comment="">
-      <change beforePath="$PROJECT_DIR$/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeLists.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CppSerialPort/AbstractSocket.h" beforeDir="false" afterPath="$PROJECT_DIR$/CppSerialPort/AbstractSocket.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CppSerialPort/IPV4Address.h" beforeDir="false" afterPath="$PROJECT_DIR$/CppSerialPort/IPV4Address.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CppSerialPort/SerialPort.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/CppSerialPort/SerialPort.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CppSerialPort/SerialPort.h" beforeDir="false" afterPath="$PROJECT_DIR$/CppSerialPort/SerialPort.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/cmake-build-debug/" />
     <ignored path="$PROJECT_DIR$/cmake-build-chaiscript/" />
@@ -71,7 +67,7 @@
         <entry file="file://$PROJECT_DIR$/CppSerialPort/SerialPort.h">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="68">
-              <caret line="4" column="17" lean-forward="true" selection-start-line="4" selection-start-column="17" selection-end-line="4" selection-end-column="17" />
+              <caret line="4" column="17" selection-start-line="4" selection-start-column="17" selection-end-line="4" selection-end-column="17" />
               <folding>
                 <element signature="e#3647#4678#0" expanded="true" />
                 <element signature="e#8962#9223#0" expanded="true" />
@@ -199,10 +195,9 @@
   </component>
   <component name="OCFindUsagesOptions" text="true" ivars="false" properties="true" derivedClasses="false" />
   <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="-8" />
-    <option name="y" value="-8" />
-    <option name="width" value="1936" />
-    <option name="height" value="1056" />
+    <option name="x" value="953" />
+    <option name="width" value="974" />
+    <option name="height" value="1047" />
   </component>
   <component name="ProjectLevelVcsManager">
     <ConfirmationsSetting value="2" id="Add" />
@@ -695,7 +690,7 @@
     <entry file="file://$PROJECT_DIR$/CppSerialPort/SerialPort.h">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="68">
-          <caret line="4" column="17" lean-forward="true" selection-start-line="4" selection-start-column="17" selection-end-line="4" selection-end-column="17" />
+          <caret line="4" column="17" selection-start-line="4" selection-start-column="17" selection-end-line="4" selection-end-column="17" />
           <folding>
             <element signature="e#3647#4678#0" expanded="true" />
             <element signature="e#8962#9223#0" expanded="true" />
