@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.1)
 project(CppSerialPortChaiScript CXX)
 
-set (THIRD_PARTY_ROOT "${CMAKE_SOURCE_DIR}/chaiscript/third-party")
+set (THIRD_PARTY_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/third-party")
 
 if (WIN32 OR WIN64)
     message(STATUS "Detected Windows compiler: ${CMAKE_CXX_COMPILER_ID}")
@@ -33,9 +33,6 @@ else()
     endif()
 
     set(CMAKE_CXX_FLAGS "-Wall -Wextra -Wpedantic -Werror -fPIC")
-    if (STATIC_LIBC_BUILD)
-        set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -static-libgcc -static-libstdc++")
-    endif()
     message (STATUS "Current CMAKE_CXX_FLAGS: ${CMAKE_CXX_FLAGS}")
     set(CMAKE_CXX_FLAGS_DEBUG "-g")
     set(CMAKE_CXX_FLAGS_RELEASE "-O3")
@@ -43,33 +40,35 @@ else()
     set(GETOPT_INCLUDE_DIRECTORY /usr/include/)
 endif()
 
-set (MAIN_LIB_DIR ../CppSerialPort)
+set (MAIN_LIB_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../CppSerialPort")
 
 set (NETWORK_CLIENT ${PROJECT_NAME}NetworkClient)
 set (SERIAL_PORT_CLIENT ${PROJECT_NAME}SerialPortClient)
 
+set (NETWORK_CLIENT_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/src/")
+set (SERIAL_PORT_CLIENT_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/src/")
 
 set(${NETWORK_CLIENT}_SOURCE_FILES
-        src/CppSerialPortChaiScriptModuleFactory.cpp
-        src/NetworkClientMain.cpp)
+        "${NETWORK_CLIENT_ROOT}/CppSerialPortChaiScriptModuleFactory.cpp"
+        "${NETWORK_CLIENT_ROOT}/NetworkClientMain.cpp")
 
 set (${NETWORK_CLIENT}_HEADER_FILES
-        src/CppSerialPortChaiScriptModuleFactory.h
-        src/ChaiScriptProgramOption.h
-        src/ChaiScriptModuleFactory.h)
+        "${NETWORK_CLIENT_ROOT}/CppSerialPortChaiScriptModuleFactory.h"
+        "${NETWORK_CLIENT_ROOT}/ChaiScriptProgramOption.h"
+        "${NETWORK_CLIENT_ROOT}/ChaiScriptModuleFactory.h")
 
 add_executable(${NETWORK_CLIENT}
         ${${NETWORK_CLIENT}_SOURCE_FILES}
         ${${NETWORK_CLIENT}_HEADER_FILES})
 
 set(${SERIAL_PORT_CLIENT}_SOURCE_FILES
-        src/CppSerialPortChaiScriptModuleFactory.cpp
-        src/SerialPortMain.cpp)
+        "${SERIAL_PORT_CLIENT_ROOT}/CppSerialPortChaiScriptModuleFactory.cpp"
+        "${SERIAL_PORT_CLIENT_ROOT}/SerialPortMain.cpp")
 
 set (${SERIAL_PORT_CLIENT}_HEADER_FILES
-        src/CppSerialPortChaiScriptModuleFactory.h
-        src/ChaiScriptProgramOption.h
-        src/ChaiScriptModuleFactory.h)
+        "${SERIAL_PORT_CLIENT_ROOT}/CppSerialPortChaiScriptModuleFactory.h"
+        "${SERIAL_PORT_CLIENT_ROOT}/ChaiScriptProgramOption.h"
+        "${SERIAL_PORT_CLIENT_ROOT}/ChaiScriptModuleFactory.h")
 
 add_executable(${SERIAL_PORT_CLIENT}
         ${${SERIAL_PORT_CLIENT}_SOURCE_FILES}
@@ -86,12 +85,12 @@ target_link_libraries(${SERIAL_PORT_CLIENT}
         pthread)
 
 target_include_directories(${NETWORK_CLIENT}
-        PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
-        PUBLIC ${MAIN_LIB_DIR})
+        PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}"
+        PUBLIC "${MAIN_LIB_DIR}")
 
 target_include_directories(${SERIAL_PORT_CLIENT}
-        PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
-        PUBLIC ${MAIN_LIB_DIR})
+        PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}"
+        PUBLIC "${MAIN_LIB_DIR}")
 
 if(${CMAKE_SYSTEM_NAME} MATCHES Linux|.*BSD|DragonFly)
     install(TARGETS ${NETWORK_CLIENT} RUNTIME DESTINATION bin)

@@ -5,11 +5,11 @@ baseName="CppSerialPort"
 programLongName="CppSerialPort"
 programName="CppSerialPort"
 
-
 absolutePath="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/$(basename "${BASH_SOURCE[0]}")"
 fileName="${absolutePath##*/}"
 filePath="$(dirname "$absolutePath")/"
 
+useClang=0
 buildType="Release"
 
 function displayHelp() {
@@ -22,6 +22,11 @@ function cleanUp() {
 
 
 function runCmake() {
+    if [[ "$useClang" -eq "1" ]]; then
+        export CC="/usr/bin/clang"
+        export CXX="/usr/bin/clang++"
+        echo "Using clang instead of gcc"
+    fi
     if [[ -z "$cmakeInstallLocation" ]]; then
         cmakeInstallLocation="-DCMAKE_INSTALL_PREFIX=/usr/"
     fi
@@ -64,6 +69,8 @@ for var in "$@"; do
         linkType=""
     elif [[ "$var" == "-v" || "$var" == "--v" || "$var" == "-verbose" || "$var" == "--verbose" ]]; then
         verboseOutput=1
+    elif [[ "$var" == "-c" || "$var" == "--c" || "$var" == "-clang" || "$var" == "--clang" || "$var" == "-use-clang" || "$var" == "--use-clang" ]]; then
+        useClang=1
     elif [[ "$var" == -DCMAKE_INSTALL_PREFIX* ]]; then
         cmakeInstallLocation="$var"
     elif [[ "$var" == -D* ]]; then

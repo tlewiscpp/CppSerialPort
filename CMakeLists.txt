@@ -1,7 +1,6 @@
 cmake_minimum_required (VERSION 3.1)
 set(CMAKE_CXX_STANDARD 14)
-set (PROJECT_NAME CppSerialPort)
-project (${PROJECT_NAME})
+project (CppSerialPort CXX)
 
 if (WIN32 OR WIN64)
     set (CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
