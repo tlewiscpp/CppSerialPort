@@ -4,7 +4,7 @@
 #include <iostream>
 
 #if defined(_WIN32)
-#    include <Windows.h>
+#   include <Windows.h>
 #else
 #   include <cerrno>
 #endif //defined(_WIN32)
@@ -17,6 +17,17 @@
 #    define INVALID_STRERROR_RESULT nullptr
 #endif //(_POSIX_C_SOURCE >= 200112L) && !  _GNU_SOURCE
 
+namespace {
+    void stripLineEndings(std::string &str) {
+        if (str.length() >= 2) {
+            str.erase(str.back());
+            str.erase(str.back());
+        } else if (str.length() > 0) {
+            str.erase(str.back());
+        }
+    }
+}
+
 namespace ErrorInformation {
 
 int getLastError() {
@@ -28,9 +39,9 @@ int getLastError() {
 }
 
 std::string getErrorString(int errorCode) {
-    char errorString[STRERROR_BUFFER_MAX];
-    memset(errorString, '\0', STRERROR_BUFFER_MAX);
 #if defined(_WIN32)
+    char errorStringBuffer[STRERROR_BUFFER_MAX];
+    memset(errorStringBuffer, '\0', STRERROR_BUFFER_MAX);
 	wchar_t *wideErrorString{ nullptr };
 	FormatMessageW(
 		FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
@@ -41,19 +52,16 @@ std::string getErrorString(int errorCode) {
 		0,
 		nullptr
 	);
-    (void)wcstombs(errorString, wideErrorString, STRERROR_BUFFER_MAX);
+    (void)wcstombs(errorStringBuffer, wideErrorString, STRERROR_BUFFER_MAX);
 	LocalFree(wideErrorString);
-#else
-    return std::string{strerror(errorCode)};
-	/*
-    auto strerrorCode = strerror_r(errorCode, errorString, STRERROR_BUFFER_MAX);
-    if (strerrorCode == INVALID_STRERROR_RESULT) {
-        std::cerr << "strerror_r(int, char *, int): error occurred" << std::endl;
-        return "";
-    }
-    */
-#endif //defined(_WIN32)
+    std::string errorString{errorStringBuffer};
+    stripLineEndings(errorString);
     return errorString;
+#else
+    std::string errorString{strerror(errorCode)};
+    stripLineEndings(errorString);
+    return errorString;
+#endif //defined(_WIN32)
 }
 
 } //namespace ErrorInformation
@@ -70,9 +78,9 @@ int getLastError() {
 }
 
 std::string getErrorString(int errorCode) {
-    char errorString[STRERROR_BUFFER_MAX];
-    memset(errorString, '\0', STRERROR_BUFFER_MAX);
 #if defined(_WIN32)
+    char errorStringBuffer[STRERROR_BUFFER_MAX];
+    memset(errorStringBuffer, '\0', STRERROR_BUFFER_MAX);
     wchar_t *wideErrorString{ nullptr };
     FormatMessageW(
         FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
@@ -84,19 +92,16 @@ std::string getErrorString(int errorCode) {
         nullptr
     );
 
-    (void)wcstombs(errorString, wideErrorString, STRERROR_BUFFER_MAX);
+    (void)wcstombs(errorStringBuffer, wideErrorString, STRERROR_BUFFER_MAX);
     LocalFree(wideErrorString);
-#else
-    return std::string{strerror(errorCode)};
-    /*
-    auto strerrorCode = strerror_r(errorCode, errorString, STRERROR_BUFFER_MAX);
-    if (strerrorCode == INVALID_STRERROR_RESULT) {
-        std::cerr << "strerror_r(int, char *, int): error occurred" << std::endl;
-        return "";
-    }
-    */
-#endif //defined(_WIN32)
+    std::string errorString{errorStringBuffer};
+    stripLineEndings(errorString);
     return errorString;
+#else
+    std::string errorString{strerror(errorCode)};
+    stripLineEndings(errorString);
+    return errorString;
+#endif //defined(_WIN32)
 }
 
 } //namespace NetworkErrorInformation

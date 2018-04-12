@@ -1,5 +1,5 @@
-#ifndef ERROR_INFORMATION_HPP
-#define ERROR_INFORMATION_HPP
+#ifndef ERROR_INFORMATION_H
+#define ERROR_INFORMATION_H
 
 #include <string>
 
@@ -13,4 +13,4 @@ namespace NetworkErrorInformation {
     std::string getErrorString(int errorCode);
 } //namespace NetworkErrorInformation
 
-#endif //ERROR_INFORMATION_HPP
+#endif //ERROR_INFORMATION_H
