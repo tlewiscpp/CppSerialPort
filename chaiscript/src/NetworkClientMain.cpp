@@ -52,6 +52,8 @@ static const char * const CHAI_SCRIPT_EXTENSION{"chai"};
 static const uint16_t MINIMUM_PORT_NUMBER{CppSerialPort::AbstractSocket::MINIMUM_PORT_NUMBER};
 static const uint16_t MAXIMUM_PORT_NUMBER{CppSerialPort::AbstractSocket::MAXIMUM_PORT_NUMBER};
 
+static const char * const DEFAULT_HOST_NAME{"127.0.0.1"};
+
 std::string tryParseHostName(std::string hostName);
 int32_t tryParsePortNumber(std::string portNumber);
 std::string tryParseScriptName(std::string scriptName);
@@ -62,7 +64,7 @@ int main(int argc, char *argv[])
         displayHelp();
         exit(EXIT_FAILURE);
     }
-    std::string hostName{"127.0.0.1"};
+    std::string hostName{};
     int32_t portNumber{-1};
     std::string scriptName{""};
     bool useUdp{false};
@@ -115,7 +117,7 @@ int main(int argc, char *argv[])
         }
     }
 
-    if (hostName.empty()) {
+    if (hostName == DEFAULT_HOST_NAME) {
         for (int i = 1; i < argc; i++) {
             if ( (strlen(argv[i]) > 0) && (argv[i][0] != '-') && (looksLikeIP(argv[i]))) {
                 hostName = argv[i];
