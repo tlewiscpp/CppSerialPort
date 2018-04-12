@@ -13,6 +13,7 @@ public:
     explicit ByteArray(const char *cStr);
     explicit ByteArray(const std::string &str);
     explicit ByteArray(char *buffer, size_t length);
+    explicit ByteArray(char *buffer, int length);
     ByteArray &operator=(const ByteArray &rhs);
     ByteArray &operator=(const std::vector<char> &rhs);
     ByteArray &operator=(const std::string &rhs);

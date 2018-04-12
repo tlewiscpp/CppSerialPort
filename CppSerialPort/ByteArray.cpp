@@ -10,14 +10,6 @@ namespace {
 
 namespace CppSerialPort {
 
-/*
-ByteArray::ByteArray(char c0) :
-    ByteArray{&c0, 1}
-{
-
-}
-*/
-
 ByteArray::ByteArray(const char *cStr) :
     m_buffer{cStr, cStr + strlen(cStr)}
 {
@@ -36,25 +28,26 @@ ByteArray::ByteArray(char *buffer, size_t length) :
 
 }
 
-
-ByteArray &ByteArray::clear()
+ByteArray::ByteArray(char *buffer, int length) :
+    ByteArray{buffer, static_cast<size_t>(length)}
 {
+    
+}
+
+ByteArray &ByteArray::clear() {
     this->m_buffer.clear();
     return *this;
 }
 
-size_t ByteArray::size() const
-{
+size_t ByteArray::size() const {
     return this->m_buffer.size();
 }
 
-size_t ByteArray::length() const
-{
+size_t ByteArray::length() const {
     return this->m_buffer.size();
 }
 
-bool ByteArray::empty() const
-{
+bool ByteArray::empty() const {
     return this->m_buffer.empty();
 }
 

@@ -21,6 +21,7 @@ ModulePtr CppSerialPortChaiScriptModuleFactory::createModule() {
     returnModule->add(constructor<ByteArray(const char *)>(), "ByteArray");
     returnModule->add(constructor<ByteArray(const std::string &)>(), "ByteArray");
     returnModule->add(constructor<ByteArray(char *, size_t)>(), "ByteArray");
+    returnModule->add(constructor<ByteArray(char *, int)>(), "ByteArray");
     returnModule->add(constructor<ByteArray(const std::vector<char> &)>(), "ByteArray");
     returnModule->add(constructor<ByteArray(const ByteArray &)>(), "ByteArray");
 
