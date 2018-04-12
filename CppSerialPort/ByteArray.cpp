@@ -10,11 +10,13 @@ namespace {
 
 namespace CppSerialPort {
 
-ByteArray::ByteArray(char c) :
-    ByteArray{&c, 1}
+/*
+ByteArray::ByteArray(char c0) :
+    ByteArray{&c0, 1}
 {
 
 }
+*/
 
 ByteArray::ByteArray(const char *cStr) :
     m_buffer{cStr, cStr + strlen(cStr)}
@@ -30,12 +32,6 @@ ByteArray::ByteArray(const std::string &str) :
 
 ByteArray::ByteArray(char *buffer, size_t length) :
     m_buffer{buffer, buffer + length}
-{
-
-}
-
-ByteArray::ByteArray(const std::vector<char> &byteArray) :
-    m_buffer{byteArray.begin(), byteArray.end()}
 {
 
 }
@@ -121,7 +117,11 @@ ByteArray ByteArray::subsequence(size_t index, size_t length) const
     while ( (endingIter != this->m_buffer.end()) && (counter++ != length) ) {
         endingIter++;
     }
-    return ByteArray{beginningIter, endingIter};
+    ByteArray returnArray{};
+    for (auto iter = beginningIter; iter != endingIter; iter++) {
+        returnArray.append(*iter);
+    }
+    return returnArray;
 }
 
 ByteArray::operator std::string() const {
@@ -196,7 +196,7 @@ ByteArray &ByteArray::operator=(char c) {
     return *this;
 }
 
-ByteArray &ByteArray::operator=(ByteArray &&rhs) {
+ByteArray &ByteArray::operator=(ByteArray &&rhs) noexcept {
     this->m_buffer.clear();
     this->m_buffer = std::move(rhs.m_buffer);
     return *this;
@@ -267,6 +267,11 @@ ByteArray &ByteArray::operator+(char c) {
     return *this;
 }
 
+ByteArray &ByteArray::operator+(int i) {
+    this->append(i);
+    return *this;
+}
+
 ByteArray &ByteArray::operator+(const ByteArray &rhs) {
     this->append(rhs);
     return *this;
@@ -284,6 +289,12 @@ ByteArray &ByteArray::operator+(const std::vector<char> &rhs) {
 
 ByteArray operator+(char c, const ByteArray &rhs) {
     ByteArray returnArray{c};
+    returnArray += rhs;
+    return returnArray;
+}
+
+ByteArray operator+(int i, const ByteArray &rhs) {
+    ByteArray returnArray{static_cast<char>(i)};
     returnArray += rhs;
     return returnArray;
 }
@@ -309,6 +320,12 @@ ByteArray operator+(const std::vector<char> &lhs, const ByteArray &rhs) {
 ByteArray operator+(const ByteArray &lhs, char c) {
     ByteArray returnArray{lhs};
     returnArray.append(c);
+    return returnArray;
+}
+
+ByteArray operator+(const ByteArray &lhs, int i) {
+    ByteArray returnArray{lhs};
+    returnArray.append(i);
     return returnArray;
 }
 

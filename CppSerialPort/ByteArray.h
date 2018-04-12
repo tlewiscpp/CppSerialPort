@@ -10,21 +10,21 @@ namespace CppSerialPort {
 class ByteArray {
 public:
     explicit ByteArray() = default;
-    explicit ByteArray(char c);
     explicit ByteArray(const char *cStr);
     explicit ByteArray(const std::string &str);
     explicit ByteArray(char *buffer, size_t length);
-    explicit ByteArray(const std::vector<char> &byteArray);
     ByteArray &operator=(const ByteArray &rhs);
     ByteArray &operator=(const std::vector<char> &rhs);
     ByteArray &operator=(const std::string &rhs);
     ByteArray &operator=(char c);
-    ByteArray &operator=(ByteArray &&rhs);
+    ByteArray &operator=(ByteArray &&rhs) noexcept;
     ByteArray &operator=(std::vector<char> &&rhs);
     ByteArray(const ByteArray &other) = default;
-    ByteArray(ByteArray &&other) = default;
-    template <typename InputIterator> explicit ByteArray(InputIterator begin, InputIterator end) :
-            m_buffer{begin, end} { }
+    ByteArray(ByteArray &&other) noexcept = default;
+    template <typename T> explicit ByteArray(const std::vector<T> &byteArray) : m_buffer{} {
+        for (const auto &it : byteArray) { this->m_buffer.push_back(static_cast<char>(it)); }
+    }
+    template <typename ...Ts> explicit ByteArray(Ts...ts) : ByteArray{std::vector<std::common_type_t<Ts...>>{ts...}} {}
 
     ByteArray &append(char c);
     ByteArray &append(int i);
@@ -46,10 +46,12 @@ public:
     size_t find(char c);
 
     friend ByteArray operator+(char c, const ByteArray &rhs);
+    friend ByteArray operator+(int i, const ByteArray &rhs);
     friend ByteArray operator+(const ByteArray &lhs, const ByteArray &rhs);
     friend ByteArray operator+(const std::string &lhs, const ByteArray &rhs);
     friend ByteArray operator+(const std::vector<char> &lhs, const ByteArray &rhs);
     friend ByteArray operator+(const ByteArray &lhs, char c);
+    friend ByteArray operator+(const ByteArray &lhs, int c);
     friend ByteArray operator+(const ByteArray &lhs, const std::string &rhs);
     friend ByteArray operator+(const ByteArray &lhs, const std::vector<char> &rhs);
 

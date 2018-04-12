@@ -23,6 +23,55 @@ ModulePtr CppSerialPortChaiScriptModuleFactory::createModule() {
     returnModule->add(constructor<ByteArray(char *, size_t)>(), "ByteArray");
     returnModule->add(constructor<ByteArray(const std::vector<char> &)>(), "ByteArray");
     returnModule->add(constructor<ByteArray(const ByteArray &)>(), "ByteArray");
+
+    returnModule->add(constructor<ByteArray(int)>(), "ByteArray");
+    returnModule->add(constructor<ByteArray(int, int)>(), "ByteArray");
+    returnModule->add(constructor<ByteArray(int, int, int)>(), "ByteArray");
+    returnModule->add(constructor<ByteArray(int, int, int, int)>(), "ByteArray");
+    returnModule->add(constructor<ByteArray(int, int, int, int, int)>(), "ByteArray");
+    returnModule->add(constructor<ByteArray(int, int, int, int, int, int)>(), "ByteArray");
+    returnModule->add(constructor<ByteArray(int, int, int, int, int, int, int)>(), "ByteArray");
+    returnModule->add(constructor<ByteArray(int, int, int, int, int, int, int, int)>(), "ByteArray");
+    returnModule->add(constructor<ByteArray(int, int, int, int, int, int, int, int, int)>(), "ByteArray");
+    returnModule->add(constructor<ByteArray(int, int, int, int, int, int, int, int, int, int)>(), "ByteArray");
+    returnModule->add(constructor<ByteArray(int, int, int, int, int, int, int, int, int, int, int)>(), "ByteArray");
+    returnModule->add(constructor<ByteArray(int, int, int, int, int, int, int, int, int, int, int, int)>(), "ByteArray");
+    returnModule->add(constructor<ByteArray(int, int, int, int, int, int, int, int, int, int, int, int, int)>(), "ByteArray");
+    returnModule->add(constructor<ByteArray(int, int, int, int, int, int, int, int, int, int, int, int, int, int)>(), "ByteArray");
+    returnModule->add(constructor<ByteArray(int, int, int, int, int, int, int, int, int, int, int, int, int, int, int)>(), "ByteArray");
+    returnModule->add(constructor<ByteArray(int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int)>(), "ByteArray");
+    returnModule->add(constructor<ByteArray(int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int)>(), "ByteArray");
+    returnModule->add(constructor<ByteArray(int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int)>(), "ByteArray");
+    returnModule->add(constructor<ByteArray(int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int)>(), "ByteArray");
+    returnModule->add(constructor<ByteArray(int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int)>(), "ByteArray");
+    returnModule->add(constructor<ByteArray(int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int)>(), "ByteArray");
+    returnModule->add(constructor<ByteArray(int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int)>(), "ByteArray");
+
+
+    returnModule->add(constructor<ByteArray(char)>(), "ByteArray");
+    returnModule->add(constructor<ByteArray(char, char)>(), "ByteArray");
+    returnModule->add(constructor<ByteArray(char, char, char)>(), "ByteArray");
+    returnModule->add(constructor<ByteArray(char, char, char, char)>(), "ByteArray");
+    returnModule->add(constructor<ByteArray(char, char, char, char, char)>(), "ByteArray");
+    returnModule->add(constructor<ByteArray(char, char, char, char, char, char)>(), "ByteArray");
+    returnModule->add(constructor<ByteArray(char, char, char, char, char, char, char)>(), "ByteArray");
+    returnModule->add(constructor<ByteArray(char, char, char, char, char, char, char, char)>(), "ByteArray");
+    returnModule->add(constructor<ByteArray(char, char, char, char, char, char, char, char, char)>(), "ByteArray");
+    returnModule->add(constructor<ByteArray(char, char, char, char, char, char, char, char, char, char)>(), "ByteArray");
+    returnModule->add(constructor<ByteArray(char, char, char, char, char, char, char, char, char, char, char)>(), "ByteArray");
+    returnModule->add(constructor<ByteArray(char, char, char, char, char, char, char, char, char, char, char, char)>(), "ByteArray");
+    returnModule->add(constructor<ByteArray(char, char, char, char, char, char, char, char, char, char, char, char, char)>(), "ByteArray");
+    returnModule->add(constructor<ByteArray(char, char, char, char, char, char, char, char, char, char, char, char, char, char)>(), "ByteArray");
+    returnModule->add(constructor<ByteArray(char, char, char, char, char, char, char, char, char, char, char, char, char, char, char)>(), "ByteArray");
+    returnModule->add(constructor<ByteArray(char, char, char, char, char, char, char, char, char, char, char, char, char, char, char, char)>(), "ByteArray");
+    returnModule->add(constructor<ByteArray(char, char, char, char, char, char, char, char, char, char, char, char, char, char, char, char, char)>(), "ByteArray");
+    returnModule->add(constructor<ByteArray(char, char, char, char, char, char, char, char, char, char, char, char, char, char, char, char, char, char)>(), "ByteArray");
+    returnModule->add(constructor<ByteArray(char, char, char, char, char, char, char, char, char, char, char, char, char, char, char, char, char, char, char)>(), "ByteArray");
+    returnModule->add(constructor<ByteArray(char, char, char, char, char, char, char, char, char, char, char, char, char, char, char, char, char, char, char, char)>(), "ByteArray");
+    returnModule->add(constructor<ByteArray(char, char, char, char, char, char, char, char, char, char, char, char, char, char, char, char, char, char, char, char, char)>(), "ByteArray");
+    returnModule->add(constructor<ByteArray(char, char, char, char, char, char, char, char, char, char, char, char, char, char, char, char, char, char, char, char, char, char)>(), "ByteArray");
+
+
     //returnModule->add(constructor<ByteArray(ByteArray &&)>(), "ByteArray");
 
     returnModule->add(fun<ByteArray &, ByteArray, const ByteArray &>(&ByteArray::operator=), "=");
