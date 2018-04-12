@@ -3,15 +3,6 @@
 
 #include <cstdio>
 
-#if defined(_WIN32)
-#   include <Windows.h>
-    typedef int fd_t;
-    typedef HANDLE file_handle_t;
-#else
-    typedef int fd_t;
-    typedef FILE* file_handle_t;
-#endif //defined(_WIN32)
-
 #include <string>
 #include <cstring>
 
@@ -40,13 +31,12 @@ public:
     virtual bool isAtEnd();
 
 protected:
-    fd_t getFileDescriptor();
-    file_handle_t getFileHandle();
+    int getFileDescriptor();
+    FILE *getFileHandle();
 
 private:
     std::string m_fileName;
-    file_handle_t m_fileHandle;
-    bool m_atEndOfFile;
+    FILE *m_fileHandle;
 
     static bool checkMode(const std::string &mode);
 };

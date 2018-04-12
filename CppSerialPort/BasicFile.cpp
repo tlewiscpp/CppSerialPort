@@ -6,13 +6,7 @@
 #include <sstream>
 #include <unordered_set>
 
-
-#if defined(_WIN32)
-#    define INVALID_FILE_DESCRIPTOR -1
-#    include <io.h>
-#else
-#    define INVALID_FILE_DESCRIPTOR -1
-#endif //defined(_WIN32)
+#define INVALID_FILE_DESCRIPTOR -1
 
 #define READ_BUFFER_MAX 1024
 
@@ -59,19 +53,6 @@ size_t BasicFile::read(char *buffer, size_t maximum) {
         message << "BasicFile::read(): file \"" << this->m_fileName << "\" cannot be read from while it is closed (call BasicFile::open() first)";
         throw std::runtime_error(message.str());
     }
-#if defined(_WIN32)
-    DWORD readBytes{0};
-    auto readResult = ReadFile(this->m_fileHandle, buffer, maximum, &readBytes, nullptr);
-    if (!readResult) {
-        auto errorCode = getLastError();
-        std::stringstream message{};
-        message << "BasicFile::read(): read from file \"" << this->m_fileName << "\" failed with error code " << errorCode << " (" << getErrorString(errorCode) << ")";
-        throw std::runtime_error(message.str());
-    } else if (readBytes == 0) {
-        this->m_atEndOfFile = true;
-    }
-    return static_cast<size_t>(readBytes);
-#else
     auto result = fread(buffer, sizeof(char), maximum, this->m_fileHandle);
     if (ferror(this->m_fileHandle)) {
         auto errorCode = getLastError();
@@ -80,8 +61,6 @@ size_t BasicFile::read(char *buffer, size_t maximum) {
         throw std::runtime_error(message.str());
     }
     return result;
-#endif //defined(_WIN32)
-
 }
 
 size_t BasicFile::write(char *buffer, size_t maximum) {
@@ -90,19 +69,6 @@ size_t BasicFile::write(char *buffer, size_t maximum) {
         message << "BasicFile::write(): file \"" << this->m_fileName << "\" cannot be read from while it is closed (call BasicFile::open() first)";
         throw std::runtime_error(message.str());
     }
-#if defined(_WIN32)
-    DWORD writtenBytes{0};
-    auto readResult = WriteFile(this->m_fileHandle, buffer, maximum, &writtenBytes, nullptr);
-    if (!readResult) {
-        auto errorCode = getLastError();
-        std::stringstream message{};
-        message << "BasicFile::write(): write to file \"" << this->m_fileName << "\" failed with error code " << errorCode << " (" << getErrorString(errorCode) << ")";
-        throw std::runtime_error(message.str());
-    } else if (writtenBytes == 0) {
-        this->m_atEndOfFile = true;
-    }
-    return static_cast<size_t>(writtenBytes);
-#else
     auto result = fwrite(buffer, sizeof(char), maximum, this->m_fileHandle);
     if (ferror(this->m_fileHandle)) {
         auto errorCode = getLastError();
@@ -111,7 +77,6 @@ size_t BasicFile::write(char *buffer, size_t maximum) {
         throw std::runtime_error(message.str());
     }
     return result;
-#endif //defined(_WIN32)
 }
 
 size_t BasicFile::write(char c) {
@@ -129,11 +94,7 @@ bool BasicFile::isAtEnd() {
         message << "BasicFile::isAtEnd(): file \"" << this->m_fileName << "\" cannot be queried while it is closed (call BasicFile::open() first)";
         throw std::runtime_error(message.str());
     }
-#if defined(_WIN32)
-    return this->m_atEndOfFile;
-#else
     return feof(this->m_fileHandle) != 0;
-#endif //defined(_WIN32)
 }
 
 BasicFile &BasicFile::open(const std::string &mode) {
@@ -145,9 +106,6 @@ BasicFile &BasicFile::open(const std::string &mode) {
         message << "BasicFile::open(): Mode parameter \"" << mode << "\" is not a valid open mode";
         throw std::runtime_error(message.str());
     }
-#if defined(_WIN32)
-    //CreateFileA()
-#else
     auto handle = fopen(this->m_fileName.c_str(), mode.c_str());
     if (handle == nullptr) {
         auto errorCode = getLastError();
@@ -156,8 +114,6 @@ BasicFile &BasicFile::open(const std::string &mode) {
         throw std::runtime_error(message.str());
     }
     this->m_fileHandle = handle;
-#endif //defined(_WIN32)
-    this->m_atEndOfFile = false;
     return *this;
 }
 
@@ -181,16 +137,6 @@ bool BasicFile::isOpen() {
 }
 
 BasicFile &BasicFile::close() {
-
-#if defined(_WIN32)
-    auto returnCode = CloseHandle(this->m_fileHandle);
-    if (!returnCode) {
-        auto errorCode = getLastError();
-        std::stringstream message{};
-        message << "BasicFile::close(): CloseHandle returned error code " << errorCode << " (" << getErrorString(errorCode) << ")" << std::endl;
-        throw std::runtime_error(message.str());
-    }
-#else
     auto returnCode = fclose(this->m_fileHandle);
     if (returnCode == -1) {
         auto errorCode = getLastError();
@@ -198,19 +144,14 @@ BasicFile &BasicFile::close() {
         message << "BasicFile::close(): fclose returned error code " << errorCode << " (" << getErrorString(errorCode) << ")" << std::endl;
         throw std::runtime_error(message.str());
     }
-#endif //defined(_WIN32)
     return *this;
 }
 
-fd_t BasicFile::getFileDescriptor() {
-#if defined(_WIN32)
-    return this->m_fileHandle == nullptr ? INVALID_FILE_DESCRIPTOR : _get_osfhandle(reinterpret_cast<intptr_t>(this->m_fileHandle));
-#else
+int BasicFile::getFileDescriptor() {
     return this->m_fileHandle == nullptr ? INVALID_FILE_DESCRIPTOR : fileno(this->m_fileHandle);
-#endif //defined(_WIN32)
 }
 
-file_handle_t BasicFile::getFileHandle() {
+FILE *BasicFile::getFileHandle() {
     return this->m_fileHandle;
 }
 
@@ -226,18 +167,10 @@ BasicFile::~BasicFile() {
     if (this->m_fileHandle == nullptr) {
         return;
     }
-#if defined(_WIN32)
-    auto returnCode = CloseHandle(this->m_fileHandle);
-    if (!returnCode) {
-        auto errorCode = getLastError();
-        std::cerr << "BasicFile::close(): CloseHandle returned error code " << errorCode << " (" << getErrorString(errorCode) << ")" << std::endl;
-    }
-#else
     auto returnCode = fclose(this->m_fileHandle);
     if (returnCode == -1) {
         auto errorCode = getLastError();
         std::cerr << "BasicFile::close(): fclose returned error code " << errorCode << " (" << getErrorString(errorCode) << ")" << std::endl;
     }
-#endif //defined(_WIN32)
 }
 
