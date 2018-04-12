@@ -33,16 +33,19 @@ ModulePtr CppSerialPortChaiScriptModuleFactory::createModule() {
     //returnModule->add(fun<ByteArray &, ByteArray, std::vector<char> &&>(&ByteArray::operator=), "=");
 
     returnModule->add(fun<ByteArray &, ByteArray, char>(&ByteArray::append), "append");
+    returnModule->add(fun<ByteArray &, ByteArray, int>(&ByteArray::append), "append");
     returnModule->add(fun<ByteArray &, ByteArray, const ByteArray &>(&ByteArray::append), "append");
     returnModule->add(fun<ByteArray &, ByteArray, const std::string &>(&ByteArray::append), "append");
     returnModule->add(fun<ByteArray &, ByteArray, const std::vector<char> &>(&ByteArray::append), "append");
 
     returnModule->add(fun<ByteArray &, ByteArray, char>(&ByteArray::operator+=), "+=");
+    returnModule->add(fun<ByteArray &, ByteArray, int>(&ByteArray::operator+=), "+=");
     returnModule->add(fun<ByteArray &, ByteArray, const ByteArray &>(&ByteArray::operator+=), "+=");
     returnModule->add(fun<ByteArray &, ByteArray, const std::string &>(&ByteArray::operator+=), "+=");
     returnModule->add(fun<ByteArray &, ByteArray, const std::vector<char> &>(&ByteArray::operator+=), "+=");
 
     returnModule->add(fun<ByteArray &, ByteArray, char>(&ByteArray::operator+), "+");
+    returnModule->add(fun<ByteArray &, ByteArray, int>(&ByteArray::operator+), "+");
     returnModule->add(fun<ByteArray &, ByteArray, const ByteArray &>(&ByteArray::operator+), "+");
     returnModule->add(fun<ByteArray &, ByteArray, const std::string &>(&ByteArray::operator+), "+");
     returnModule->add(fun<ByteArray &, ByteArray, const std::vector<char> &>(&ByteArray::operator+), "+");

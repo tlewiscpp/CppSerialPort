@@ -212,10 +212,19 @@ ByteArray &ByteArray::operator+=(char c) {
     return this->append(c);
 }
 
+ByteArray &ByteArray::operator+=(int i) {
+    return this->append(i);
+}
+
 ByteArray &ByteArray::append(char c) {
     this->m_buffer.push_back(c);
     return *this;
 }
+
+ByteArray &ByteArray::append(int i) {
+    return this->append(static_cast<char>(i));
+}
+
 ByteArray &ByteArray::append(const ByteArray &rhs) {
     std::copy(rhs.m_buffer.begin(), rhs.m_buffer.end(), std::back_inserter(this->m_buffer));
     return *this;

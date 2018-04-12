@@ -27,13 +27,16 @@ public:
             m_buffer{begin, end} { }
 
     ByteArray &append(char c);
+    ByteArray &append(int i);
     ByteArray &append(const ByteArray &rhs);
     ByteArray &append(const std::string &rhs);
     ByteArray &append(const std::vector<char> &rhs);
     ByteArray &operator+=(char c);
+    ByteArray &operator+=(int i);
     ByteArray &operator+=(const ByteArray &rhs);
     ByteArray &operator+=(const std::string &rhs);
     ByteArray &operator+=(const std::vector<char> &rhs);
+    ByteArray &operator+(int i);
     ByteArray &operator+(char c);
     ByteArray &operator+(const ByteArray &rhs);
     ByteArray &operator+(const std::string &rhs);

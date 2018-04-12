@@ -172,7 +172,7 @@ void notifyScriptError(std::exception *e) {
     if ( (evalError = dynamic_cast<chaiscript::exception::eval_error *>(e)) != nullptr) {
 		std::cout << "Evaluation Error: " << evalError->pretty_print() << std::endl;
     } else {
-        std::cout << "Evaluation Error: " << e->what() << std::endl;
+        std::cout << "Error: " << e->what() << std::endl;
     }
 }
 
