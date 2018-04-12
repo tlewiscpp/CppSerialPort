@@ -167,6 +167,7 @@ ModulePtr CppSerialPortChaiScriptModuleFactory::createModule() {
     returnModule->add(fun<void, IByteStream>(&IByteStream::flushTx), "flushTx");
     returnModule->add(fun<ssize_t, IByteStream, char>(&IByteStream::write), "write");
     returnModule->add(fun<ssize_t, IByteStream, const char *, size_t>(&IByteStream::write), "write");
+    returnModule->add(fun<ssize_t, IByteStream, const ByteArray &>(&IByteStream::write), "write");
 
     returnModule->add(fun<ssize_t, IByteStream, const std::string &>(&IByteStream::writeLine), "writeLine");
     returnModule->add(fun<ssize_t, IByteStream, const ByteArray &>(&IByteStream::writeLine), "writeLine");

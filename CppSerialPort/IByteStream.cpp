@@ -42,63 +42,55 @@ IByteStream::IByteStream() :
 
 }
 
-void IByteStream::setReadTimeout(int timeout)
-{
+void IByteStream::setReadTimeout(int timeout) {
     if (timeout < 0) {
         throw std::runtime_error("CppSerialPort::IByteStream::setReadTimeout(int): invariant failure (read timeout cannot be less than 0, " + toStdString(timeout) + " < 0)");
     }
     this->m_readTimeout = timeout;
 }
 
-int IByteStream::readTimeout() const
-{
+int IByteStream::readTimeout() const {
     return this->m_readTimeout;
 
 }
-void IByteStream::setWriteTimeout(int timeout)
-{
+
+void IByteStream::setWriteTimeout(int timeout) {
     if (timeout < 0) {
         throw std::runtime_error("CppSerialPort::IByteStream::setWriteTimeout(int): invariant failure (write timeout cannot be less than 0, " + toStdString(timeout) + " < 0)");
     }
     this->m_writeTimeout = timeout;
 }
 
-int IByteStream::writeTimeout() const
-{
+int IByteStream::writeTimeout() const {
     return this->m_writeTimeout;
 }
 
-ByteArray IByteStream::lineEnding() const
-{
+ByteArray IByteStream::lineEnding() const {
     return this->m_lineEnding;
 }
 
-void IByteStream::setLineEnding(const std::string &str)
-{
+void IByteStream::setLineEnding(const std::string &str) {
     if (str.length() == 0) {
         throw std::runtime_error("CppSerialPort::IByteStream::setLineEnding(const std::string &): str.length() == 0 (invariant failure)");
     }
     this->m_lineEnding = str;
 }
 
-void IByteStream::setLineEnding(const ByteArray &byteArray)
-{
+void IByteStream::setLineEnding(const ByteArray &byteArray) {
     if (byteArray.length() == 0) {
         throw std::runtime_error("CppSerialPort::IByteStream::setLineEnding(const ByteArray &): byteArray.length() == 0 (invariant failure)");
     }
     this->m_lineEnding = byteArray;
 }
 
-void IByteStream::setLineEnding(char chr)
-{
+void IByteStream::setLineEnding(char chr) {
     if (chr == '\0') {
         throw std::runtime_error("CppSerialPort::IByteStream::setLineEnding(char): chr == '\\0' (invariant failure)");
     }
     this->m_lineEnding = std::string(1, chr);
 }
 
-ssize_t IByteStream::writeLine(const std::string &str)
-{
+ssize_t IByteStream::writeLine(const std::string &str) {
     std::lock_guard<std::mutex> writeLock{this->m_writeMutex};
 	ByteArray toWrite{};
     toWrite += str;
@@ -106,14 +98,12 @@ ssize_t IByteStream::writeLine(const std::string &str)
 	return this->write(toWrite.data(), toWrite.length());
 }
 
-ssize_t IByteStream::write(const std::string &str)
-{
+ssize_t IByteStream::write(const std::string &str) {
     std::lock_guard<std::mutex> writeLock{this->m_writeMutex};
 	return this->write(str.c_str(), str.length());
 }
 
-ssize_t IByteStream::writeLine(const ByteArray &byteArray)
-{
+ssize_t IByteStream::writeLine(const ByteArray &byteArray) {
     std::lock_guard<std::mutex> writeLock{this->m_writeMutex};
     ByteArray toWrite{};
     toWrite += byteArray;
@@ -121,14 +111,12 @@ ssize_t IByteStream::writeLine(const ByteArray &byteArray)
     return this->write(toWrite.data(), toWrite.length());
 }
 
-ssize_t IByteStream::write(const ByteArray &byteArray)
-{
+ssize_t IByteStream::write(const ByteArray &byteArray) {
     std::lock_guard<std::mutex> writeLock{this->m_writeMutex};
     return this->write(byteArray.data(), byteArray.length());
 }
 
-ByteArray IByteStream::readLine(bool *timeout)
-{
+ByteArray IByteStream::readLine(bool *timeout) {
     return this->readUntil(this->m_lineEnding, timeout);
 }
 
@@ -136,8 +124,7 @@ ByteArray IByteStream::readUntil(const std::string &until, bool *timeout) {
     return this->readUntil(ByteArray{until}, timeout);
 }
 
-ByteArray IByteStream::readUntil(const ByteArray &until, bool *timeout)
-{
+ByteArray IByteStream::readUntil(const ByteArray &until, bool *timeout) {
 	std::lock_guard<std::mutex> readLock{ this->m_readMutex };
     uint64_t startTime{IByteStream::getEpoch()};
     ByteArray returnArray{""};
@@ -161,13 +148,11 @@ ByteArray IByteStream::readUntil(const ByteArray &until, bool *timeout)
     return returnArray;
 }
 
-ByteArray IByteStream::readUntil(char until, bool *timeout)
-{
+ByteArray IByteStream::readUntil(char until, bool *timeout) {
     return this->readUntil(ByteArray{until}, timeout);
 }
 
-bool IByteStream::fileExists(const std::string &fileToCheck)
-{
+bool IByteStream::fileExists(const std::string &fileToCheck) {
 #if defined(_WIN32)
     std::ifstream readFromFile{};
     readFromFile.open(fileToCheck.c_str());
@@ -194,8 +179,7 @@ uint64_t IByteStream::getEpoch()
 }
 #else
 #include <sys/time.h>
-uint64_t IByteStream::getEpoch()
-{
+uint64_t IByteStream::getEpoch() {
     struct timeval tv{};
     gettimeofday(&tv, nullptr);
     return (static_cast<unsigned long long>(tv.tv_sec) * 1000) +

@@ -44,8 +44,9 @@ public:
 	virtual char read(bool *timeout) = 0;
 	virtual ssize_t write(char) = 0;
 	virtual ssize_t write(const char *, size_t) = 0;
+	virtual ssize_t write(const ByteArray &byteArray);
 
-    virtual std::string portName() const = 0;
+	virtual std::string portName() const = 0;
 	virtual bool isOpen() const = 0;
 	virtual void openPort() = 0;
 	virtual void closePort() = 0;
@@ -66,7 +67,6 @@ public:
 
 	virtual ssize_t writeLine(const std::string &str);
     virtual ssize_t writeLine(const ByteArray &byteArray);
-    virtual ssize_t write(const ByteArray &byteArray);
 
     virtual ByteArray readLine(bool *timeout);
 	virtual ByteArray readUntil(const ByteArray &until, bool *timeout);
