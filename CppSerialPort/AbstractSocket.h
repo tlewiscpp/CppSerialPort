@@ -1,9 +1,8 @@
 #ifndef CPPSERIALPORT_ABSTRACTSOCKET_H
 #define CPPSERIALPORT_ABSTRACTSOCKET_H
 
-#include <string>
 #if defined(_WIN32)
-#    include <WinSock2.h>
+#    include <winsock2.h>
 #    include <ws2tcpip.h>
 #    include <Windows.h>
 typedef SOCKET socket_t;
@@ -14,9 +13,9 @@ typedef SOCKET socket_t;
 typedef int socket_t;
 #endif //defined(_WIN32)
 
-
 #include <sys/types.h>
 #include <memory>
+#include <string>
 #include "IByteStream.h"
 #include "IPV4Address.h"
 

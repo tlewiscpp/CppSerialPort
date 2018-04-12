@@ -1,27 +1,5 @@
-/***********************************************************************
-*    SerialPort.h:                                                     *
-*    SerialPort class, for connecting to an RS232 serial port          *
-*    Copyright (c) 2017 Tyler Lewis                                    *
-************************************************************************
-*    This is a header file for CppSerialPort:                          *
-*    https://github.com/tlewiscpp/CppSerialPort                        *
-*    This file may be distributed with the CppSerialPort library,      *
-*    but may also be distributed as a standalone file                  *
-*    The source code is released under the GNU LGPL                    *
-*    This file holds the declarations of a SerialPort class            *
-*    It is used to connect to RS232 compliant serial ports             *
-*                                                                      *
-*    You should have received a copy of the GNU Lesser General         *
-*    Public license along with CppSerialPort                           *
-*    If not, see <http://www.gnu.org/licenses/>                        *
-***********************************************************************/
-
 #ifndef CPPSERIALPORT_SERIALPORT_H
 #define CPPSERIALPORT_SERIALPORT_H
-
-#if defined(_WIN32)
-#     undef MINGW_HAS_SECURE_API
-#endif
 
 #include <string>
 #include <vector>
@@ -29,9 +7,11 @@
 
 #include "IByteStream.h"
 #include <unordered_set>
-
 #include <type_traits>
 
+#if defined(_WIN32)
+#    include <Windows.h>
+#endif //defined(_WIN32)
 
 //Thanks to Jarod42
 //https://stackoverflow.com/a/30561530/4791654
@@ -125,8 +105,8 @@ enum class FlowControl {
 
 
 #if defined(_WIN32)
-#include <Windows.h>
-using modem_status_t = DWORD;
+
+typedef DWORD modem_status_t;
 
 enum class StopBits {
     StopOne     = ONESTOPBIT,
@@ -166,8 +146,8 @@ enum class BaudRate {
 };
 
 #else
-using modem_status_t = int;
 #include <termios.h>
+typedef int modem_status_t;
 enum class Parity {
     ParityEven,
     ParityOdd,
@@ -328,7 +308,7 @@ private:
 
     static const std::vector<std::string> SERIAL_PORT_NAMES;
 
-#if (_WIN32)
+#if defined(_WIN32)
 	static const char *AVAILABLE_PORT_NAMES_BASE;
     static const char *DTR_RTS_ON_IDENTIFIER;
     static const int constexpr NUMBER_OF_POSSIBLE_SERIAL_PORTS{256};
@@ -342,7 +322,7 @@ private:
     termios m_portSettings{};
     termios m_oldPortSettings{};
 	int getFileDescriptor() const;
-#endif
+#endif //defined(_WIN32)
     void applyPortSettings();
     modem_status_t getModemStatus() const;
 

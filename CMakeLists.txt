@@ -15,7 +15,7 @@ set (${PROJECT_NAME}_SOURCE_FILES
     CppSerialPort/UdpClient.cpp
     CppSerialPort/AbstractSocket.cpp
     CppSerialPort/ErrorInformation.cpp
-        CppSerialPort/BasicFile.cpp
+    CppSerialPort/BasicFile.cpp
     CppSerialPort/ByteArray.cpp)
 
 set (${PROJECT_NAME}_HEADER_FILES

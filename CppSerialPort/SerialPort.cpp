@@ -1,20 +1,4 @@
-/***********************************************************************
-*    SerialPort.cpp:                                                   *
-*    SerialPort class, for connecting to an RS232 serial port          *
-*    Copyright (c) 2016 Tyler Lewis                                    *
-************************************************************************
-*    This is a header file for CppSerialPort:                          *
-*    https://github.serial/tlewiscpp/CppSerialPort                     *
-*    This file may be distributed with the entire CppSerialPort library*
-*    but may also be distributed as a standalone file                  *
-*    The source code is released under the GNU LGPL                    *
-*    This file holds the implementation of a SerialPort class          *
-*    It is used to connect to RS232 compliant serial ports             *
-*                                                                      *
-*    You should have received a copy of the GNU Lesser General         *
-*    Public license along with CppSerialPort                           *
-*    If not, see <http://www.gnu.org/licenses/>                        *
-***********************************************************************/
+#include "SerialPort.h"
 
 #include <cstdio>
 #include <cstring>
@@ -23,28 +7,26 @@
 #include <cctype>
 #include <algorithm>
 #include <set>
+#include <iostream>
+#include <limits>
 #include <climits>
 
 #if defined(_WIN32)
-#    include <Windows.h>
 #    include <io.h>
 #    include <Fcntl.h>
 #else
-    #include <termios.h>
-    #include <sys/ioctl.h>
-    #include <unistd.h>
-    #include <fcntl.h>
-    #include <sys/types.h>
-    #include <sys/stat.h>
-    #include <climits>
-    #include <sys/file.h>
-    #include <cerrno>
-    #include <sys/signal.h>
-#endif
+#   include <termios.h>
+#   include <sys/ioctl.h>
+#   include <unistd.h>
+#   include <fcntl.h>
+#   include <sys/types.h>
+#   include <sys/stat.h>
+#   include <climits>
+#   include <sys/file.h>
+#   include <cerrno>
+#   include <sys/signal.h>
+#endif //defined(_WIN32)
 
-#include "SerialPort.h"
-#include <iostream>
-#include <limits>
 #include "ErrorInformation.hpp"
 
 using ErrorInformation::getLastError;

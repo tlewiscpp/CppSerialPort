@@ -1,10 +1,9 @@
 
-#ifndef TRMIDOUBLECHECKBOX_IPV4ADDRESS_H
-#define TRMIDOUBLECHECKBOX_IPV4ADDRESS_H
+#ifndef CPPSERIALPORT_IPV4ADDRESS_H
+#define CPPSERIALPORT_IPV4ADDRESS_H
 
 #include <cstdint>
 #include <string>
-
 
 namespace CppSerialPort {
 
@@ -35,4 +34,4 @@ private:
 } //namespace CppSerialPort
 
 
-#endif //TRMIDOUBLECHECKBOX_IPV4ADDRESS_H
+#endif //CPPSERIALPORT_IPV4ADDRESS_H
