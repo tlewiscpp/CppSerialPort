@@ -78,12 +78,14 @@ int main(int argc, char *argv[])
             case 's':
                 scriptName = tryParseScriptName(optarg);
                 break;
+            default:
+                break;
         }
 	}
     for (int i = 1; i < argc; i++) {
-        if (startsWith(argv[i], SERIAL_PORT_BASE)) {
+        if ( (startsWith(argv[i], SERIAL_PORT_BASE)) && (serialPortName.empty()) ) {
             serialPortName = argv[i];
-        } else if (endsWith(argv[i], CHAI_SCRIPT_EXTENSION)) {
+        } else if ( (endsWith(argv[i], CHAI_SCRIPT_EXTENSION)) && (scriptName.empty()) ) {
             scriptName = argv[i];
         } else if ( (strlen(argv[i]) == 2) && (argv[i][0] == '-') && (argv[i][1] == '-') ) {
            useStdin = true;
@@ -92,6 +94,8 @@ int main(int argc, char *argv[])
     if ( (!useStdin) && (scriptName.length() == 0) ) {
         std::cout << "No script name specified, using stdin" << std::endl;
         useStdin = true;
+    } else {
+        std::cout << "Using ScriptName " << scriptName << std::endl;
     }
     std::cout << "Using SerialPort " << serialPortName << std::endl;
     chaiscript::ChaiScript chaiEngine{}; // loads stdlib from loadable module on file system

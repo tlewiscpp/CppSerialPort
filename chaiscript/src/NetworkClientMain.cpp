@@ -117,29 +117,30 @@ int main(int argc, char *argv[])
         }
     }
 
-    if (hostName == DEFAULT_HOST_NAME) {
+    if (hostName.empty()) {
         for (int i = 1; i < argc; i++) {
             if ( (strlen(argv[i]) > 0) && (argv[i][0] != '-') && (looksLikeIP(argv[i]))) {
                 hostName = argv[i];
             }
         }
         if (hostName.empty()) {
-            std::cerr << "Please specify a host name to connect to" << std::endl;
-            exit(EXIT_FAILURE);
+            hostName = DEFAULT_HOST_NAME;
         }
     }
 
     for (int i = 1; i < argc; i++) {
-        if (endsWith(argv[i], CHAI_SCRIPT_EXTENSION)) {
+        if (endsWith(argv[i], CHAI_SCRIPT_EXTENSION) && (scriptName.empty()) ) {
             scriptName = argv[i];
         } else if ( (strlen(argv[i]) == 2) && (argv[i][0] == '-') && (argv[i][1] == '-') ) {
            useStdin = true;
         }
     }
 
-    if ( (!useStdin) && (scriptName.length() == 0) ) {
+    if ( (!useStdin) && (scriptName.empty()) ) {
         std::cout << "No script name specified, using stdin" << std::endl;
         useStdin = true;
+    } else {
+        std::cout << "Using ScriptName " << scriptName << std::endl;
     }
     std::cout << "Using HostName " << hostName  << std::endl;
     std::cout << "Using PortNumber " << portNumber << std::endl;
