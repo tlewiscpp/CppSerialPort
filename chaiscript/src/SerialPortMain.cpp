@@ -4,8 +4,8 @@
 #include <fstream>
 
 #include <getopt.h>
-#include "ChaiScriptProgramOption.h"
-#include "CppSerialPortChaiScriptModuleFactory.h"
+#include "ChaiScriptProgramOption.hpp"
+#include "CppSerialPortChaiScriptModuleFactory.hpp"
 
 #include "SerialPort.h"
 #include <chaiscript/chaiscript.hpp>
@@ -14,17 +14,21 @@ static const ProgramOption portOption   {'p', "port",   required_argument, "Spec
 static const ProgramOption scriptOption {'s', "script", required_argument, "Specify the script to execute (ex C:/Path/To/Script.chai (absolute) or Script.chai (relative) path)" };
 static const ProgramOption helpOption   {'h', "help",   no_argument,       "Display help text and exit"};
 
-std::array<const ProgramOption *, 3> programOptions{
-    &portOption,
-    &scriptOption,
-    &helpOption
+static const option longOptions[] {
+        portOption.toPosixOption(),
+        scriptOption.toPosixOption(),
+        helpOption.toPosixOption(),
+        {nullptr, 0, nullptr, 0}
 };
 
-static const option longOptions[] {
-    portOption.toPosixOption(),
-    scriptOption.toPosixOption(),
-    helpOption.toPosixOption(),
-    {nullptr, 0, nullptr, 0}
+template <typename T, size_t N> inline constexpr size_t arraySize( T (&t)[N] ) { (void)t; return N; };
+
+static const size_t PROGRAM_OPTION_COUNT{arraySize(longOptions)-1};
+
+std::array<const ProgramOption *, PROGRAM_OPTION_COUNT> programOptions{
+        &portOption,
+        &scriptOption,
+        &helpOption
 };
 
 void displayHelp();
@@ -34,7 +38,6 @@ bool startsWith(const std::string &str, char start);
 bool endsWith(const std::string &str, const std::string &ending);
 bool endsWith(const std::string &str, char end);
 
-template <typename Container> std::string buildShortOptions(const Container &container);
 void notifyScriptError(std::exception *e);
 
 #if defined(_WIN32)
@@ -64,7 +67,7 @@ int main(int argc, char *argv[])
     int currentOption{0};
     opterr = 0;
 
-    while ( (currentOption = getopt_long(argc, argv, buildShortOptions(programOptions).c_str(), longOptions, &optionIndex)) != -1) {    
+    while ( (currentOption = getopt_long(argc, argv, ProgramOption::buildShortOptions(programOptions).c_str(), longOptions, &optionIndex)) != -1) {
         switch (currentOption) {    
             case 'h':
                 displayHelp();
@@ -195,18 +198,6 @@ bool endsWith(const std::string &str, char ending) {
 
 void delay(unsigned int howLong) {
     std::this_thread::sleep_for(std::chrono::milliseconds(howLong));
-}
-
-template <typename Container>
-std::string buildShortOptions(const Container &programOptions) {
-    std::string returnString{""};
-    for (const auto &it : programOptions) {
-        returnString += static_cast<char>(it->shortOption());
-        if (it->argumentSpecifier() == required_argument) {
-            returnString += ':';
-        }
-    }
-    return returnString;
 }
 
 void displayHelp() {

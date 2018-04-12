@@ -1,4 +1,4 @@
-#include "CppSerialPortChaiScriptModuleFactory.h"
+#include "CppSerialPortChaiScriptModuleFactory.hpp"
 
 #include <chaiscript/chaiscript.hpp>
 #include <CppSerialPort/SerialPort.h>

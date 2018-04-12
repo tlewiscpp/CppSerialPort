@@ -53,9 +53,9 @@ set(${NETWORK_CLIENT}_SOURCE_FILES
         "${NETWORK_CLIENT_ROOT}/NetworkClientMain.cpp")
 
 set (${NETWORK_CLIENT}_HEADER_FILES
-        "${NETWORK_CLIENT_ROOT}/CppSerialPortChaiScriptModuleFactory.h"
-        "${NETWORK_CLIENT_ROOT}/ChaiScriptProgramOption.h"
-        "${NETWORK_CLIENT_ROOT}/ChaiScriptModuleFactory.h")
+        "${NETWORK_CLIENT_ROOT}/CppSerialPortChaiScriptModuleFactory.hpp"
+        "${NETWORK_CLIENT_ROOT}/ChaiScriptProgramOption.hpp"
+        "${NETWORK_CLIENT_ROOT}/ChaiScriptModuleFactory.hpp")
 
 add_executable(${NETWORK_CLIENT}
         ${${NETWORK_CLIENT}_SOURCE_FILES}
@@ -66,9 +66,9 @@ set(${SERIAL_PORT_CLIENT}_SOURCE_FILES
         "${SERIAL_PORT_CLIENT_ROOT}/SerialPortMain.cpp")
 
 set (${SERIAL_PORT_CLIENT}_HEADER_FILES
-        "${SERIAL_PORT_CLIENT_ROOT}/CppSerialPortChaiScriptModuleFactory.h"
-        "${SERIAL_PORT_CLIENT_ROOT}/ChaiScriptProgramOption.h"
-        "${SERIAL_PORT_CLIENT_ROOT}/ChaiScriptModuleFactory.h")
+        "${SERIAL_PORT_CLIENT_ROOT}/CppSerialPortChaiScriptModuleFactory.hpp"
+        "${SERIAL_PORT_CLIENT_ROOT}/ChaiScriptProgramOption.hpp"
+        "${SERIAL_PORT_CLIENT_ROOT}/ChaiScriptModuleFactory.hpp")
 
 add_executable(${SERIAL_PORT_CLIENT}
         ${${SERIAL_PORT_CLIENT}_SOURCE_FILES}

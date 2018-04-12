@@ -18,10 +18,14 @@
 //Used to allow only 1 constructor definition to encompass
 //all permutations of DataBits, StopBits, etc...
 
+
+//c++11 or below
+#if __cplusplus <= 201103L
 namespace std {
     template< bool B, class T, class F > using conditional_t = typename conditional<B,T,F>::type;
     template< bool B, class T = void > using enable_if_t = typename enable_if<B,T>::type;
 }
+#endif
 
 namespace PermutedConstructor 
 {

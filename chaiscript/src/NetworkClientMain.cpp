@@ -5,8 +5,8 @@
 #include <fstream>
 
 #include <getopt.h>
-#include "ChaiScriptProgramOption.h"
-#include "CppSerialPortChaiScriptModuleFactory.h"
+#include "ChaiScriptProgramOption.hpp"
+#include "CppSerialPortChaiScriptModuleFactory.hpp"
 
 #include "UdpClient.h"
 #include "TcpClient.h"
@@ -18,21 +18,25 @@ static const ProgramOption scriptOption      {'s', "script", required_argument, 
 static const ProgramOption udpOption         {'u', "udp", no_argument, "Use UDP instead of default (TCP)"};
 static const ProgramOption helpOption        {'h', "help",   no_argument,       "Display help text and exit"};
 
-std::array<const ProgramOption *, 5> programOptions{
+static const option longOptions[] {
+        portOption.toPosixOption(),
+        hostNameOption.toPosixOption(),
+        scriptOption.toPosixOption(),
+        udpOption.toPosixOption(),
+        helpOption.toPosixOption(),
+        {nullptr, 0, nullptr, 0}
+};
+
+template <typename T, size_t N> inline constexpr size_t arraySize( T (&t)[N] ) { (void)t; return N; };
+
+static const size_t PROGRAM_OPTION_COUNT{arraySize(longOptions)-1};
+
+std::array<const ProgramOption *, PROGRAM_OPTION_COUNT> programOptions{
     &portOption,
     &hostNameOption,
     &scriptOption,
     &udpOption,
     &helpOption
-};
-
-static const option longOptions[] {
-    portOption.toPosixOption(),
-    hostNameOption.toPosixOption(),
-    scriptOption.toPosixOption(),
-    udpOption.toPosixOption(),
-    helpOption.toPosixOption(),
-    {nullptr, 0, nullptr, 0}
 };
 
 bool looksLikeIP(const char *str);
@@ -43,13 +47,6 @@ bool startsWith(const std::string &str, char start);
 bool endsWith(const std::string &str, const std::string &ending);
 bool endsWith(const std::string &str, char end);
 void notifyScriptError(std::exception *e);
-template <typename Container> std::string buildShortOptions(const Container &container);
-
-#if defined(_WIN32)
-    static const char * const SERIAL_PORT_BASE{"COM"};
-#else
-    static const char * const SERIAL_PORT_BASE{"/dev/"};
-#endif //defined(_WIN32)
 
 static const char * const CHAI_SCRIPT_EXTENSION{"chai"};
 static const uint16_t MINIMUM_PORT_NUMBER{CppSerialPort::AbstractSocket::MINIMUM_PORT_NUMBER};
@@ -75,7 +72,7 @@ int main(int argc, char *argv[])
     int currentOption{0};
     opterr = 0;
 
-    while ( (currentOption = getopt_long(argc, argv, buildShortOptions(programOptions).c_str(), longOptions, &optionIndex)) != -1) {    
+    while ( (currentOption = getopt_long(argc, argv, ProgramOption::buildShortOptions(programOptions).c_str(), longOptions, &optionIndex)) != -1) {
         switch (currentOption) {    
             case 'h':
                 displayHelp();
@@ -261,18 +258,6 @@ bool endsWith(const std::string &str, char ending) {
 
 void delay(unsigned int howLong) {
     std::this_thread::sleep_for(std::chrono::milliseconds(howLong));
-}
-
-template <typename Container>
-std::string buildShortOptions(const Container &programOptions) {
-    std::string returnString{""};
-    for (const auto &it : programOptions) {
-        returnString += static_cast<char>(it->shortOption());
-        if (it->argumentSpecifier() == required_argument) {
-            returnString += ':';
-        }
-    }
-    return returnString;
 }
 
 void displayHelp() {
