@@ -18,12 +18,22 @@
 #endif //(_POSIX_C_SOURCE >= 200112L) && !  _GNU_SOURCE
 
 namespace {
+    bool endsWith(const std::string &str, char ending) {
+        return (!str.empty()) && (str.back() == ending);
+    }
+
     void stripLineEndings(std::string &str) {
         if (str.length() >= 2) {
-            str.pop_back();
-            str.pop_back();
+            if (endsWith(str, '\r') || endsWith(str, '\n')) {
+                str.pop_back();
+            }
+            if (endsWith(str, '\r') || endsWith(str, '\n')) {
+                str.pop_back();
+            }
         } else if (str.length() > 0) {
-            str.pop_back();
+            if (endsWith(str, '\r') || endsWith(str, '\n')) {
+                str.pop_back();
+            }
         }
     }
 }
