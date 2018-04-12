@@ -95,10 +95,10 @@ int main(int argc, char *argv[])
         std::cout << "No script name specified, using stdin" << std::endl;
         useStdin = true;
     } else {
-        std::cout << "Using ScriptName " << scriptName << std::endl;
+        std::cout << "Using ScriptName=\"" << scriptName << "\"" << std::endl;
     }
-    std::cout << "Using SerialPort " << serialPortName << std::endl;
-    chaiscript::ChaiScript chaiEngine{}; // loads stdlib from loadable module on file system
+    std::cout << "Using SerialPort=\"" << serialPortName << "\"" << std::endl;
+    chaiscript::ChaiScript chaiEngine{};
 
     chaiEngine.add(CppSerialPort::CppSerialPortChaiScriptModuleFactory{}.createModule());
     
@@ -136,7 +136,6 @@ int main(int argc, char *argv[])
         }
 
     } else {
-        std::cout << "Using file \"" << scriptName << "\"" << std::endl;
         try {
             chaiEngine.eval_file(scriptName.c_str());
         } catch (std::exception &e) {
