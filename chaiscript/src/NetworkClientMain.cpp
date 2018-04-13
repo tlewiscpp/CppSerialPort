@@ -48,6 +48,11 @@ bool endsWith(const std::string &str, const std::string &ending);
 bool endsWith(const std::string &str, char end);
 void notifyScriptError(std::exception *e);
 
+unsigned long milliseconds();
+unsigned long seconds();
+unsigned long minutes();
+unsigned long hours();
+
 static const char * const CHAI_SCRIPT_EXTENSION{"chai"};
 static const uint16_t MINIMUM_PORT_NUMBER{CppSerialPort::AbstractSocket::MINIMUM_PORT_NUMBER};
 static const uint16_t MAXIMUM_PORT_NUMBER{CppSerialPort::AbstractSocket::MAXIMUM_PORT_NUMBER};
@@ -157,6 +162,10 @@ int main(int argc, char *argv[])
 
     chaiEngine.add_global(chaiscript::var(networkClient), "networkClient");
     chaiEngine.add(chaiscript::fun(&delay), "delay");
+    chaiEngine.add(chaiscript::fun(&milliseconds), "millis");
+    chaiEngine.add(chaiscript::fun(&seconds), "seconds");
+    chaiEngine.add(chaiscript::fun(&minutes), "minutes");
+    chaiEngine.add(chaiscript::fun(&hours), "hours");
     networkClient->openPort();   
     
     if (useStdin) {
@@ -260,6 +269,29 @@ bool endsWith(const std::string &str, char ending) {
 
 void delay(unsigned int howLong) {
     std::this_thread::sleep_for(std::chrono::milliseconds(howLong));
+}
+
+static auto startTime = std::chrono::high_resolution_clock::now();
+
+auto getElapsedTimePoint() {
+    auto currentTime = std::chrono::high_resolution_clock::now();
+    return (currentTime - startTime);
+}
+
+unsigned long milliseconds() {
+    return static_cast<unsigned long>(std::chrono::duration_cast<std::chrono::milliseconds>(getElapsedTimePoint()).count());
+}
+
+unsigned long seconds() {
+    return static_cast<unsigned long>(std::chrono::duration_cast<std::chrono::seconds>(getElapsedTimePoint()).count());
+}
+
+unsigned long minutes() {
+    return static_cast<unsigned long>(std::chrono::duration_cast<std::chrono::minutes>(getElapsedTimePoint()).count());
+}
+
+unsigned long hours() {
+    return static_cast<unsigned long>(std::chrono::duration_cast<std::chrono::hours>(getElapsedTimePoint()).count());
 }
 
 void displayHelp() {

@@ -128,6 +128,9 @@ ModulePtr CppSerialPortChaiScriptModuleFactory::createModule() {
 
     returnModule->add(fun<ByteArray, ByteArray, size_t, size_t>(&ByteArray::subsequence), "subsequence");
     returnModule->add(fun<std::string, ByteArray>(&ByteArray::toString), "toString");
+    returnModule->add(fun<std::string, ByteArray, int>(&ByteArray::prettyPrint), "prettyPrint");
+    returnModule->add(fun<std::string, ByteArray>(&ByteArray::prettyPrint), "prettyPrint");
+
 
     returnModule->add(fun<bool, ByteArray, char *, size_t>(&ByteArray::endsWith), "endsWith");
     returnModule->add(fun<bool, ByteArray, const char *>(&ByteArray::endsWith), "endsWith");

@@ -4,6 +4,37 @@
 #include <string>
 #include <vector>
 #include <algorithm>
+#include <type_traits>
+
+namespace Detail {
+    template <template<typename> class Trait, typename First, typename ...Args>
+    struct is_all_same_type {
+        enum { value = Trait<First>::value && is_all_same_type<Trait, Args...>::value };
+    };
+
+    template <template<typename> class Trait, typename Head>
+    struct is_all_same_type<Trait, Head> {
+        enum { value = Trait<Head>::value };
+    };
+
+    template <typename T>
+    using UIntRequirement = std::is_same<unsigned int, T>;
+
+    template <typename T>
+    using IntRequirement = std::is_same<int, T>;
+
+    template <typename T>
+    using CharRequirement = std::is_same<char, T>;
+
+    template <typename T>
+    using UCharRequirement = std::is_same<unsigned char, T>;
+
+    template <typename T>
+    using ShortRequirement = std::is_same<short, T>;
+
+    template <typename T>
+    using UShortRequirement = std::is_same<unsigned short, T>;
+}
 
 namespace CppSerialPort {
 
@@ -23,12 +54,19 @@ public:
     ByteArray(const ByteArray &other) = default;
     ByteArray(ByteArray &&other) noexcept = default;
     template <typename T> explicit ByteArray(const std::vector<T> &byteArray) : m_buffer{} {
-
         for (const auto &it : byteArray) { this->m_buffer.push_back(static_cast<char>(it)); }
     }
     template <typename ...Ts> explicit ByteArray(Ts...ts) : 
         ByteArray{std::vector<std::common_type_t<Ts...>>{ts...}} {
-//           static_assert(is_all_same<int, Ts...>::value || is_all_same<char, Ts...>, "Arguments must be int.");
+            static_assert(
+                    Detail::is_all_same_type<Detail::UCharRequirement, Ts...>::value ||
+                    Detail::is_all_same_type<Detail::CharRequirement, Ts...>::value ||
+                    Detail::is_all_same_type<Detail::UShortRequirement, Ts...>::value ||
+                    Detail::is_all_same_type<Detail::ShortRequirement, Ts...>::value ||
+                    Detail::is_all_same_type<Detail::IntRequirement, Ts...>::value ||
+                    Detail::is_all_same_type<Detail::UIntRequirement, Ts...>::value,
+                    "All arguments must be of homogeneous type");
+            //static_assert(is_all_same<int, Ts...>::value || is_all_same<char, Ts...>, "Arguments must be int.");
         }
 
     ByteArray &append(char c);
@@ -89,6 +127,8 @@ public:
     friend bool operator==(const ByteArray &lhs, const ByteArray &rhs) { return std::equal(lhs.m_buffer.begin(), lhs.m_buffer.end(), rhs.m_buffer.begin()); }
     explicit operator std::string() const;
     std::string toString() const;
+    std::string prettyPrint(int spacing) const;
+    std::string prettyPrint() const;
 
     bool endsWith(char *buffer, size_t length) const;
     bool endsWith(const char *cStr) const;

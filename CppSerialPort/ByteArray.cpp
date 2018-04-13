@@ -3,9 +3,22 @@
 #include <cstring>
 #include <stdexcept>
 #include <sstream>
+#include <iomanip>
 
 namespace {
     template <typename T> inline std::string toStdString(const T &t) { return dynamic_cast<std::ostringstream &>(std::ostringstream{} << t).str(); }
+    
+    template <typename InputType> static std::string toFixedWidthHex(InputType value, size_t targetLength, bool includeZeroX = true) {
+        std::stringstream returnString{};
+        if (includeZeroX) {
+            returnString << "0x";
+        }
+        returnString << std::setfill('0');
+        returnString << std::setw(static_cast<int>(targetLength));
+        returnString << std::hex;
+        returnString << static_cast<int>(value);
+        return returnString.str();
+    }
 }
 
 namespace CppSerialPort {
@@ -110,6 +123,7 @@ ByteArray ByteArray::subsequence(size_t index, size_t length) const
     while ( (endingIter != this->m_buffer.end()) && (counter++ != length) ) {
         endingIter++;
     }
+    //return ByteArray{beginningIter, endingIter};
     ByteArray returnArray{};
     for (auto iter = beginningIter; iter != endingIter; iter++) {
         returnArray.append(*iter);
@@ -354,7 +368,6 @@ std::vector<char>::iterator ByteArray::end() {
     return this->m_buffer.end();
 }
 
-
 const std::vector<char>::const_iterator ByteArray::cend() const {
     return this->m_buffer.cend();
 }
@@ -367,4 +380,25 @@ const std::vector<char>::const_reverse_iterator ByteArray::crend() const {
     return this->m_buffer.crend();
 }
 
+std::string ByteArray::prettyPrint() const {
+    return this->prettyPrint(1);
 }
+
+std::string ByteArray::prettyPrint(int spacing) const {
+    std::string returnString{""};
+    for (unsigned int i = 0; i < this->m_buffer.size(); i++) {
+        returnString += toFixedWidthHex(this->m_buffer[i], 2, true);
+        if (i != (this->m_buffer.size() - 1)) {
+            for (int j = 0; j < spacing; j++) {
+                returnString += ' ';
+            }
+            returnString += ':';
+            for (int j = 0; j < spacing; j++) {
+                returnString += ' ';
+            }
+        }
+    }
+    return returnString;
+}
+
+} //namespace CppSerialPort
