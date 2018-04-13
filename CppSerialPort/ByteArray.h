@@ -23,9 +23,13 @@ public:
     ByteArray(const ByteArray &other) = default;
     ByteArray(ByteArray &&other) noexcept = default;
     template <typename T> explicit ByteArray(const std::vector<T> &byteArray) : m_buffer{} {
+
         for (const auto &it : byteArray) { this->m_buffer.push_back(static_cast<char>(it)); }
     }
-    template <typename ...Ts> explicit ByteArray(Ts...ts) : ByteArray{std::vector<std::common_type_t<Ts...>>{ts...}} {}
+    template <typename ...Ts> explicit ByteArray(Ts...ts) : 
+        ByteArray{std::vector<std::common_type_t<Ts...>>{ts...}} {
+//           static_assert(is_all_same<int, Ts...>::value || is_all_same<char, Ts...>, "Arguments must be int.");
+        }
 
     ByteArray &append(char c);
     ByteArray &append(int i);
