@@ -180,7 +180,7 @@ uint64_t IByteStream::getEpoch()
 #else
 #include <sys/time.h>
 uint64_t IByteStream::getEpoch() {
-    struct timeval tv{};
+    struct timeval tv{0, 0};
     gettimeofday(&tv, nullptr);
     return (static_cast<unsigned long long>(tv.tv_sec) * 1000) +
            (static_cast<unsigned long long>(tv.tv_usec) / 1000);

@@ -161,7 +161,7 @@ void SerialPort::setReadTimeout(int timeout)
         return;
     }
 #if defined(_WIN32)
-    COMMTIMEOUTS commTimeouts{};
+    COMMTIMEOUTS commTimeouts{0, 0, 0, 0, 0};
     commTimeouts.ReadIntervalTimeout         = MAXDWORD;
     commTimeouts.ReadTotalTimeoutMultiplier  = 0;
     commTimeouts.ReadTotalTimeoutConstant    = static_cast<DWORD>(this->readTimeout());
@@ -237,7 +237,7 @@ char SerialPort::read(bool *readTimeout)
 	memset(readStuff, '\0', SERIAL_PORT_BUFFER_MAX);
 
 	DWORD commErrors{};
-	COMSTAT commStatus{};
+	COMSTAT commStatus{0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 	auto clearErrorsResult = ClearCommError(this->m_serialPortHandle, &commErrors, &commStatus);
 	if (clearErrorsResult == 0) {
 		const auto errorCode = getLastError();

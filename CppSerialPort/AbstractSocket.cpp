@@ -32,11 +32,32 @@ AbstractSocket::AbstractSocket(const std::string &hostName, uint16_t portNumber)
     m_readBuffer{""}
 {
 #if defined(_WIN32)
-    WSADATA wsaData{};
-    // if this doesn't work
-    //WSAData wsaData; // then try this instead
-    // MAKEWORD(1,1) for Winsock 1.1, MAKEWORD(2,0) for Winsock 2.0:
+    /*
+     typedef struct WSAData {
+	WORD		wVersion;
+	WORD		wHighVersion;
+#ifdef _WIN64
+	unsigned short	iMaxSockets;
+	unsigned short	iMaxUdpDg;
+	char		*lpVendorInfo;
+	char		szDescription[WSADESCRIPTION_LEN+1];
+	char		szSystemStatus[WSASYS_STATUS_LEN+1];
+#else
+	char		szDescription[WSADESCRIPTION_LEN+1];
+	char		szSystemStatus[WSASYS_STATUS_LEN+1];
+	unsigned short	iMaxSockets;
+	unsigned short	iMaxUdpDg;
+	char		*lpVendorInfo;
+#endif
+} WSADATA, *LPWSADATA;
+     */
+#   if defined(_WIN64)
+    WSADATA wsaData{0, 0, 0, 0, nullptr, {}, {}};
+#   else
+    WSADATA wsaData{0, 0, {}, {}, 0, 0, nullptr};
+#   endif //defined(_WIN64)
 
+    memset(&wsaData, 0, sizeof(WSADATA));
     auto wsaStartupResult = WSAStartup(MAKEWORD(2, 0), &wsaData);
     if (wsaStartupResult != 0) {
         throw std::runtime_error("CppSerialPort::AbstractSocket::AbstractSocket(const std::string &, uint16_t): WSAStartup failed: error code " + toStdString(wsaStartupResult) + " (" + getErrorString(wsaStartupResult) + ')');
@@ -209,7 +230,7 @@ ssize_t AbstractSocket::write(const char *bytes, size_t byteCount) {
 }
 
 timeval AbstractSocket::toTimeVal(uint32_t totalTimeout) {
-    timeval tv{};
+    timeval tv{0, 0};
     tv.tv_sec = static_cast<long>(totalTimeout / 1000);
     tv.tv_usec = static_cast<long>((totalTimeout % 1000) * 1000);
     return tv;

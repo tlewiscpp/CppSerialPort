@@ -36,7 +36,7 @@ void UdpClient::doConnect(addrinfo *addressInfo) {
 }
 
 addrinfo UdpClient::getAddressInfoHints() {
-    addrinfo hints{};
+    addrinfo hints{0, 0, 0, 0, 0, nullptr, nullptr, nullptr};
     memset(reinterpret_cast<void *>(&hints), 0, sizeof(addrinfo));
     hints.ai_family = AF_UNSPEC; //IPV4 or IPV6
     hints.ai_socktype = SOCK_DGRAM; //UDP
