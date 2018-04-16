@@ -7,6 +7,7 @@
 #include "ChaiScriptProgramOption.hpp"
 #include "CppSerialPortChaiScriptModuleFactory.hpp"
 
+#include "Random.hpp"
 #include "SerialPort.h"
 #include <chaiscript/chaiscript.hpp>
 
@@ -48,6 +49,10 @@ void notifyScriptError(std::exception *e);
 
 static const char * const CHAI_SCRIPT_EXTENSION{"chai"};
 
+unsigned long milliseconds();
+unsigned long seconds();
+unsigned long minutes();
+unsigned long hours();
 
 std::string tryParseSerialPortName(std::string portName);
 std::string tryParseScriptName(std::string scriptName);
@@ -111,8 +116,16 @@ int main(int argc, char *argv[])
                                                           CppSerialPort::FlowControl::FlowOff,
                                                           "\n")
     };
+
+    std::shared_ptr<Random> random{std::make_shared<Random>()};
+
     chaiEngine.add_global(chaiscript::var(serialPort), "serialPort");
+    chaiEngine.add(chaiscript::fun(static_cast<int(Random::*)(int, int)>(&Random::randomBetween<int>), random.get()), "randomBetween");
     chaiEngine.add(chaiscript::fun(&delay), "delay");
+    chaiEngine.add(chaiscript::fun(&milliseconds), "millis");
+    chaiEngine.add(chaiscript::fun(&seconds), "seconds");
+    chaiEngine.add(chaiscript::fun(&minutes), "minutes");
+    chaiEngine.add(chaiscript::fun(&hours), "hours");
     serialPort->openPort();
 
     if (useStdin) {
@@ -201,6 +214,29 @@ bool endsWith(const std::string &str, char ending) {
 
 void delay(unsigned int howLong) {
     std::this_thread::sleep_for(std::chrono::milliseconds(howLong));
+}
+
+static auto startTime = std::chrono::high_resolution_clock::now();
+
+auto getElapsedTimePoint() {
+    auto currentTime = std::chrono::high_resolution_clock::now();
+    return (currentTime - startTime);
+}
+
+unsigned long milliseconds() {
+    return static_cast<unsigned long>(std::chrono::duration_cast<std::chrono::milliseconds>(getElapsedTimePoint()).count());
+}
+
+unsigned long seconds() {
+    return static_cast<unsigned long>(std::chrono::duration_cast<std::chrono::seconds>(getElapsedTimePoint()).count());
+}
+
+unsigned long minutes() {
+    return static_cast<unsigned long>(std::chrono::duration_cast<std::chrono::minutes>(getElapsedTimePoint()).count());
+}
+
+unsigned long hours() {
+    return static_cast<unsigned long>(std::chrono::duration_cast<std::chrono::hours>(getElapsedTimePoint()).count());
 }
 
 void displayHelp() {

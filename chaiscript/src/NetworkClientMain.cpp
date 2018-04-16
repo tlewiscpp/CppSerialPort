@@ -8,6 +8,7 @@
 #include "ChaiScriptProgramOption.hpp"
 #include "CppSerialPortChaiScriptModuleFactory.hpp"
 
+#include "Random.hpp"
 #include "UdpClient.h"
 #include "TcpClient.h"
 #include <chaiscript/chaiscript.hpp>
@@ -160,8 +161,11 @@ int main(int argc, char *argv[])
         networkClient = std::make_shared<CppSerialPort::TcpClient>(hostName, portNumber);
     }
 
+    std::shared_ptr<Random> random{std::make_shared<Random>()};
+
     chaiEngine.add_global(chaiscript::var(networkClient), "networkClient");
     chaiEngine.add(chaiscript::fun(&delay), "delay");
+    chaiEngine.add(chaiscript::fun(static_cast<int(Random::*)(int, int)>(&Random::randomBetween<int>), random.get()), "randomBetween");
     chaiEngine.add(chaiscript::fun(&milliseconds), "millis");
     chaiEngine.add(chaiscript::fun(&seconds), "seconds");
     chaiEngine.add(chaiscript::fun(&minutes), "minutes");
