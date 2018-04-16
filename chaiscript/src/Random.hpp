@@ -24,7 +24,7 @@ public:
     }
 
     template <typename T> T randomBetween(T lowLimit, T highLimit) {
-        return randomBetween<T>(lowLimit, highLimit, false, false);
+        return randomBetween<T>(lowLimit, highLimit, true, true);
     }
 private:
     std::mt19937 m_randomEngine;
