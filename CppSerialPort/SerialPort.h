@@ -6,6 +6,7 @@
 #include <sstream>
 
 #include "IByteStream.h"
+#include "BasicFile.hpp"
 #include <unordered_set>
 #include <type_traits>
 
@@ -293,13 +294,13 @@ public:
 private:
     ByteArray m_readBuffer;
     std::string m_portName;
-    int m_portNumber{};
+    int m_portNumber;
     BaudRate m_baudRate;
     StopBits m_stopBits;
     DataBits m_dataBits;
     Parity m_parity;
     FlowControl m_flowControl;
-    bool m_isOpen;
+    BasicFile m_fileStream;
 #if defined(_WIN32)
     std::mutex m_readMutex;
 #endif
@@ -320,7 +321,6 @@ private:
     HANDLE m_serialPortHandle;
     COMMCONFIG m_portSettings;
 #else
-	FILE *m_fileStream{nullptr};
 	static const std::vector<const char *> AVAILABLE_PORT_NAMES_BASE;
     static const int constexpr NUMBER_OF_POSSIBLE_SERIAL_PORTS{256*9};
     termios m_portSettings{};
@@ -330,8 +330,8 @@ private:
     void applyPortSettings();
     modem_status_t getModemStatus() const;
 
-        bool isDisconnected();
-    };
+    bool isDisconnected();
+};
 
 } //namespace CppSerialPort
 

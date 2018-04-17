@@ -56,14 +56,14 @@ const std::string SerialPort::DEFAULT_LINE_ENDING{"\n"};
 const std::vector<std::string> SerialPort::SERIAL_PORT_NAMES{SerialPort::generateSerialPortNames()};
 
 SerialPort::SerialPort(const std::string &name, BaudRate baudRate, DataBits dataBits, StopBits stopBits, Parity parity, FlowControl flowControl, const std::string &lineEnding) :
-        m_portName{name},
-        m_portNumber{0},
-        m_baudRate{baudRate},
-        m_stopBits{stopBits},
-        m_dataBits{dataBits},
-        m_parity{parity},
-        m_flowControl{flowControl},
-        m_isOpen{false}
+    m_portName{name},
+    m_portNumber{0},
+    m_baudRate{baudRate},
+    m_stopBits{stopBits},
+    m_dataBits{dataBits},
+    m_parity{parity},
+    m_flowControl{flowControl},
+    m_fileStream{}
 {
     this->setLineEnding(lineEnding);
     std::pair<int, std::string> truePortNameAndNumber{getPortNameAndNumber(this->m_portName)};
@@ -71,16 +71,13 @@ SerialPort::SerialPort(const std::string &name, BaudRate baudRate, DataBits data
     this->m_portName = truePortNameAndNumber.second;
 #if defined(_WIN32)
     this->m_serialPortHandle = INVALID_HANDLE_VALUE;
-#else
-    this->m_fileStream = nullptr;
 #endif //defined(_WIN32)
 }
 
 
 #if !defined(_WIN32)
-int SerialPort::getFileDescriptor() const
-{
-    return fileno(this->m_fileStream);
+int SerialPort::getFileDescriptor() const {
+    return (this->m_fileStream.getFileHandle() ? this->m_fileStream.getFileDescriptor() : -1);
 }
 #endif //!defined(_WIN32)
 
@@ -117,15 +114,10 @@ void SerialPort::openPort()
     this->m_portSettings.dcb.fAbortOnError=FALSE;
     this->m_portSettings.dcb.fNull=FALSE;
 #else
-    this->m_fileStream = fopen(this->portName().c_str(), "r+");
-    if (!this->m_fileStream) {
-		const auto errorCode = getLastError();
-		throw std::runtime_error("CppSerialPort::SerialPort::openPort(): fopen(const char *, const char *): Unable to open FILE pointer for " + this->portName() + ": error code " + toStdString(errorCode) + " (" + getErrorString(errorCode) + ')');
-    }
-    if(flock(this->getFileDescriptor(), LOCK_EX | LOCK_NB) != 0) {
-		const auto errorCode = getLastError();
-		throw std::runtime_error("CppSerialPort::SerialPort::openPort(): flock(int, int): Unable to lock serial port " + this->portName() + ": error code " + toStdString(errorCode) + " (" + getErrorString(errorCode) + ')');
-	}
+
+    this->m_fileStream.setFileName(this->portName());
+    this->m_fileStream.open("r+");
+    this->m_fileStream.lockFile();
 
 	if (tcgetattr(this->getFileDescriptor(), &this->m_oldPortSettings) != 0) {
 		const auto errorCode = getLastError();
@@ -142,7 +134,6 @@ void SerialPort::openPort()
     this->m_portSettings.c_cflag |= (CLOCAL | CREAD);
 #endif
 
-	this->m_isOpen = true;
     this->setBaudRate(this->m_baudRate);
     this->setDataBits(this->m_dataBits);
     this->setStopBits(this->m_stopBits);
@@ -301,7 +292,7 @@ char SerialPort::read(bool *readTimeout)
     if (select(this->getFileDescriptor() + 1, &read_fds, &write_fds, &except_fds, &timeout) == 1) {
         int bytesAvailable{0};
         ioctl(this->getFileDescriptor(), FIONREAD, &bytesAvailable);
-        auto returnedBytes = fread(readStuff, sizeof(char), static_cast<size_t>(bytesAvailable), this->m_fileStream);
+        auto returnedBytes = this->m_fileStream.read(readStuff, static_cast<size_t>(bytesAvailable));
         if (returnedBytes <= 0) {
             if (readTimeout) {
                 *readTimeout = true;
@@ -346,8 +337,8 @@ ssize_t SerialPort::write(char c)
     }
     return static_cast<ssize_t>(writtenBytes);
 #else
-    auto writtenBytes = ::write(this->getFileDescriptor(), &c, 1);
-    if (writtenBytes != 0) {
+	auto writtenBytes = this->m_fileStream.write(c);
+    if (writtenBytes != 1) {
         return (getLastError() == EAGAIN ? 0 : writtenBytes);
     }
     return writtenBytes;
@@ -365,8 +356,8 @@ ssize_t SerialPort::write(const char *bytes, size_t numberOfBytes) {
 	}
 	return static_cast<ssize_t>(writtenBytes);
 #else
-	auto writtenBytes = ::write(this->getFileDescriptor(), bytes, numberOfBytes);
-	if (writtenBytes != 0) {
+	auto writtenBytes = this->m_fileStream.write(bytes, numberOfBytes);
+	if (writtenBytes != numberOfBytes) {
 		return (getLastError() == EAGAIN ? 0 : writtenBytes);
 	}
 	return writtenBytes;
@@ -387,12 +378,10 @@ void SerialPort::closePort()
         std::memcpy(&this->m_portSettings, &this->m_oldPortSettings, sizeof(this->m_portSettings));
         this->m_portSettings = this->m_oldPortSettings;
         this->applyPortSettings();
-        flock(this->getFileDescriptor(), LOCK_UN);
-        fclose(this->m_fileStream);
+        this->m_fileStream.close();
 #endif
-        this->m_isOpen = false;
-    } catch (std::exception &e) {
-        this->m_isOpen = false;
+    } catch (const std::exception &e) {
+        std::cerr << "CppSerialPort::SerialPort::closePort(): Exception caught: \"" << e.what() << "\"" << std::endl;
     }
 }
 
@@ -570,9 +559,8 @@ bool SerialPort::isAvailableSerialPort(const std::string &name)
 #endif //defined(_WIN32)
 }
 
-bool SerialPort::isOpen() const
-{
-    return this->m_isOpen;
+bool SerialPort::isOpen() const {
+    return this->m_fileStream.isOpen();
 }
 
 
@@ -648,7 +636,7 @@ void SerialPort::setStopBits(StopBits stopBits)
 
 void SerialPort::setParity(Parity parity)
 {
-    if (!this->m_isOpen) {
+    if (!this->isOpen()) {
         return;
     }
 #if defined(_WIN32)

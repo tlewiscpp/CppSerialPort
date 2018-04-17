@@ -1,6 +1,11 @@
 #include "BasicFile.hpp"
-
 #include "ErrorInformation.hpp"
+
+#if defined(_WIN32)
+
+#else
+#    include <sys/file.h>
+#endif //defined(_WIN32)
 
 #include <iostream>
 #include <sstream>
@@ -13,23 +18,28 @@
 using ErrorInformation::getErrorString;
 using ErrorInformation::getLastError;
 
+namespace CppSerialPort {
+
 BasicFile::BasicFile(const std::string &fileName) :
     m_fileName{""},
-    m_fileHandle{nullptr}
+    m_fileHandle{nullptr},
+    m_fileLock{false}
 {
     this->setFileName(fileName);
 }
 
 BasicFile::BasicFile() :
     m_fileName{""},
-    m_fileHandle{nullptr}
+    m_fileHandle{nullptr},
+    m_fileLock{false}
 {
 
 }
 
 BasicFile::BasicFile(BasicFile &&file) noexcept :
     m_fileName{std::move(file.m_fileName)},
-    m_fileHandle{file.m_fileHandle}
+    m_fileHandle{file.m_fileHandle},
+    m_fileLock{file.m_fileLock}
 {
     file.m_fileHandle = nullptr;
 }
@@ -38,6 +48,7 @@ BasicFile &BasicFile::operator=(BasicFile &&file) noexcept {
     this->m_fileName = std::move(file.m_fileName);
     this->m_fileHandle = file.m_fileHandle;
     file.m_fileHandle = nullptr;
+    this->m_fileLock = file.m_fileLock;
     return *this;
 }
 
@@ -63,7 +74,7 @@ size_t BasicFile::read(char *buffer, size_t maximum) {
     return result;
 }
 
-size_t BasicFile::write(char *buffer, size_t maximum) {
+size_t BasicFile::write(const char *buffer, size_t maximum) {
     if (!this->isOpen()) {
         std::stringstream message{};
         message << "BasicFile::write(): file \"" << this->m_fileName << "\" cannot be read from while it is closed (call BasicFile::open() first)";
@@ -132,7 +143,7 @@ BasicFile &BasicFile::setFileName(const std::string &fileName) {
     return *this;
 }
 
-bool BasicFile::isOpen() {
+bool BasicFile::isOpen() const {
     return this->m_fileHandle != nullptr;
 }
 
@@ -144,17 +155,32 @@ BasicFile &BasicFile::close() {
         message << "BasicFile::close(): fclose returned error code " << errorCode << " (" << getErrorString(errorCode) << ")" << std::endl;
         throw std::runtime_error(message.str());
     }
+    if (this->isLocked()) {
+        this->unlockFile();
+    }
     return *this;
 }
 
-int BasicFile::getFileDescriptor() {
+int BasicFile::getFileDescriptor() const {
     return this->m_fileHandle == nullptr ? INVALID_FILE_DESCRIPTOR : fileno(this->m_fileHandle);
 }
 
-FILE *BasicFile::getFileHandle() {
+FILE *BasicFile::getFileHandle() const {
     return this->m_fileHandle;
 }
 
+
+BasicFile &BasicFile::setFileHandle(FILE *fileHandle) {
+    if (this->isOpen()) {
+        throw std::runtime_error("BasicFile::setFileHandle(): FileHandle cannot be set while file is currently open (call BasicFile::close() first)");
+    }
+    if (fileHandle == nullptr) {
+        throw std::runtime_error("BasicFile::setFileHandle(): FileHandle parameter cannot be a nullptr");
+    }
+    this->m_fileHandle = fileHandle;
+    this->unlockFile();
+    return *this;
+}
 
 bool BasicFile::checkMode(const std::string &mode) {
     static const std::unordered_set<std::string> validModes {
@@ -163,6 +189,52 @@ bool BasicFile::checkMode(const std::string &mode) {
     return validModes.find(mode) != validModes.end();
 }
 
+bool BasicFile::isLocked() const {
+    return this->m_fileLock;
+}
+
+BasicFile &BasicFile::lockFile() {
+    if (!this->isOpen()) {
+        std::stringstream message{};
+        message << "BasicFile::lockFile(): File cannot be locked while it is closed (call BasicFile::open() first)";
+        throw std::runtime_error(message.str());
+    }
+#if defined(_WIN32)
+
+#else
+    auto flockResult = flock(this->getFileDescriptor(), LOCK_EX | LOCK_NB);
+    if (flockResult == -1) {
+        const auto errorCode = getLastError();
+        std::stringstream message{};
+        message << "BasicFile::open(): flock returned error code " << errorCode << " (" << getErrorString(errorCode) << ')';
+        throw std::runtime_error(message.str());
+    }
+    this->m_fileLock = true;
+#endif //defined(_WIN32)
+    return *this;
+
+}
+
+BasicFile &BasicFile::unlockFile() {
+    if (!this->m_fileLock) {
+        return *this;
+    }
+#if defined(_WIN32)
+
+#else
+    auto flockResult = flock(this->getFileDescriptor(), LOCK_UN);
+    if (flockResult == -1) {
+        const auto errorCode = getLastError();
+        std::stringstream message{};
+        message << "BasicFile::unlockFile(): flock returned error code " << errorCode << " (" << getErrorString(errorCode) << ')';
+        throw std::runtime_error(message.str());
+    }
+    this->m_fileLock = false;
+#endif //defined(_WIN32)
+    return *this;
+}
+
+
 BasicFile::~BasicFile() {
     if (this->m_fileHandle == nullptr) {
         return;
@@ -170,7 +242,16 @@ BasicFile::~BasicFile() {
     auto returnCode = fclose(this->m_fileHandle);
     if (returnCode == -1) {
         auto errorCode = getLastError();
-        std::cerr << "BasicFile::close(): fclose returned error code " << errorCode << " (" << getErrorString(errorCode) << ")" << std::endl;
+        std::cerr << "BasicFile::~BasicFile(): fclose returned error code " << errorCode << " (" << getErrorString(errorCode) << ")" << std::endl;
+    }
+    if (this->isLocked()) {
+        try {
+            this->unlockFile();
+        } catch (const std::exception &e) {
+            std::cerr << "BasicFile::~BasicFile(): BasicFile::unlockFile threw exception \"" << e.what() << "\"" << std::endl;
+        }
     }
 }
+
+} //namespace CppSerialPort
 

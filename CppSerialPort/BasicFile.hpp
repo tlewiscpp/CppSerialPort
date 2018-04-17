@@ -6,6 +6,7 @@
 #include <string>
 #include <cstring>
 
+namespace CppSerialPort {
 
 class BasicFile {
 public:
@@ -22,23 +23,31 @@ public:
 
     virtual char read();
     virtual size_t read(char *buffer, size_t maximum);
-    virtual size_t write(char *buffer, size_t maximum);
+    virtual size_t write(const char *buffer, size_t maximum);
     virtual size_t write(char c);
     virtual BasicFile &open(const std::string &mode);
     virtual BasicFile &open(const std::string &name, const std::string &mode);
     virtual BasicFile &close();
-    virtual bool isOpen();
+    virtual bool isOpen() const;
     virtual bool isAtEnd();
 
-protected:
-    int getFileDescriptor();
-    FILE *getFileHandle();
+    virtual BasicFile &lockFile();
+    virtual BasicFile &unlockFile();
+    bool isLocked() const;
+
+    int getFileDescriptor() const;
+    FILE *getFileHandle() const;
+
+    BasicFile &setFileHandle(FILE *fileHandle);
 
 private:
     std::string m_fileName;
     FILE *m_fileHandle;
+    bool m_fileLock;
 
     static bool checkMode(const std::string &mode);
 };
+
+} //namespace CppSerialPort
 
 #endif //BASICFILE_BASICFILE_H
