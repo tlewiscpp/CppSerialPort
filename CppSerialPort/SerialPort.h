@@ -245,11 +245,6 @@ public:
     void closePort() override;
     char read(bool *readTimeout) override;
 
-#if defined(_WIN32)
-    ByteArray readLine(bool *timeout = nullptr) override;
-    ByteArray readUntil(const ByteArray &until, bool *timeout = nullptr) override;
-    ByteArray readUntil(char until, bool *timeout = nullptr) override;
-#endif
     void setReadTimeout(int timeout) override;
 
     std::string portName() const override;

@@ -11,6 +11,7 @@ namespace CppSerialPort {
 class BasicFile {
 public:
     explicit BasicFile(const std::string &name);
+    explicit BasicFile(int fileDescriptor);
     BasicFile();
     BasicFile(const BasicFile &file) = delete;
     BasicFile(BasicFile &&file) noexcept;
@@ -26,6 +27,7 @@ public:
     virtual size_t write(const char *buffer, size_t maximum);
     virtual size_t write(char c);
     virtual BasicFile &open(const std::string &mode);
+    virtual BasicFile &open(int fileDescriptor, const std::string &mode);
     virtual BasicFile &open(const std::string &name, const std::string &mode);
     virtual BasicFile &close();
     virtual bool isOpen() const;
@@ -46,7 +48,14 @@ private:
     bool m_fileLock;
 
     static bool checkMode(const std::string &mode);
+
+    enum OpenStyle {
+        OpenFileDescriptor,
+        OpenFileName
+    };
+    BasicFile &doOpen(OpenStyle openStyle, const std::string &mode);
 };
+
 
 } //namespace CppSerialPort
 

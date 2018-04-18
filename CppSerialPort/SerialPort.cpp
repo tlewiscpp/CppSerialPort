@@ -107,6 +107,8 @@ void SerialPort::openPort()
 		throw std::runtime_error("CppSerialPort::SerialPort::openPort(): GetCommState(HANDLE, LPDCB): Unable to get current communication state for  " + this->portName() + ": error code " + toStdString(errorCode) + " (" + getErrorString(errorCode) + ')');
 	}
 
+    this->m_fileStream.open(_open_osfhandle(reinterpret_cast<intptr_t>(this->m_serialPortHandle), 0), "r+");
+
     /*set up parameters*/
     this->m_portSettings.dcb.fBinary=TRUE;
     this->m_portSettings.dcb.fInX=FALSE;
@@ -114,7 +116,6 @@ void SerialPort::openPort()
     this->m_portSettings.dcb.fAbortOnError=FALSE;
     this->m_portSettings.dcb.fNull=FALSE;
 #else
-
     this->m_fileStream.setFileName(this->portName());
     this->m_fileStream.open("r+");
     this->m_fileStream.lockFile();
@@ -175,45 +176,6 @@ void SerialPort::setReadTimeout(int timeout)
 #endif //defined(_WIN32)
 }
 
-#if defined(_WIN32)
-ByteArray SerialPort::readLine(bool *timeout)
-{
-    return this->readUntil(this->lineEnding(), timeout);
-}
-
-ByteArray SerialPort::readUntil(const ByteArray &until, bool *timeout)
-{
-    std::lock_guard<std::mutex> readLock{ this->m_readMutex };
-    uint64_t startTime{IByteStream::getEpoch()};
-    ByteArray returnArray{""};
-    if (timeout) {
-        *timeout = false;
-    }
-    do {
-        bool readTimeout{false};
-        char maybeChar{this->read(&readTimeout)};
-        if (readTimeout) {
-            continue;
-        }
-        returnArray += maybeChar;
-        if (returnArray.endsWith(until)) {
-            return returnArray.subsequence(0, returnArray.length() - until.length());
-        }
-    } while ((IByteStream::getEpoch() - startTime) <= static_cast<unsigned long>(this->readTimeout()));
-    if (timeout) {
-        *timeout = true;
-    }
-    //Put it all back in if timeout occurs
-    this->m_readBuffer = returnArray + this->m_readBuffer;
-    return ByteArray{};
-}
-
-ByteArray SerialPort::readUntil(char until, bool *timeout)
-{
-    return this->readUntil(ByteArray{until}, timeout);
-}
-#endif //defined(_WIN32)
-
 char SerialPort::read(bool *readTimeout)
 {
 #if defined(_WIN32)
@@ -232,27 +194,20 @@ char SerialPort::read(bool *readTimeout)
 	auto clearErrorsResult = ClearCommError(this->m_serialPortHandle, &commErrors, &commStatus);
 	if (clearErrorsResult == 0) {
 		const auto errorCode = getLastError();
-		std::cout << "ClearCommError(HANDLE, LPDWORD, LPCOMSTAT) error: " << toStdString(errorCode) << " (" << getErrorString(errorCode) << ")" << std::endl;
+		throw std::runtime_error("ClearCommError(HANDLE, LPDWORD, LPCOMSTAT) error: " + toStdString(errorCode) + " (" + getErrorString(errorCode) + ")");
 	}
 
-    DWORD readBytes{0};
-	DWORD maxBytes{ commStatus.cbInQue };
+    DWORD maxBytes{ commStatus.cbInQue };
     if (commStatus.cbInQue == 0) {
         maxBytes = 1;
     }
 
-    auto readResult = ReadFile(this->m_serialPortHandle, readStuff, maxBytes, &readBytes, nullptr);
-    if (readResult == 0) {
-		const auto errorCode = getLastError();
-		std::cout << "ReadFile(HANDLE, LPVOID, DWORD, LPDWORD, LPDWORD) error: " << toStdString(errorCode) << " (" << getErrorString(errorCode) << ")" << std::endl;
-		if (readTimeout) *readTimeout = true;
-        return 0;
-	}
-	if ( ( readBytes <= 0 ) || (readStuff[0] == '\0') ) {
+    auto readResult = this->m_fileStream.read(readStuff, maxBytes);
+	if ( ( readResult <= 0 ) || (readStuff[0] == '\0') ) {
         if (readTimeout) *readTimeout = true;
 		return 0;
     }
-    for (size_t i = 0; i < readBytes; i++) {
+    for (size_t i = 0; i < readResult; i++) {
         this->m_readBuffer += readStuff[i];
     }
     if (readTimeout) *readTimeout = false;
@@ -327,41 +282,19 @@ bool SerialPort::isDisconnected() {
 
 ssize_t SerialPort::write(char c)
 {
-#if defined(_WIN32)
-    DWORD writtenBytes{0};
-	if (!WriteFile(this->m_serialPortHandle, &c, 1 , &writtenBytes, nullptr)) {
-        auto errorCode = getLastError();
-        (void)errorCode;
-        //TODO: Check if errorCode is IO_NOT_COMPLETED or whatever
-        return 0;
-    }
-    return static_cast<ssize_t>(writtenBytes);
-#else
-	auto writtenBytes = this->m_fileStream.write(c);
+    auto writtenBytes = this->m_fileStream.write(c);
     if (writtenBytes != 1) {
         return (getLastError() == EAGAIN ? 0 : writtenBytes);
     }
     return writtenBytes;
-#endif //defined(_WIN32)
 }
 
 ssize_t SerialPort::write(const char *bytes, size_t numberOfBytes) {
-#if defined(_WIN32)
-	DWORD writtenBytes{ 0 };
-	if (!WriteFile(this->m_serialPortHandle, bytes, static_cast<DWORD>(numberOfBytes), &writtenBytes, nullptr)) {
-		auto errorCode = getLastError();
-		(void)errorCode;
-		//TODO: Check if errorCode is IO_NOT_COMPLETED or whatever
-		return 0;
-	}
-	return static_cast<ssize_t>(writtenBytes);
-#else
 	auto writtenBytes = this->m_fileStream.write(bytes, numberOfBytes);
 	if (writtenBytes != numberOfBytes) {
 		return (getLastError() == EAGAIN ? 0 : writtenBytes);
 	}
 	return writtenBytes;
-#endif //defined(_WIN32)
 }
 
 void SerialPort::closePort()
@@ -373,6 +306,7 @@ void SerialPort::closePort()
 #if defined(_WIN32)
         CancelIo(this->m_serialPortHandle);
         CloseHandle(this->m_serialPortHandle);
+        this->m_fileStream.close();
 #else
         //TODO: Check error codes for these functions
         std::memcpy(&this->m_portSettings, &this->m_oldPortSettings, sizeof(this->m_portSettings));

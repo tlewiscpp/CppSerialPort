@@ -96,8 +96,49 @@ size_t BasicFile::write(char c) {
 
 BasicFile &BasicFile::open(const std::string &fileName, const std::string &mode) {
     this->setFileName(fileName);
-    return this->open(mode);
+    return this->doOpen(OpenStyle::OpenFileName, mode);
 }
+
+BasicFile &BasicFile::open(int fileDescriptor, const std::string &mode) {
+    if (fileDescriptor <= 0) {
+        std::stringstream message{};
+        message << "BasicFile::open(): FileDescriptor parameter cannot be less than or equal to 0 (" << fileDescriptor << " <= 0)";
+        throw std::runtime_error(message.str());
+    }
+    this->setFileName(std::to_string(fileDescriptor));
+    return this->doOpen(OpenStyle::OpenFileDescriptor, mode);
+}
+
+BasicFile &BasicFile::open(const std::string &mode) {
+    return this->doOpen(OpenStyle::OpenFileName, mode);
+}
+
+BasicFile &BasicFile::doOpen(BasicFile::OpenStyle openStyle, const std::string &mode) {
+    if (this->m_fileName.empty()) {
+        throw std::runtime_error("BasicFile::doOpen(): current FileName parameter cannot be empty when opening a file (call BasicFile::setFileName() first");
+    }
+    if (!BasicFile::checkMode(mode)) {
+        std::stringstream message{};
+        message << "BasicFile::doOpen(): Mode parameter \"" << mode << "\" is not a valid open mode";
+        throw std::runtime_error(message.str());
+    }
+    FILE *handle{nullptr};
+    if (openStyle == OpenStyle::OpenFileDescriptor) {
+        int fileDescriptor{std::stoi(this->m_fileName)};
+        handle = fdopen(fileDescriptor, mode.c_str());
+    } else {
+        handle = fopen(this->m_fileName.c_str(), mode.c_str());
+    }
+    if (handle == nullptr) {
+        auto errorCode = getLastError();
+        std::stringstream message{};
+        message << "BasicFile::doOpen(): fopen for FileName=\"" << this->m_fileName << "\", OpenMode=\"" << mode << "\" failed with error code " << errorCode << " (" << getErrorString(errorCode) << ")";
+        throw std::runtime_error(message.str());
+    }
+    this->m_fileHandle = handle;
+    return *this;
+}
+
 
 bool BasicFile::isAtEnd() {
     if (!this->isOpen()) {
@@ -108,25 +149,6 @@ bool BasicFile::isAtEnd() {
     return feof(this->m_fileHandle) != 0;
 }
 
-BasicFile &BasicFile::open(const std::string &mode) {
-    if (this->m_fileName.empty()) {
-        throw std::runtime_error("BasicFile::open(): current FileName parameter cannot be empty when opening a file (call BasicFile::setFileName() first");
-    }
-    if (!BasicFile::checkMode(mode)) {
-        std::stringstream message{};
-        message << "BasicFile::open(): Mode parameter \"" << mode << "\" is not a valid open mode";
-        throw std::runtime_error(message.str());
-    }
-    auto handle = fopen(this->m_fileName.c_str(), mode.c_str());
-    if (handle == nullptr) {
-        auto errorCode = getLastError();
-        std::stringstream message{};
-        message << "BasicFile::open(): fopen for FileName=\"" << this->m_fileName << "\", OpenMode=\"" << mode << "\" failed with error code " << errorCode << " (" << getErrorString(errorCode) << ")";
-        throw std::runtime_error(message.str());
-    }
-    this->m_fileHandle = handle;
-    return *this;
-}
 
 std::string BasicFile::fileName() const {
     return this->m_fileName;
@@ -252,6 +274,7 @@ BasicFile::~BasicFile() {
         }
     }
 }
+
 
 } //namespace CppSerialPort
 
