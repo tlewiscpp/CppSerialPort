@@ -11,7 +11,6 @@ namespace CppSerialPort {
 class BasicFile {
 public:
     explicit BasicFile(const std::string &name);
-    explicit BasicFile(int fileDescriptor);
     BasicFile();
     BasicFile(const BasicFile &file) = delete;
     BasicFile(BasicFile &&file) noexcept;

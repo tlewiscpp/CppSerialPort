@@ -6,6 +6,11 @@
 #include <algorithm>
 #include <type_traits>
 
+#if defined (_WIN32)
+namespace std { template< class... T > using common_type_t = typename common_type<T...>::type; } //namespace std
+#endif //__cplusplus < 199714L
+
+
 namespace Detail {
     template <template<typename> class Trait, typename First, typename ...Args>
     struct is_all_same_type {

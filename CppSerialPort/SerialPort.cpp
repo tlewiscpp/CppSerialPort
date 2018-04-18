@@ -186,34 +186,44 @@ char SerialPort::read(bool *readTimeout)
         return returnValue;
     }
 
-	static char readStuff[SERIAL_PORT_BUFFER_MAX];
-	memset(readStuff, '\0', SERIAL_PORT_BUFFER_MAX);
+    static char readStuff[SERIAL_PORT_BUFFER_MAX];
+    memset(readStuff, '\0', SERIAL_PORT_BUFFER_MAX);
 
-	DWORD commErrors{};
-	COMSTAT commStatus{0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-	auto clearErrorsResult = ClearCommError(this->m_serialPortHandle, &commErrors, &commStatus);
-	if (clearErrorsResult == 0) {
-		const auto errorCode = getLastError();
-		throw std::runtime_error("ClearCommError(HANDLE, LPDWORD, LPCOMSTAT) error: " + toStdString(errorCode) + " (" + getErrorString(errorCode) + ")");
-	}
-
-    DWORD maxBytes{ commStatus.cbInQue };
-    if (commStatus.cbInQue == 0) {
-        maxBytes = 1;
+    auto waitResult = WaitForSingleObject(this->m_serialPortHandle, static_cast<DWORD>(this->readTimeout()));
+    if (waitResult == WAIT_OBJECT_0) {
+        DWORD commErrors{};
+        COMSTAT commStatus{0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+        auto clearErrorsResult = ClearCommError(this->m_serialPortHandle, &commErrors, &commStatus);
+        if (clearErrorsResult == 0) {
+            const auto errorCode = getLastError();
+            throw std::runtime_error("ClearCommError(HANDLE, LPDWORD, LPCOMSTAT) error: " + toStdString(errorCode) + " (" + getErrorString(errorCode) + ")");
+        }
+        DWORD maxBytes{ commStatus.cbInQue };
+        auto returnedBytes = this->m_fileStream.read(readStuff, static_cast<size_t>(maxBytes));
+        if (returnedBytes <= 0) {
+            if (readTimeout) {
+                *readTimeout = true;
+            }
+            if (this->isDisconnected()) {
+                this->closePort();
+                throw SerialPortDisconnectedException{this->m_portName, "CppSerialPort::SerialPort::read(): The serial port has been disconnected from the system"};
+            }
+            return 0;
+        }
+        for (size_t i = 0; i < returnedBytes; i++) {
+            this->m_readBuffer += readStuff[i];
+        }
+        char returnValue{this->m_readBuffer[0]};
+        this->m_readBuffer.popFront();
+        if (readTimeout) {
+            *readTimeout = false;
+        }
+        return returnValue;
     }
-
-    auto readResult = this->m_fileStream.read(readStuff, maxBytes);
-	if ( ( readResult <= 0 ) || (readStuff[0] == '\0') ) {
-        if (readTimeout) *readTimeout = true;
-		return 0;
+    if (readTimeout) {
+        *readTimeout = true;
     }
-    for (size_t i = 0; i < readResult; i++) {
-        this->m_readBuffer += readStuff[i];
-    }
-    if (readTimeout) *readTimeout = false;
-    char returnValue{this->m_readBuffer[0]};
-    this->m_readBuffer = this->m_readBuffer.popFront();
-    return returnValue;
+    return 0;
 #else
     if (!this->m_readBuffer.empty()) {
         char returnValue{this->m_readBuffer[0]};
