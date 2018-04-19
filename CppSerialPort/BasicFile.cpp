@@ -3,6 +3,7 @@
 
 #if defined(_WIN32)
 #    include <io.h>
+#    include <fileapi.h>
 #else
 #    include <sys/file.h>
 #endif //defined(_WIN32)
@@ -145,17 +146,31 @@ BasicFile &BasicFile::doOpen(BasicFile::OpenStyle openStyle, const std::string &
         throw std::runtime_error(message.str());
     }
     FILE *handle{nullptr};
+    int fileDescriptor{-1};
     if (openStyle == OpenStyle::OpenFileDescriptor) {
-        int fileDescriptor{std::stoi(this->m_fileName)};
+        fileDescriptor = std::stoi(this->m_fileName);
         handle = fdopen(fileDescriptor, mode.c_str());
     } else if (openStyle == OpenStyle::OpenFileName){
         handle = fopen(this->m_fileName.c_str(), mode.c_str());
 #if defined(_WIN32)
     } else if (openStyle == OpenStyle::OpenNativeHandle) {
-        int fileDescriptor{_open_osfhandle(reinterpret_cast<intptr_t>(this->m_nativeHandle), 0)};
+        fileDescriptor = _open_osfhandle(reinterpret_cast<intptr_t>(this->m_nativeHandle), 0);
         handle = fdopen(fileDescriptor, mode.c_str());
 #endif //defined(_WIN32)
     }
+
+#if defined(_WIN32)
+    if (this->m_nativeHandle == nullptr) {
+        auto nativeHandle = reinterpret_cast<HANDLE>(_get_osfhandle(fileDescriptor));
+        if (nativeHandle == nullptr) {
+            auto errorCode = getLastError();
+            std::stringstream message{};
+            message << "ByteStream::doOpen(): Failed to get native handle (_get_osfhandle): error code " << errorCode << " (" << getErrorString(errorCode) << ")";
+            throw std::runtime_error(message.str());
+        }
+        this->m_nativeHandle = nativeHandle;
+    }
+#endif //defined(_WIN32)
 
     if (handle == nullptr) {
         auto errorCode = getLastError();
@@ -163,6 +178,7 @@ BasicFile &BasicFile::doOpen(BasicFile::OpenStyle openStyle, const std::string &
         message << "BasicFile::doOpen(): fopen for FileName=\"" << this->m_fileName << "\", OpenMode=\"" << mode << "\" failed with error code " << errorCode << " (" << getErrorString(errorCode) << ")";
         throw std::runtime_error(message.str());
     }
+
     this->m_fileHandle = handle;
     return *this;
 }
@@ -248,7 +264,7 @@ BasicFile &BasicFile::lockFile() {
         throw std::runtime_error(message.str());
     }
 #if defined(_WIN32)
-
+    auto lockFileResult = LockFile(this->m_nativeHandle, );
 #else
     auto flockResult = flock(this->getFileDescriptor(), LOCK_EX | LOCK_NB);
     if (flockResult == -1) {
