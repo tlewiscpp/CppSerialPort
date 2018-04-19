@@ -1,10 +1,13 @@
-#ifndef BASICFILE_BASICFILE_H
-#define BASICFILE_BASICFILE_H
+#ifndef CPPSERIALPORT_BASICFILE_H
+#define CPPSERIALPORT_BASICFILE_H
 
 #include <cstdio>
-
 #include <string>
 #include <cstring>
+
+#if defined(_WIN32)
+using HANDLE = void*;
+#endif //defined(_WIN32)
 
 namespace CppSerialPort {
 
@@ -28,6 +31,9 @@ public:
     virtual BasicFile &open(const std::string &mode);
     virtual BasicFile &open(int fileDescriptor, const std::string &mode);
     virtual BasicFile &open(const std::string &name, const std::string &mode);
+#if defined(_WIN32)
+    virtual BasicFile &open(HANDLE nativeHandle, const std::string &mode);
+#endif //defined(_WIN32)
     virtual BasicFile &close();
     virtual bool isOpen() const;
     virtual bool isAtEnd();
@@ -39,23 +45,33 @@ public:
     int getFileDescriptor() const;
     FILE *getFileHandle() const;
 
-    BasicFile &setFileHandle(FILE *fileHandle);
+#if defined(_WIN32)
+    HANDLE getNativeHandle() const;
+#endif //defined(_WIN320
 
 private:
     std::string m_fileName;
     FILE *m_fileHandle;
     bool m_fileLock;
 
+#if defined(_WIN32)
+    HANDLE m_nativeHandle;
+#endif //defined(_WIN32)
+
     static bool checkMode(const std::string &mode);
 
     enum OpenStyle {
         OpenFileDescriptor,
-        OpenFileName
+        OpenFileName,
+#if defined(_WIN32)
+        OpenNativeHandle
+#endif //defined(_WIN32)
     };
     BasicFile &doOpen(OpenStyle openStyle, const std::string &mode);
+    BasicFile &clearNativeHandles();
 };
 
 
 } //namespace CppSerialPort
 
-#endif //BASICFILE_BASICFILE_H
+#endif //CPPSERIALPORT_BASICFILE_H

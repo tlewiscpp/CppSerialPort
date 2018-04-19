@@ -2,7 +2,7 @@
 #include "ErrorInformation.hpp"
 
 #if defined(_WIN32)
-
+#    include <io.h>
 #else
 #    include <sys/file.h>
 #endif //defined(_WIN32)
@@ -42,6 +42,11 @@ BasicFile::BasicFile(BasicFile &&file) noexcept :
     m_fileLock{file.m_fileLock}
 {
     file.m_fileHandle = nullptr;
+
+#if defined(_WIN32)
+    this->m_nativeHandle = file.m_nativeHandle;
+    file.m_nativeHandle = nullptr;
+#endif //defined(_WIN32)
 }
 
 BasicFile &BasicFile::operator=(BasicFile &&file) noexcept {
@@ -49,6 +54,12 @@ BasicFile &BasicFile::operator=(BasicFile &&file) noexcept {
     this->m_fileHandle = file.m_fileHandle;
     file.m_fileHandle = nullptr;
     this->m_fileLock = file.m_fileLock;
+
+#if defined(_WIN32)
+    this->m_nativeHandle = file.m_nativeHandle;
+    file.m_nativeHandle = nullptr;
+#endif //defined(_WIN32)
+
     return *this;
 }
 
@@ -113,6 +124,17 @@ BasicFile &BasicFile::open(const std::string &mode) {
     return this->doOpen(OpenStyle::OpenFileName, mode);
 }
 
+#if defined(_WIN32)
+BasicFile &BasicFile::open(HANDLE nativeHandle, const std::string &mode) {
+    if (nativeHandle == nullptr) {
+        throw std::runtime_error("BasicFile::open(): NativeHandle parameter cannot be a nullptr");
+    }
+    this->doOpen(BasicFile::OpenNativeHandle, mode);
+    return *this;
+}
+#endif //defined(_WIN32)
+
+
 BasicFile &BasicFile::doOpen(BasicFile::OpenStyle openStyle, const std::string &mode) {
     if (this->m_fileName.empty()) {
         throw std::runtime_error("BasicFile::doOpen(): current FileName parameter cannot be empty when opening a file (call BasicFile::setFileName() first");
@@ -126,9 +148,15 @@ BasicFile &BasicFile::doOpen(BasicFile::OpenStyle openStyle, const std::string &
     if (openStyle == OpenStyle::OpenFileDescriptor) {
         int fileDescriptor{std::stoi(this->m_fileName)};
         handle = fdopen(fileDescriptor, mode.c_str());
-    } else {
+    } else if (openStyle == OpenStyle::OpenFileName){
         handle = fopen(this->m_fileName.c_str(), mode.c_str());
+#if defined(_WIN32)
+    } else if (openStyle == OpenStyle::OpenNativeHandle) {
+        int fileDescriptor{_open_osfhandle(reinterpret_cast<intptr_t>(this->m_nativeHandle), 0)};
+        handle = fdopen(fileDescriptor, mode.c_str());
+#endif //defined(_WIN32)
     }
+
     if (handle == nullptr) {
         auto errorCode = getLastError();
         std::stringstream message{};
@@ -180,6 +208,17 @@ BasicFile &BasicFile::close() {
     if (this->isLocked()) {
         this->unlockFile();
     }
+    this->clearNativeHandles();
+    return *this;
+}
+
+BasicFile &BasicFile::clearNativeHandles() {
+#if defined(_WIN32)
+    this->m_nativeHandle = nullptr;
+#else
+
+#endif //defined(_WIN32)
+    this->m_fileName = nullptr;
     return *this;
 }
 
@@ -189,19 +228,6 @@ int BasicFile::getFileDescriptor() const {
 
 FILE *BasicFile::getFileHandle() const {
     return this->m_fileHandle;
-}
-
-
-BasicFile &BasicFile::setFileHandle(FILE *fileHandle) {
-    if (this->isOpen()) {
-        throw std::runtime_error("BasicFile::setFileHandle(): FileHandle cannot be set while file is currently open (call BasicFile::close() first)");
-    }
-    if (fileHandle == nullptr) {
-        throw std::runtime_error("BasicFile::setFileHandle(): FileHandle parameter cannot be a nullptr");
-    }
-    this->m_fileHandle = fileHandle;
-    this->unlockFile();
-    return *this;
 }
 
 bool BasicFile::checkMode(const std::string &mode) {
@@ -256,6 +282,11 @@ BasicFile &BasicFile::unlockFile() {
     return *this;
 }
 
+#if defined(_WIN32)
+HANDLE BasicFile::getNativeHandle() const {
+    return this->m_nativeHandle;
+}
+#endif //defined(_WIN32)
 
 BasicFile::~BasicFile() {
     if (this->m_fileHandle == nullptr) {
@@ -273,8 +304,8 @@ BasicFile::~BasicFile() {
             std::cerr << "BasicFile::~BasicFile(): BasicFile::unlockFile threw exception \"" << e.what() << "\"" << std::endl;
         }
     }
+    this->clearNativeHandles();
 }
-
 
 } //namespace CppSerialPort
 

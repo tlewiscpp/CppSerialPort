@@ -310,10 +310,7 @@ private:
 
 #if defined(_WIN32)
 	static const char *AVAILABLE_PORT_NAMES_BASE;
-    static const char *DTR_RTS_ON_IDENTIFIER;
-    static const int constexpr NUMBER_OF_POSSIBLE_SERIAL_PORTS{256};
     static const char *SERIAL_PORT_REGISTRY_PATH;
-    HANDLE m_serialPortHandle;
     COMMCONFIG m_portSettings;
 #else
 	static const std::vector<const char *> AVAILABLE_PORT_NAMES_BASE;
