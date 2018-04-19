@@ -214,15 +214,19 @@ bool BasicFile::isOpen() const {
 }
 
 BasicFile &BasicFile::close() {
+    if (this->isLocked()) {
+        this->unlockFile();
+    }
+    if (this->m_fileHandle == nullptr) {
+        this->clearNativeHandles();
+        return;
+    }
     auto returnCode = fclose(this->m_fileHandle);
     if (returnCode == -1) {
         auto errorCode = getLastError();
         std::stringstream message{};
         message << "BasicFile::close(): fclose returned error code " << errorCode << " (" << getErrorString(errorCode) << ")" << std::endl;
         throw std::runtime_error(message.str());
-    }
-    if (this->isLocked()) {
-        this->unlockFile();
     }
     this->clearNativeHandles();
     return *this;
