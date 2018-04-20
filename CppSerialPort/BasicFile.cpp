@@ -218,7 +218,6 @@ BasicFile &BasicFile::close() {
         this->unlockFile();
     }
     if (this->m_fileHandle == nullptr) {
-        this->clearNativeHandles();
         return *this;
     }
     auto returnCode = fclose(this->m_fileHandle);
@@ -238,7 +237,7 @@ BasicFile &BasicFile::clearNativeHandles() {
 #else
 
 #endif //defined(_WIN32)
-    this->m_fileName = nullptr;
+    this->m_fileHandle = nullptr;
     return *this;
 }
 
