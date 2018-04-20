@@ -73,7 +73,10 @@ SerialPort::SerialPort(const std::string &name, BaudRate baudRate, DataBits data
 
 #if !defined(_WIN32)
 int SerialPort::getFileDescriptor() const {
-    return (this->m_fileStream.getFileHandle() ? this->m_fileStream.getFileDescriptor() : -1);
+    if (this->m_fileStream.getFileHandle() == nullptr) {
+        throw SerialPortDisconnectedException(this->portName(), "CppSerialPort::SerialPort::getFileDescriptpr(): FileStream FILE * handle is a nullptr");
+    }
+    return this->m_fileStream.getFileDescriptor();
 }
 #endif //!defined(_WIN32)
 
