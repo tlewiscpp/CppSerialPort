@@ -99,6 +99,14 @@ size_t BasicFile::write(const char *buffer, size_t maximum) {
         message << "BasicFile::write(): write to file \"" << this->m_fileName << "\" failed with error code " << errorCode << " (" << getErrorString(errorCode) << ")";
         throw std::runtime_error(message.str());
     }
+
+    auto flushResult = fflush(this->m_fileHandle);
+    if (flushResult == -1) {
+        auto errorCode = getLastError();
+        std::stringstream message{};
+        message << "BasicFile::write(): flush of file \"" << this->m_fileName << "\" failed with error code " << errorCode << " (" << getErrorString(errorCode) << ")";
+        throw std::runtime_error(message.str());
+    }
     return result;
 }
 
