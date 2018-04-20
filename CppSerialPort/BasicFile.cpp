@@ -219,7 +219,7 @@ BasicFile &BasicFile::close() {
     }
     if (this->m_fileHandle == nullptr) {
         this->clearNativeHandles();
-        return;
+        return *this;
     }
     auto returnCode = fclose(this->m_fileHandle);
     if (returnCode == -1) {
