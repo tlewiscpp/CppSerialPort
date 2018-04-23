@@ -150,6 +150,14 @@ int main(int argc, char *argv[])
     }
     std::cout << "Using HostName=\"" << hostName  << "\"" << std::endl;
     std::cout << "Using PortNumber=\"" << portNumber << "\"" << std::endl;
+    std::cout << "Using SocketMethod=";
+    if (useUdp) {
+        std::cout << "UDP";
+    } else {
+        std::cout << "TCP";
+    }
+    std::cout << std::endl;
+    
     chaiscript::ChaiScript chaiEngine{};
 
     chaiEngine.add(CppSerialPort::CppSerialPortChaiScriptModuleFactory{}.createModule());
