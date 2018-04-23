@@ -1,5 +1,5 @@
-#ifndef CPPSERIALPORT_BYTEARRAY_H
-#define CPPSERIALPORT_BYTEARRAY_H
+#ifndef CPPSERIALPORT_BYTEARRAY_HPP
+#define CPPSERIALPORT_BYTEARRAY_HPP
 
 #include <string>
 #include <vector>
@@ -22,23 +22,17 @@ namespace Detail {
         enum { value = Trait<Head>::value };
     };
 
-    template <typename T>
-    using UIntRequirement = std::is_same<unsigned int, T>;
+    template <typename T> using UIntRequirement = std::is_same<unsigned int, T>;
 
-    template <typename T>
-    using IntRequirement = std::is_same<int, T>;
+    template <typename T> using IntRequirement = std::is_same<int, T>;
 
-    template <typename T>
-    using CharRequirement = std::is_same<char, T>;
+    template <typename T> using CharRequirement = std::is_same<char, T>;
 
-    template <typename T>
-    using UCharRequirement = std::is_same<unsigned char, T>;
+    template <typename T> using UCharRequirement = std::is_same<unsigned char, T>;
 
-    template <typename T>
-    using ShortRequirement = std::is_same<short, T>;
+    template <typename T> using ShortRequirement = std::is_same<short, T>;
 
-    template <typename T>
-    using UShortRequirement = std::is_same<unsigned short, T>;
+    template <typename T> using UShortRequirement = std::is_same<unsigned short, T>;
 }
 
 namespace CppSerialPort {
@@ -154,4 +148,4 @@ private:
 } //namespace CppSerialPort
 
 
-#endif //CPPSERIALPORT_BYTEARRAY_H
+#endif //CPPSERIALPORT_BYTEARRAY_HPP

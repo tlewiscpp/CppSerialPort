@@ -1,11 +1,11 @@
-#ifndef CPPSERIALPORT_SERIALPORT_H
-#define CPPSERIALPORT_SERIALPORT_H
+#ifndef CPPSERIALPORT_SERIALPORT_HPP
+#define CPPSERIALPORT_SERIALPORT_HPP
 
 #include <string>
 #include <vector>
 #include <sstream>
 
-#include "IByteStream.h"
+#include "IByteStream.hpp"
 #include "BasicFile.hpp"
 #include <unordered_set>
 #include <type_traits>
@@ -328,4 +328,4 @@ private:
 } //namespace CppSerialPort
 
 
-#endif //CPPSERIALPORT_SERIALPORT_H
+#endif //CPPSERIALPORT_SERIALPORT_HPP

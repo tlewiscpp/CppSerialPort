@@ -15,7 +15,7 @@
 *    If not, see <http://www.gnu.org/licenses/>                        *
 ***********************************************************************/
 
-#include "IByteStream.h"
+#include "IByteStream.hpp"
 #include <fstream>
 
 #if defined(_WIN32)

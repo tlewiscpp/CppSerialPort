@@ -46,15 +46,15 @@ set (${PROJECT_NAME}_SOURCE_FILES
     "${SOURCE_ROOT}/ByteArray.cpp")
 
 set (${PROJECT_NAME}_HEADER_FILES
-    "${SOURCE_ROOT}/IPV4Address.h"
-    "${SOURCE_ROOT}/IByteStream.h"
-    "${SOURCE_ROOT}/SerialPort.h"
-    "${SOURCE_ROOT}/TcpClient.h"
-    "${SOURCE_ROOT}/UdpClient.h"
-    "${SOURCE_ROOT}/AbstractSocket.h"
+    "${SOURCE_ROOT}/IPV4Address.hpp"
+    "${SOURCE_ROOT}/IByteStream.hpp"
+    "${SOURCE_ROOT}/SerialPort.hpp"
+    "${SOURCE_ROOT}/TcpClient.hpp"
+    "${SOURCE_ROOT}/UdpClient.hpp"
+    "${SOURCE_ROOT}/AbstractSocket.hpp"
     "${SOURCE_ROOT}/ErrorInformation.hpp"
     "${SOURCE_ROOT}/BasicFile.hpp"
-    "${SOURCE_ROOT}/ByteArray.h")
+    "${SOURCE_ROOT}/ByteArray.hpp")
 
 add_library(${PROJECT_NAME} SHARED
     ${${PROJECT_NAME}_SOURCE_FILES}

@@ -1,4 +1,4 @@
-#include "ByteArray.h"
+#include "ByteArray.hpp"
 
 #include <cstring>
 #include <stdexcept>

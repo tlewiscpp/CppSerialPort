@@ -1,12 +1,12 @@
 #include "CppSerialPortChaiScriptModuleFactory.hpp"
 
 #include <chaiscript/chaiscript.hpp>
-#include <CppSerialPort/SerialPort.h>
-#include <CppSerialPort/IByteStream.h>
-#include <CppSerialPort/AbstractSocket.h>
-#include <CppSerialPort/TcpClient.h>
-#include <CppSerialPort/UdpClient.h>
-#include <CppSerialPort/ByteArray.h>
+#include <CppSerialPort/SerialPort.hpp>
+#include <CppSerialPort/IByteStream.hpp>
+#include <CppSerialPort/AbstractSocket.hpp>
+#include <CppSerialPort/TcpClient.hpp>
+#include <CppSerialPort/UdpClient.hpp>
+#include <CppSerialPort/ByteArray.hpp>
 
 using namespace CppSerialPort;
 using namespace chaiscript;

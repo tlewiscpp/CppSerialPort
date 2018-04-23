@@ -1,5 +1,5 @@
-#ifndef CPPSERIALPORT_ABSTRACTSOCKET_H
-#define CPPSERIALPORT_ABSTRACTSOCKET_H
+#ifndef CPPSERIALPORT_ABSTRACTSOCKET_HPP
+#define CPPSERIALPORT_ABSTRACTSOCKET_HPP
 
 #if defined(_WIN32)
 #    include <winsock2.h>
@@ -16,8 +16,8 @@ typedef int socket_t;
 #include <sys/types.h>
 #include <memory>
 #include <string>
-#include "IByteStream.h"
-#include "IPV4Address.h"
+#include "IByteStream.hpp"
+#include "IPV4Address.hpp"
 
 namespace CppSerialPort {
 
@@ -91,7 +91,7 @@ protected:
         void setSocketDescriptor(socket_t socketDescriptor);
     };
 
-} //namespace CppSerialPor
+} //namespace CppSerialPort
 
 
-#endif //CPPSERIALPORT_ABSTRACTSOCKET_H
+#endif //CPPSERIALPORT_ABSTRACTSOCKET_HPP

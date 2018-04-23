@@ -1,7 +1,7 @@
-#ifndef CPPSERIALPORT_TCPCLIENT_H
-#define CPPSERIALPORT_TCPCLIENT_H
+#ifndef CPPSERIALPORT_TCPCLIENT_HPP
+#define CPPSERIALPORT_TCPCLIENT_HPP
 
-#include "AbstractSocket.h"
+#include "AbstractSocket.hpp"
 
 namespace CppSerialPort {
 
@@ -19,4 +19,4 @@ protected:
 
 } //namespace CppSerialPort
 
-#endif //CPPSERIALPORT_TCPCLIENT_H
+#endif //CPPSERIALPORT_TCPCLIENT_HPP

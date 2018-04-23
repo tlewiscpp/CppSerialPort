@@ -1,7 +1,7 @@
-#ifndef CPPSERIALPORT_UDPCLIENT_H
-#define CPPSERIALPORT_UDPCLIENT_H
+#ifndef CPPSERIALPORT_UDPCLIENT_HPP
+#define CPPSERIALPORT_UDPCLIENT_HPP
 
-#include "AbstractSocket.h"
+#include "AbstractSocket.hpp"
 
 namespace CppSerialPort {
 
@@ -22,4 +22,4 @@ private:
 
 } //namespace CppSerialPort
 
-#endif //CPPUDP_UDPCLIENT_H
+#endif //CPPUDP_UDPCLIENT_HPP

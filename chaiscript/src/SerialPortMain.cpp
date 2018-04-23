@@ -8,7 +8,7 @@
 #include "CppSerialPortChaiScriptModuleFactory.hpp"
 
 #include "Random.hpp"
-#include "SerialPort.h"
+#include "SerialPort.hpp"
 #include <chaiscript/chaiscript.hpp>
 
 static const ProgramOption portOption   {'p', "port",   required_argument, "Specify the serial port to use (ex COM4 or /dev/ttyUSB1)" };

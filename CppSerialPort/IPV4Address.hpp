@@ -1,6 +1,5 @@
-
-#ifndef CPPSERIALPORT_IPV4ADDRESS_H
-#define CPPSERIALPORT_IPV4ADDRESS_H
+#ifndef CPPSERIALPORT_IPV4ADDRESS_HPP
+#define CPPSERIALPORT_IPV4ADDRESS_HPP
 
 #include <cstdint>
 #include <string>
@@ -34,4 +33,4 @@ private:
 } //namespace CppSerialPort
 
 
-#endif //CPPSERIALPORT_IPV4ADDRESS_H
+#endif //CPPSERIALPORT_IPV4ADDRESS_HPP
