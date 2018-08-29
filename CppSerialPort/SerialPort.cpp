@@ -14,6 +14,7 @@
 #if defined(_WIN32)
 #    include <io.h>
 #    include <Fcntl.h>
+#    include <thread>
 #else
 #   include <termios.h>
 #   include <sys/ioctl.h>
@@ -88,7 +89,7 @@ void SerialPort::openPort()
 	}
 #if defined(_WIN32)
 
-    auto handle = CreateFileA(this->m_portName.c_str(), GENERIC_READ|GENERIC_WRITE, 0, nullptr, OPEN_EXISTING, 0, nullptr);
+    auto handle = CreateFileA(this->m_portName.c_str(), GENERIC_READ|GENERIC_WRITE, 0, nullptr, OPEN_EXISTING, FILE_FLAG_OVERLAPPED, nullptr);
     if(handle == INVALID_HANDLE_VALUE) {
 		const auto errorCode = getLastError();
 		throw std::runtime_error("CppSerialPort::SerialPort::openPort(): CreateFileA(LPCSTR, DWORD, DWORD, LPSECURITY_ATTRIBUTES, DWORD, DWORD, HANDLE, HANDLE): Unable to open serial port " + this->portName() + ": error code " + toStdString(errorCode) + " (" + getErrorString(errorCode) + ')');
@@ -187,17 +188,26 @@ char SerialPort::read(bool *readTimeout)
 
     static char readStuff[SERIAL_PORT_BUFFER_MAX];
     memset(readStuff, '\0', SERIAL_PORT_BUFFER_MAX);
-
-    auto waitResult = WaitForSingleObject(this->m_fileStream.getNativeHandle(), static_cast<DWORD>(this->readTimeout()));
-    if (waitResult == WAIT_OBJECT_0) {
+    auto startTime = IByteStream::getEpoch();
+    do {
         DWORD commErrors{};
         COMSTAT commStatus{0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
         auto clearErrorsResult = ClearCommError(this->m_fileStream.getNativeHandle(), &commErrors, &commStatus);
         if (clearErrorsResult == 0) {
             const auto errorCode = getLastError();
-            throw std::runtime_error("ClearCommError(HANDLE, LPDWORD, LPCOMSTAT) error: " + toStdString(errorCode) + " (" + getErrorString(errorCode) + ")");
+            throw std::runtime_error(
+                    "ClearCommError(HANDLE, LPDWORD, LPCOMSTAT) error: " + toStdString(errorCode) + " (" +
+                    getErrorString(errorCode) + ")");
         }
-        DWORD maxBytes{ commStatus.cbInQue };
+        DWORD maxBytes{commStatus.cbInQue};
+        if (maxBytes == 0) {
+            if (this->readTimeout() > 0) {
+                std::this_thread::sleep_for(std::chrono::milliseconds(10));
+                continue;
+            } else {
+                break;
+            }
+        }
         auto returnedBytes = this->m_fileStream.read(readStuff, static_cast<size_t>(maxBytes));
         if (returnedBytes <= 0) {
             if (readTimeout) {
@@ -205,7 +215,8 @@ char SerialPort::read(bool *readTimeout)
             }
             if (this->isDisconnected()) {
                 this->closePort();
-                throw SerialPortDisconnectedException{this->m_portName, "CppSerialPort::SerialPort::read(): The serial port has been disconnected from the system"};
+                throw SerialPortDisconnectedException{this->m_portName,
+                                                      "CppSerialPort::SerialPort::read(): The serial port has been disconnected from the system"};
             }
             return 0;
         }
@@ -218,7 +229,7 @@ char SerialPort::read(bool *readTimeout)
             *readTimeout = false;
         }
         return returnValue;
-    }
+    } while ( (IByteStream::getEpoch() - startTime) < this->readTimeout() );
     if (readTimeout) {
         *readTimeout = true;
     }
