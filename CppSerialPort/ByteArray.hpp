@@ -6,7 +6,7 @@
 #include <algorithm>
 #include <type_traits>
 
-#if defined (_WIN32)
+#if defined (_WIN32) || (__cplusplus < 199714L)
 namespace std { template< class... T > using common_type_t = typename common_type<T...>::type; } //namespace std
 #endif //__cplusplus < 199714L
 
