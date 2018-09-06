@@ -51,8 +51,8 @@ public:
     ByteArray &operator=(char c);
     ByteArray &operator=(ByteArray &&rhs) noexcept;
     ByteArray &operator=(std::vector<char> &&rhs);
-    ByteArray(const ByteArray &other) = default;
-    ByteArray(ByteArray &&other) noexcept = default;
+    ByteArray(const ByteArray &) = default;
+    ByteArray(ByteArray &&) noexcept = default;
     template <typename T> explicit ByteArray(const std::vector<T> &byteArray) : m_buffer{} {
         for (const auto &it : byteArray) { this->m_buffer.push_back(static_cast<char>(it)); }
     }
