@@ -6,10 +6,11 @@
 #include <algorithm>
 #include <type_traits>
 
+/*
 #if defined (_WIN32) || (__cplusplus < 199714L)
 namespace std { template< class... T > using common_type_t = typename common_type<T...>::type; } //namespace std
 #endif //__cplusplus < 199714L
-
+*/
 
 namespace Detail {
     template <template<typename> class Trait, typename First, typename ...Args>
@@ -56,7 +57,7 @@ public:
         for (const auto &it : byteArray) { this->m_buffer.push_back(static_cast<char>(it)); }
     }
     template <typename ...Ts> explicit ByteArray(Ts...ts) : 
-        ByteArray{std::vector<std::common_type_t<Ts...>>{ts...}} {
+        ByteArray{std::vector<typename std::common_type<Ts...>::type>{ts...}} {
             static_assert(
                     Detail::is_all_same_type<Detail::UCharRequirement, Ts...>::value ||
                     Detail::is_all_same_type<Detail::CharRequirement, Ts...>::value ||
