@@ -15,6 +15,7 @@ docs
 .vs/
 .vscode/
 cmake-build-*
+build*
 .idea/
 
 # Qt-es
