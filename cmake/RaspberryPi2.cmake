@@ -1,7 +1,7 @@
 set(CMAKE_SYSTEM_NAME Linux)
 set(CMAKE_SYSTEM_PROCESSOR arm)
 
-set(RPI_ROOT raspi)
+set(RPI_ROOT CrossCompile/raspi2)
 
 set(CMAKE_SYSROOT $ENV{HOME}/${RPI_ROOT}/sysroot/)
 set(CROSS_COMPILING 1)
