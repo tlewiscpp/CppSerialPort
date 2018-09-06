@@ -315,8 +315,8 @@ private:
 #else
 	static const std::vector<const char *> AVAILABLE_PORT_NAMES_BASE;
     static const int constexpr NUMBER_OF_POSSIBLE_SERIAL_PORTS{256*9};
-    termios m_portSettings{};
-    termios m_oldPortSettings{};
+    termios m_portSettings;
+    termios m_oldPortSettings;
 	int getFileDescriptor() const;
 #endif //defined(_WIN32)
     void applyPortSettings();
