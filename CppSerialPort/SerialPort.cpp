@@ -229,7 +229,7 @@ char SerialPort::read(bool *readTimeout)
             *readTimeout = false;
         }
         return returnValue;
-    } while ( (IByteStream::getEpoch() - startTime) < this->readTimeout() );
+    } while ( (IByteStream::getEpoch() - startTime) < static_cast<unsigned long>(this->readTimeout()) );
     if (readTimeout) {
         *readTimeout = true;
     }
