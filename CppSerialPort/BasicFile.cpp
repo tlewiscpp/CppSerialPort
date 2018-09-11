@@ -275,17 +275,17 @@ BasicFile &BasicFile::lockFile() {
         throw std::runtime_error(message.str());
     }
 #if defined(_WIN32)
-    auto lockFileResult = LockFile(this->m_nativeHandle, );
+    auto lockFileResult = LockFile(this->m_nativeHandle, 0, 0, MAXDWORD, MAXDWORD);
 #else
-    auto flockResult = flock(this->getFileDescriptor(), LOCK_EX | LOCK_NB);
-    if (flockResult == -1) {
+    auto lockFileResult = flock(this->getFileDescriptor(), LOCK_EX | LOCK_NB);
+#endif //defined(_WIN32)
+    if (lockFileResult == -1) {
         const auto errorCode = getLastError();
         std::stringstream message{};
         message << "BasicFile::open(): flock returned error code " << errorCode << " (" << getErrorString(errorCode) << ')';
         throw std::runtime_error(message.str());
     }
     this->m_fileLock = true;
-#endif //defined(_WIN32)
     return *this;
 
 }
@@ -295,17 +295,17 @@ BasicFile &BasicFile::unlockFile() {
         return *this;
     }
 #if defined(_WIN32)
-
+    auto unlockFileResult = UnlockFile(this->getNativeHandle(), 0, 0, MAXDWORD, MAXDWORD);
 #else
-    auto flockResult = flock(this->getFileDescriptor(), LOCK_UN);
-    if (flockResult == -1) {
+    auto unlockFileResult = flock(this->getFileDescriptor(), LOCK_UN);
+#endif //defined(_WIN32)
+    if (unlockFileResult == -1) {
         const auto errorCode = getLastError();
         std::stringstream message{};
         message << "BasicFile::unlockFile(): flock returned error code " << errorCode << " (" << getErrorString(errorCode) << ')';
         throw std::runtime_error(message.str());
     }
     this->m_fileLock = false;
-#endif //defined(_WIN32)
     return *this;
 }
 
