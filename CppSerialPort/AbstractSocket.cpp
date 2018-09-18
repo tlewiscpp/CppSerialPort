@@ -32,25 +32,6 @@ AbstractSocket::AbstractSocket(const std::string &hostName, uint16_t portNumber)
     m_readBuffer{""}
 {
 #if defined(_WIN32)
-    /*
-     typedef struct WSAData {
-	WORD		wVersion;
-	WORD		wHighVersion;
-#ifdef _WIN64
-	unsigned short	iMaxSockets;
-	unsigned short	iMaxUdpDg;
-	char		*lpVendorInfo;
-	char		szDescription[WSADESCRIPTION_LEN+1];
-	char		szSystemStatus[WSASYS_STATUS_LEN+1];
-#else
-	char		szDescription[WSADESCRIPTION_LEN+1];
-	char		szSystemStatus[WSASYS_STATUS_LEN+1];
-	unsigned short	iMaxSockets;
-	unsigned short	iMaxUdpDg;
-	char		*lpVendorInfo;
-#endif
-} WSADATA, *LPWSADATA;
-     */
 #   if defined(_WIN64)
     WSADATA wsaData{0, 0, 0, 0, nullptr, {}, {}};
 #   else
@@ -158,9 +139,9 @@ char AbstractSocket::read(bool *readTimeout) {
 
     //Use select() to wait for data to arrive
     //At socket, then read and return
-    fd_set read_fds{0, 0, 0};
-    fd_set write_fds{0, 0, 0};
-    fd_set except_fds{0, 0, 0};
+    fd_set read_fds{0, {0, 0}};
+    fd_set write_fds{0, {0, 0}};
+    fd_set except_fds{0, {0, 0}};
     FD_ZERO(&read_fds);
     FD_ZERO(&write_fds);
     FD_ZERO(&except_fds);
