@@ -1,4 +1,4 @@
-#include "IPV4Address.hpp"
+#include <CppSerialPort/IPV4Address.hpp>
 
 #include <string>
 #include <sstream>

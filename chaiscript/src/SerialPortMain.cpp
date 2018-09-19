@@ -6,9 +6,9 @@
 #include <getopt.h>
 #include "ChaiScriptProgramOption.hpp"
 #include "CppSerialPortChaiScriptModuleFactory.hpp"
+#include <CppSerialPort/SerialPort.hpp>
 
 #include "Random.hpp"
-#include "SerialPort.hpp"
 #include <chaiscript/chaiscript.hpp>
 
 static const ProgramOption portOption   {'p', "port",   required_argument, "Specify the serial port to use (ex COM4 or /dev/ttyUSB1)" };
@@ -22,7 +22,7 @@ static const option longOptions[] {
         {nullptr, 0, nullptr, 0}
 };
 
-template <typename T, size_t N> inline constexpr size_t arraySize( T (&t)[N] ) { (void)t; return N; }
+template <typename T, size_t N> inline constexpr size_t arraySize( T (&t)[N] ) { return t ? N : N; }
 
 static const size_t PROGRAM_OPTION_COUNT{arraySize(longOptions)-1};
 
@@ -218,25 +218,22 @@ void delay(unsigned int howLong) {
 
 static auto startTime = std::chrono::high_resolution_clock::now();
 
-auto getElapsedTimePoint() {
-    auto currentTime = std::chrono::high_resolution_clock::now();
-    return (currentTime - startTime);
-}
+#define ELAPSED_TIME (std::chrono::high_resolution_clock::now() - startTime)
 
 unsigned long milliseconds() {
-    return static_cast<unsigned long>(std::chrono::duration_cast<std::chrono::milliseconds>(getElapsedTimePoint()).count());
+    return static_cast<unsigned long>(std::chrono::duration_cast<std::chrono::milliseconds>(ELAPSED_TIME).count());
 }
 
 unsigned long seconds() {
-    return static_cast<unsigned long>(std::chrono::duration_cast<std::chrono::seconds>(getElapsedTimePoint()).count());
+    return static_cast<unsigned long>(std::chrono::duration_cast<std::chrono::seconds>(ELAPSED_TIME).count());
 }
 
 unsigned long minutes() {
-    return static_cast<unsigned long>(std::chrono::duration_cast<std::chrono::minutes>(getElapsedTimePoint()).count());
+    return static_cast<unsigned long>(std::chrono::duration_cast<std::chrono::minutes>(ELAPSED_TIME).count());
 }
 
 unsigned long hours() {
-    return static_cast<unsigned long>(std::chrono::duration_cast<std::chrono::hours>(getElapsedTimePoint()).count());
+    return static_cast<unsigned long>(std::chrono::duration_cast<std::chrono::hours>(ELAPSED_TIME).count());
 }
 
 void displayHelp() {

@@ -1,4 +1,5 @@
-#include "TcpClient.hpp"
+#include <CppSerialPort/TcpClient.hpp>
+#include <CppSerialPort/ErrorInformation.hpp>
 
 #if defined(_WIN32)
 #    include "Ws2tcpip.h"
@@ -10,7 +11,6 @@
 #include <cstring>
 #include <climits>
 #include <iostream>
-#include "ErrorInformation.hpp"
 
 using NetworkErrorInformation::getLastError;
 using NetworkErrorInformation::getErrorString;

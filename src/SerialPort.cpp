@@ -1,4 +1,5 @@
-#include "SerialPort.hpp"
+#include <CppSerialPort/SerialPort.hpp>
+#include <CppSerialPort/ErrorInformation.hpp>
 
 #include <cstdio>
 #include <cstring>
@@ -28,7 +29,6 @@
 #   include <sys/signal.h>
 #endif //defined(_WIN32)
 
-#include "ErrorInformation.hpp"
 
 using ErrorInformation::getLastError;
 using ErrorInformation::getErrorString;

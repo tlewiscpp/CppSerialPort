@@ -1,21 +1,4 @@
-/***********************************************************************
-*    IByteStream.cpp:                                                  *
-*    IByteStream, base class for simple read and write operations      *
-*    Copyright (c) 2017 Tyler Lewis                                    *
-************************************************************************
-*    This is a header file for CppSerialPort:                          *
-*    https://github.com/tlewiscpp/CppSerialPort                        *
-*    This file may be distributed with the CppSerialPort library,      *
-*    but may also be distributed as a standalone file                  *
-*    The source code is released under the GNU LGPL                    *
-*    This file holds the implementation for the methods used in        *
-*                                                                      *
-*    You should have received a copy of the GNU Lesser General         *
-*    Public license along with CppSerialPort                           *
-*    If not, see <http://www.gnu.org/licenses/>                        *
-***********************************************************************/
-
-#include "IByteStream.hpp"
+#include <CppSerialPort/IByteStream.hpp>
 #include <fstream>
 
 #if defined(_WIN32)

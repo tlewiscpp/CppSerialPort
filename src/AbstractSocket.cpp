@@ -1,4 +1,5 @@
-#include "AbstractSocket.hpp"
+#include <CppSerialPort/AbstractSocket.hpp>
+#include <CppSerialPort/ErrorInformation.hpp>
 
 #if defined(_WIN32)
 #    include "Ws2tcpip.h"
@@ -12,7 +13,6 @@ using accept_reuse_t = int;
 #include <cstring>
 #include <climits>
 #include <iostream>
-#include "ErrorInformation.hpp"
 
 using NetworkErrorInformation::getLastError;
 using NetworkErrorInformation::getErrorString;
@@ -139,9 +139,9 @@ char AbstractSocket::read(bool *readTimeout) {
 
     //Use select() to wait for data to arrive
     //At socket, then read and return
-    fd_set read_fds{0, {0, 0}};
-    fd_set write_fds{0, {0, 0}};
-    fd_set except_fds{0, {0, 0}};
+    fd_set read_fds{0, 0, 0};
+    fd_set write_fds{0, 0, 0};
+    fd_set except_fds{0, 0, 0};
     FD_ZERO(&read_fds);
     FD_ZERO(&write_fds);
     FD_ZERO(&except_fds);

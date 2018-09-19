@@ -1,4 +1,4 @@
-#include "ErrorInformation.hpp"
+#include <CppSerialPort/ErrorInformation.hpp>
 
 #include <cstring>
 #include <iostream>

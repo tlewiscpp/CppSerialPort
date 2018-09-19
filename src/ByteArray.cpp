@@ -1,4 +1,4 @@
-#include "ByteArray.hpp"
+#include <CppSerialPort/ByteArray.hpp>
 
 #include <cstring>
 #include <stdexcept>

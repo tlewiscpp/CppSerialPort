@@ -1,5 +1,5 @@
-#include "BasicFile.hpp"
-#include "ErrorInformation.hpp"
+#include <CppSerialPort/BasicFile.hpp>
+#include <CppSerialPort/ErrorInformation.hpp>
 
 #if defined(_WIN32)
 #    include <io.h>

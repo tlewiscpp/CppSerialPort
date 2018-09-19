@@ -1,5 +1,5 @@
 cmake_minimum_required (VERSION 3.1)
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 11)
 project (CppSerialPort CXX)
 
 if(NOT CMAKE_BUILD_TYPE)
@@ -30,7 +30,9 @@ else()
     set(CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} ${COVERAGE_LINK_FLAGS}")
 endif()
 
-set (SOURCE_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/CppSerialPort/")
+set (SOURCE_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/src/")
+set (INCLUDE_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/include/")
+set (HEADER_ROOT "${INCLUDE_ROOT}/CppSerialPort/")
 
 set (${PROJECT_NAME}_SOURCE_FILES
     "${SOURCE_ROOT}/IPV4Address.cpp"
@@ -44,15 +46,15 @@ set (${PROJECT_NAME}_SOURCE_FILES
     "${SOURCE_ROOT}/ByteArray.cpp")
 
 set (${PROJECT_NAME}_HEADER_FILES
-    "${SOURCE_ROOT}/IPV4Address.hpp"
-    "${SOURCE_ROOT}/IByteStream.hpp"
-    "${SOURCE_ROOT}/SerialPort.hpp"
-    "${SOURCE_ROOT}/TcpClient.hpp"
-    "${SOURCE_ROOT}/UdpClient.hpp"
-    "${SOURCE_ROOT}/AbstractSocket.hpp"
-    "${SOURCE_ROOT}/ErrorInformation.hpp"
-    "${SOURCE_ROOT}/BasicFile.hpp"
-    "${SOURCE_ROOT}/ByteArray.hpp")
+    "${HEADER_ROOT}/IPV4Address.hpp"
+    "${HEADER_ROOT}/IByteStream.hpp"
+    "${HEADER_ROOT}/SerialPort.hpp"
+    "${HEADER_ROOT}/TcpClient.hpp"
+    "${HEADER_ROOT}/UdpClient.hpp"
+    "${HEADER_ROOT}/AbstractSocket.hpp"
+    "${HEADER_ROOT}/ErrorInformation.hpp"
+    "${HEADER_ROOT}/BasicFile.hpp"
+    "${HEADER_ROOT}/ByteArray.hpp")
 
 add_library(${PROJECT_NAME} SHARED
     ${${PROJECT_NAME}_SOURCE_FILES}
@@ -66,6 +68,12 @@ set_target_properties(${PROJECT_NAME}_STATIC PROPERTIES OUTPUT_NAME ${PROJECT_NA
 
 target_include_directories(${PROJECT_NAME}
         PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}"
+        PUBLIC "${INCLUDE_ROOT}"
+        PUBLIC "${SOURCE_ROOT}/")
+
+target_include_directories(${PROJECT_NAME}_STATIC
+        PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}"
+        PUBLIC "${INCLUDE_ROOT}"
         PUBLIC "${SOURCE_ROOT}/")
 
 if (WIN32 OR WIN64)
