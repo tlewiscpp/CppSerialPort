@@ -6,6 +6,7 @@
      using accept_reuse_t = char;
 #else
 #    include <unistd.h>
+#    include <fnctl.h>
 #    define INVALID_SOCKET (-1)
      using accept_reuse_t = int;
 #endif //defined(_WIN32)
@@ -339,7 +340,7 @@ void AbstractSocket::setBlockingFlag(bool blocking) {
         auto errorCode = getLastError();
         throw std::runtime_error("CppSerialPort::AbstractSocket::setBlockingFlag(bool): Setting socket flags: fcntl(int, int, const void *): failed with error code " + toStdString(errorCode) + " (" + getErrorString(errorCode) + ')');
     }
-#endif //defined(_WIN3@)
+#endif //defined(_WIN32)
 }
 
 

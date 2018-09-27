@@ -43,10 +43,13 @@ void TcpClient::doConnect(addrinfo *addressInfo) {
     this->setBlockingFlag(false); //Set socket to non-blocking mode
 
     auto connectResult = ::connect(this->socketDescriptor(), addressInfo->ai_addr, addressInfo->ai_addrlen);
+    /*
     if (connectResult == -1) {
         auto errorCode = getLastError();
         throw std::runtime_error("CppSerialPort::TcpClient::doConnect(): doConnect(addrinfo *): connect(int, sockaddr *, size_t) returned error code " + toStdString(errorCode) +  " (" + getErrorString(errorCode) + ')');
     }
+    */
+    (void)connectResult;
 
     if (select(this->socketDescriptor() + 1, nullptr, &fileDescriptorSet, nullptr, &timeout) == 1) {
         getsockopt_t socketError{};
