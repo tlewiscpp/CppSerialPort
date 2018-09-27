@@ -309,11 +309,13 @@ BasicFile &BasicFile::unlockFile() {
     return *this;
 }
 
+native_handle_t BasicFile::getNativeHandle() const {
 #if defined(_WIN32)
-HANDLE BasicFile::getNativeHandle() const {
     return this->m_nativeHandle;
-}
+#else
+    return this->getFileDescriptor();
 #endif //defined(_WIN32)
+}
 
 BasicFile::~BasicFile() {
     if (this->m_fileHandle == nullptr) {

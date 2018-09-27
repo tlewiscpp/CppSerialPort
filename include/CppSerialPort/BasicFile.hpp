@@ -7,6 +7,9 @@
 
 #if defined(_WIN32)
 using HANDLE = void*;
+using native_handle_t = HANDLE;
+#else
+using native_handle_t = int;
 #endif //defined(_WIN32)
 
 namespace CppSerialPort {
@@ -45,9 +48,7 @@ public:
     int getFileDescriptor() const;
     FILE *getFileHandle() const;
 
-#if defined(_WIN32)
-    HANDLE getNativeHandle() const;
-#endif //defined(_WIN320
+    native_handle_t getNativeHandle() const;
 
 private:
     std::string m_fileName;

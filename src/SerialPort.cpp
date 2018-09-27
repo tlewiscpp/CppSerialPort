@@ -195,21 +195,18 @@ char SerialPort::read(bool *readTimeout)
         auto clearErrorsResult = ClearCommError(this->m_fileStream.getNativeHandle(), &commErrors, &commStatus);
         if (clearErrorsResult == 0) {
             const auto errorCode = getLastError();
-            throw std::runtime_error(
-                    "ClearCommError(HANDLE, LPDWORD, LPCOMSTAT) error: " + toStdString(errorCode) + " (" +
-                    getErrorString(errorCode) + ")");
+            throw std::runtime_error("ClearCommError(HANDLE, LPDWORD, LPCOMSTAT) error: " + toStdString(errorCode) + " (" + getErrorString(errorCode) + ")");
         }
         DWORD maxBytes{commStatus.cbInQue};
         if (maxBytes == 0) {
             if (this->readTimeout() > 0) {
-                std::this_thread::sleep_for(std::chrono::milliseconds(10));
                 continue;
             } else {
                 break;
             }
         }
         auto returnedBytes = this->m_fileStream.read(readStuff, static_cast<size_t>(maxBytes));
-        if (returnedBytes <= 0) {
+        if (returnedBytes < 0) {
             if (readTimeout) {
                 *readTimeout = true;
             }
@@ -219,21 +216,19 @@ char SerialPort::read(bool *readTimeout)
                                                       "CppSerialPort::SerialPort::read(): The serial port has been disconnected from the system"};
             }
             return 0;
+        } else if (returnedBytes > 0) {
+            for (size_t i = 0; i < returnedBytes; i++) {
+                this->m_readBuffer += readStuff[i];
+            }
+            char returnValue{this->m_readBuffer[0]};
+            this->m_readBuffer.popFront();
+            if (readTimeout) {
+                *readTimeout = false;
+            }
+            return returnValue;
         }
-        for (size_t i = 0; i < returnedBytes; i++) {
-            this->m_readBuffer += readStuff[i];
-        }
-        char returnValue{this->m_readBuffer[0]};
-        this->m_readBuffer.popFront();
-        if (readTimeout) {
-            *readTimeout = false;
-        }
-        return returnValue;
     } while ( (this->readTimeout() < 0) ? true : ( (IByteStream::getEpoch() - startTime) < static_cast<unsigned long>(this->readTimeout()) ) );
-    if (readTimeout) {
-        *readTimeout = true;
-    }
-    return 0;
+
 #else
     if (!this->m_readBuffer.empty()) {
         char returnValue{this->m_readBuffer[0]};
