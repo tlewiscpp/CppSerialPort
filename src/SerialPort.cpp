@@ -316,15 +316,15 @@ void SerialPort::closePort()
     }
     try {
 #if defined(_WIN32)
-        CancelIo(this->m_fileStream.getNativeHandle());
-        CloseHandle(this->m_fileStream.getNativeHandle());
-        this->m_fileStream.close();
+    CancelIo(this->m_fileStream.getNativeHandle());
+    //CloseHandle(this->m_fileStream.getNativeHandle());
+    this->m_fileStream.close();
 #else
-        //TODO: Check error codes for these functions
-        std::memcpy(&this->m_portSettings, &this->m_oldPortSettings, sizeof(this->m_portSettings));
-        this->m_portSettings = this->m_oldPortSettings;
-        this->applyPortSettings();
-        this->m_fileStream.close();
+    //TODO: Check error codes for these functions
+    std::memcpy(&this->m_portSettings, &this->m_oldPortSettings, sizeof(this->m_portSettings));
+    this->m_portSettings = this->m_oldPortSettings;
+    this->applyPortSettings();
+    this->m_fileStream.close();
 #endif
     } catch (const std::exception &e) {
         std::cerr << "CppSerialPort::SerialPort::closePort(): Exception caught: \"" << e.what() << "\"" << std::endl;

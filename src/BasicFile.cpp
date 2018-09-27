@@ -317,17 +317,17 @@ BasicFile::~BasicFile() {
     if (this->m_fileHandle == nullptr) {
         return;
     }
-    auto returnCode = fclose(this->m_fileHandle);
-    if (returnCode == -1) {
-        auto errorCode = getLastError();
-        std::cerr << "BasicFile::~BasicFile(): fclose returned error code " << errorCode << " (" << getErrorString(errorCode) << ")" << std::endl;
-    }
     if (this->isLocked()) {
         try {
             this->unlockFile();
         } catch (const std::exception &e) {
             std::cerr << "BasicFile::~BasicFile(): BasicFile::unlockFile threw exception \"" << e.what() << "\"" << std::endl;
         }
+    }
+    auto returnCode = fclose(this->m_fileHandle);
+    if (returnCode == -1) {
+        auto errorCode = getLastError();
+        std::cerr << "BasicFile::~BasicFile(): fclose returned error code " << errorCode << " (" << getErrorString(errorCode) << ")" << std::endl;
     }
     this->clearNativeHandles();
 }
