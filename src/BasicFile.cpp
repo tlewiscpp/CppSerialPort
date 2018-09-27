@@ -128,6 +128,7 @@ BasicFile &BasicFile::open(native_handle_t nativeHandle, const std::string &mode
     if (nativeHandle == nullptr) {
         throw std::runtime_error("BasicFile::open(): NativeHandle parameter cannot be a nullptr");
     }
+    this->m_nativeHandle = nativeHandle;
     this->doOpen(BasicFile::OpenNativeHandle, mode);
     return *this;
 #else
