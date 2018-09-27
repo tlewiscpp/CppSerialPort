@@ -6,7 +6,7 @@
      using accept_reuse_t = char;
 #else
 #    include <unistd.h>
-#    include <fnctl.h>
+#    include <fcntl.h>
 #    define INVALID_SOCKET (-1)
      using accept_reuse_t = int;
 #endif //defined(_WIN32)
