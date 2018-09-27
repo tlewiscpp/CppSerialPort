@@ -218,6 +218,9 @@ char SerialPort::read(bool *readTimeout)
             return returnValue;
         }
     } while ( (this->readTimeout() < 0) ? true : ( (IByteStream::getEpoch() - startTime) < static_cast<unsigned long>(this->readTimeout()) ) );
+    if (readTimeout) {
+        *readTimeout = true;
+    }
 
 #else
     if (!this->m_readBuffer.empty()) {
