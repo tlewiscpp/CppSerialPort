@@ -318,15 +318,15 @@ void AbstractSocket::setBlockingFlag(bool blocking) {
 #if defined(_WIN32)
     unsigned long mode{blocking ? 0UL : 1UL};
     auto result = ioctlsocket(this->socketDescriptor(), FIONBIO, &mode);
-    if (!result) {
+    if (result) {
         auto errorCode = getLastError();
-        throw std::runtime_error("CppSerialPort::AbstractSocket::setNonBlockFlag(bool): Getting current socket flags: ioctlsocket(int, int, unsigned long): failed with error code " + toStdString(errorCode) + " (" + getErrorString(errorCode) + ')');
+        throw std::runtime_error("CppSerialPort::AbstractSocket::setBlockingFlag(bool): Getting current socket flags: ioctlsocket(int, int, unsigned long): failed with error code " + toStdString(errorCode) + " (" + getErrorString(errorCode) + ')');
     }
 #else
     int currentFlags{fcntl(this->socketDescriptor(), F_GETFL, nullptr)};
     if (currentFlags == -1) {
         auto errorCode = getLastError();
-        throw std::runtime_error("CppSerialPort::AbstractSocket::setNonBlockFlag(bool): Getting current socket flags: fcntl(int, int, const void *): failed with error code " + toStdString(errorCode) + " (" + getErrorString(errorCode) + ')');
+        throw std::runtime_error("CppSerialPort::AbstractSocket::setBlockingFlag(bool): Getting current socket flags: fcntl(int, int, const void *): failed with error code " + toStdString(errorCode) + " (" + getErrorString(errorCode) + ')');
     }
 
     if (blocking) {
@@ -337,7 +337,7 @@ void AbstractSocket::setBlockingFlag(bool blocking) {
     auto result = fcntl(this->socketDescriptor(), F_SETFL, currentFlags);
     if (result == -1) {
         auto errorCode = getLastError();
-        throw std::runtime_error("CppSerialPort::AbstractSocket::setNonBlockFlag(bool): Setting socket flags: fcntl(int, int, const void *): failed with error code " + toStdString(errorCode) + " (" + getErrorString(errorCode) + ')');
+        throw std::runtime_error("CppSerialPort::AbstractSocket::setBlockingFlag(bool): Setting socket flags: fcntl(int, int, const void *): failed with error code " + toStdString(errorCode) + " (" + getErrorString(errorCode) + ')');
     }
 #endif //defined(_WIN3@)
 }
