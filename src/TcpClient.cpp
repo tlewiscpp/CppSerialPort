@@ -2,10 +2,12 @@
 #include <CppSerialPort/ErrorInformation.hpp>
 
 #if defined(_WIN32)
-#    include "Ws2tcpip.h"
+#    include "ws2tcpip.h"
+     using getsockopt_t = char;
 #else
 #    include <unistd.h>
 #    include <fcntl.h>
+     using getsockopt_t = int;
 #endif //defined(_WIN32)
 
 #include <cstring>
@@ -32,11 +34,35 @@ TcpClient::TcpClient(const std::string &hostName, uint16_t portNumber) :
 }
 
 void TcpClient::doConnect(addrinfo *addressInfo) {
+    fd_set fileDescriptorSet{};
+    struct timeval timeout{3, 0}; //3 seconds, 0 milliseconds
+
+    FD_ZERO(&fileDescriptorSet);
+    FD_SET(this->socketDescriptor(), &fileDescriptorSet);
+
+    this->setBlockingFlag(false); //Set socket to non-blocking mode
+
     auto connectResult = ::connect(this->socketDescriptor(), addressInfo->ai_addr, addressInfo->ai_addrlen);
     if (connectResult == -1) {
         auto errorCode = getLastError();
-        throw std::runtime_error("CppSerialPort::TcpClient::doConnect(): doConnect(addrinfo *): error code " + toStdString(errorCode) +  " (" + getErrorString(errorCode) + ')');
+        throw std::runtime_error("CppSerialPort::TcpClient::doConnect(): doConnect(addrinfo *): connect(int, sockaddr *, size_t) returned error code " + toStdString(errorCode) +  " (" + getErrorString(errorCode) + ')');
     }
+
+    if (select(this->socketDescriptor() + 1, nullptr, &fileDescriptorSet, nullptr, &timeout) == 1) {
+        getsockopt_t socketError{};
+        socklen_t socketErrorLength{sizeof(socketError)};
+
+        getsockopt(this->socketDescriptor(), SOL_SOCKET, SO_ERROR, &socketError, &socketErrorLength);
+
+        if (socketError != 0) {
+            auto errorCode = getLastError();
+            throw std::runtime_error("CppSerialPort::TcpClient::doConnect(): doConnect(addrinfo *): connect(int, sockaddr *, size_t) failed with error code " + toStdString(errorCode) +  " (" + getErrorString(errorCode) + ')');
+        }
+    }
+
+    this->setBlockingFlag(true); //Return socket to blocking mode
+
+
 }
 
 addrinfo TcpClient::getAddressInfoHints() {

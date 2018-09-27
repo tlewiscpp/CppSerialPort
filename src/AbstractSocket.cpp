@@ -2,17 +2,18 @@
 #include <CppSerialPort/ErrorInformation.hpp>
 
 #if defined(_WIN32)
-#    include "Ws2tcpip.h"
-using accept_reuse_t = char;
+#    include "ws2tcpip.h"
+     using accept_reuse_t = char;
 #else
 #    include <unistd.h>
 #    define INVALID_SOCKET (-1)
-using accept_reuse_t = int;
+     using accept_reuse_t = int;
 #endif //defined(_WIN32)
 
 #include <cstring>
 #include <climits>
 #include <iostream>
+#include <include/CppSerialPort/AbstractSocket.hpp>
 
 using NetworkErrorInformation::getLastError;
 using NetworkErrorInformation::getErrorString;
@@ -312,6 +313,35 @@ void AbstractSocket::connect() {
         throw std::runtime_error("CppSerialPort::AbstractSocket::connect(): Setting write timeout(" + toStdString(this->writeTimeout())  + "): setsockopt(int, int, int, const void *, int) set write timeout failed: error code " + toStdString(errorCode) + " (" + getErrorString(errorCode) + ')');
     }
 }
+
+void AbstractSocket::setBlockingFlag(bool blocking) {
+#if defined(_WIN32)
+    unsigned long mode{blocking ? 0UL : 1UL};
+    auto result = ioctlsocket(this->socketDescriptor(), FIONBIO, &mode);
+    if (!result) {
+        auto errorCode = getLastError();
+        throw std::runtime_error("CppSerialPort::AbstractSocket::setNonBlockFlag(bool): Getting current socket flags: ioctlsocket(int, int, unsigned long): failed with error code " + toStdString(errorCode) + " (" + getErrorString(errorCode) + ')');
+    }
+#else
+    int currentFlags{fcntl(this->socketDescriptor(), F_GETFL, nullptr)};
+    if (currentFlags == -1) {
+        auto errorCode = getLastError();
+        throw std::runtime_error("CppSerialPort::AbstractSocket::setNonBlockFlag(bool): Getting current socket flags: fcntl(int, int, const void *): failed with error code " + toStdString(errorCode) + " (" + getErrorString(errorCode) + ')');
+    }
+
+    if (blocking) {
+        currentFlags = (currentFlags & ~O_NONBLOCK);
+    } else {
+        currentFlags = (currentFlags | O_NONBLOCK);
+    }
+    auto result = fcntl(this->socketDescriptor(), F_SETFL, currentFlags);
+    if (result == -1) {
+        auto errorCode = getLastError();
+        throw std::runtime_error("CppSerialPort::AbstractSocket::setNonBlockFlag(bool): Setting socket flags: fcntl(int, int, const void *): failed with error code " + toStdString(errorCode) + " (" + getErrorString(errorCode) + ')');
+    }
+#endif //defined(_WIN3@)
+}
+
 
 AbstractSocket::~AbstractSocket() {
     if (this->isConnected()) {
