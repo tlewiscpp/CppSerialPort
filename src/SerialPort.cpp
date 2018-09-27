@@ -206,17 +206,7 @@ char SerialPort::read(bool *readTimeout)
             }
         }
         auto returnedBytes = this->m_fileStream.read(readStuff, static_cast<size_t>(maxBytes));
-        if (returnedBytes < 0) {
-            if (readTimeout) {
-                *readTimeout = true;
-            }
-            if (this->isDisconnected()) {
-                this->closePort();
-                throw SerialPortDisconnectedException{this->m_portName,
-                                                      "CppSerialPort::SerialPort::read(): The serial port has been disconnected from the system"};
-            }
-            return 0;
-        } else if (returnedBytes > 0) {
+        if (returnedBytes > 0) {
             for (size_t i = 0; i < returnedBytes; i++) {
                 this->m_readBuffer += readStuff[i];
             }
