@@ -158,7 +158,8 @@ char AbstractSocket::read(bool *readTimeout) {
         if (receiveResult == -1) {
             auto errorCode = getLastError();
             if (errorCode != EAGAIN) {
-                throw std::runtime_error("CppSerialPort::AbstractSocket::read(): recv(int, void *, size_t, int): error code " + toStdString(errorCode) + " (" + getErrorString(errorCode) + ')');
+                this->closePort();
+                throw SocketDisconnectedException{this->portName(), "CppSerialPort::AbstractSocket::read(): The server hung up unexpectedly"};
             }
             if (readTimeout) {
                 *readTimeout = true;
