@@ -32,11 +32,8 @@ public:
     virtual size_t write(const char *buffer, size_t maximum);
     virtual size_t write(char c);
     virtual BasicFile &open(const std::string &mode);
-    virtual BasicFile &open(int fileDescriptor, const std::string &mode);
     virtual BasicFile &open(const std::string &name, const std::string &mode);
-#if defined(_WIN32)
-    virtual BasicFile &open(HANDLE nativeHandle, const std::string &mode);
-#endif //defined(_WIN32)
+    virtual BasicFile &open(native_handle_t nativeHandle, const std::string &mode);
     virtual BasicFile &close();
     virtual bool isOpen() const;
     virtual bool isAtEnd();

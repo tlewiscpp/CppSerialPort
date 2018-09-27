@@ -296,12 +296,8 @@ private:
     Parity m_parity;
     FlowControl m_flowControl;
     BasicFile m_fileStream;
-#if defined(_WIN32)
-    std::mutex m_readMutex;
-#endif
 
     static const long constexpr SERIAL_PORT_BUFFER_MAX{4096};
-    static const long constexpr SINGLE_MESSAGE_BUFFER_MAX{4096};
 
     static std::pair<int, std::string> getPortNameAndNumber(const std::string &name);
     static std::vector<std::string> generateSerialPortNames();

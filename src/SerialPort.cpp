@@ -89,13 +89,14 @@ void SerialPort::openPort()
 	}
 #if defined(_WIN32)
 
-    auto handle = CreateFileA(this->m_portName.c_str(), GENERIC_READ|GENERIC_WRITE, 0, nullptr, OPEN_EXISTING, FILE_FLAG_OVERLAPPED, nullptr);
+    //auto handle = CreateFileA(this->portName().c_str(), GENERIC_READ|GENERIC_WRITE, 0, nullptr, OPEN_EXISTING, FILE_FLAG_OVERLAPPED, nullptr);
+    auto handle = CreateFileA(this->m_portName.c_str(), GENERIC_READ|GENERIC_WRITE, 0, nullptr, OPEN_EXISTING, 0, nullptr);
     if(handle == INVALID_HANDLE_VALUE) {
 		const auto errorCode = getLastError();
 		throw std::runtime_error("CppSerialPort::SerialPort::openPort(): CreateFileA(LPCSTR, DWORD, DWORD, LPSECURITY_ATTRIBUTES, DWORD, DWORD, HANDLE, HANDLE): Unable to open serial port " + this->portName() + ": error code " + toStdString(errorCode) + " (" + getErrorString(errorCode) + ')');
 	}
 
-    //Get full configuration)
+    //Get full configuration
 	if (!GetCommConfig(handle, &this->m_portSettings, &this->m_portSettings.dwSize)) {
 		const auto errorCode = getLastError();
 		throw std::runtime_error("CppSerialPort::SerialPort::openPort(): GetCommConfig(HANDLE, LPCOMMCONFIG, LPDWORD): Unable to get current communication configuration for  " + this->portName() + ": error code " + toStdString(errorCode) + " (" + getErrorString(errorCode) + ')');
@@ -107,7 +108,9 @@ void SerialPort::openPort()
 		throw std::runtime_error("CppSerialPort::SerialPort::openPort(): GetCommState(HANDLE, LPDCB): Unable to get current communication state for  " + this->portName() + ": error code " + toStdString(errorCode) + " (" + getErrorString(errorCode) + ')');
 	}
 
+	this->m_fileStream.setFileName(this->portName());
     this->m_fileStream.open(handle, "r+");
+    this->m_fileStream.lockFile();
 
     /*set up parameters*/
     this->m_portSettings.dcb.fBinary=TRUE;
@@ -221,6 +224,7 @@ char SerialPort::read(bool *readTimeout)
     if (readTimeout) {
         *readTimeout = true;
     }
+    return 0;
 
 #else
     if (!this->m_readBuffer.empty()) {

@@ -119,29 +119,27 @@ BasicFile &BasicFile::open(const std::string &fileName, const std::string &mode)
     return this->doOpen(OpenStyle::OpenFileName, mode);
 }
 
-BasicFile &BasicFile::open(int fileDescriptor, const std::string &mode) {
-    if (fileDescriptor <= 0) {
-        std::stringstream message{};
-        message << "BasicFile::open(): FileDescriptor parameter cannot be less than or equal to 0 (" << fileDescriptor << " <= 0)";
-        throw std::runtime_error(message.str());
-    }
-    this->setFileName(std::to_string(fileDescriptor));
-    return this->doOpen(OpenStyle::OpenFileDescriptor, mode);
-}
-
 BasicFile &BasicFile::open(const std::string &mode) {
     return this->doOpen(OpenStyle::OpenFileName, mode);
 }
 
+BasicFile &BasicFile::open(native_handle_t nativeHandle, const std::string &mode) {
 #if defined(_WIN32)
-BasicFile &BasicFile::open(HANDLE nativeHandle, const std::string &mode) {
     if (nativeHandle == nullptr) {
         throw std::runtime_error("BasicFile::open(): NativeHandle parameter cannot be a nullptr");
     }
     this->doOpen(BasicFile::OpenNativeHandle, mode);
     return *this;
-}
+#else
+    if (nativeHandle <= 0) {
+        std::stringstream message{};
+        message << "BasicFile::open(): FileDescriptor parameter cannot be less than or equal to 0 (" << nativeHandle << " <= 0)";
+        throw std::runtime_error(message.str());
+    }
+    this->setFileName(std::to_string(nativeHandle));
+    return this->doOpen(OpenStyle::OpenFileDescriptor, mode);
 #endif //defined(_WIN32)
+}
 
 
 BasicFile &BasicFile::doOpen(BasicFile::OpenStyle openStyle, const std::string &mode) {
@@ -160,11 +158,9 @@ BasicFile &BasicFile::doOpen(BasicFile::OpenStyle openStyle, const std::string &
         handle = fdopen(fileDescriptor, mode.c_str());
     } else if (openStyle == OpenStyle::OpenFileName){
         handle = fopen(this->m_fileName.c_str(), mode.c_str());
-#if defined(_WIN32)
     } else if (openStyle == OpenStyle::OpenNativeHandle) {
         fileDescriptor = _open_osfhandle(reinterpret_cast<intptr_t>(this->m_nativeHandle), 0);
         handle = fdopen(fileDescriptor, mode.c_str());
-#endif //defined(_WIN32)
     }
 
 #if defined(_WIN32)
