@@ -65,8 +65,7 @@ void TcpClient::doConnect(addrinfo *addressInfo) {
         }
 #endif //!defined(_WIN32)
     } else {
-        auto errorCode = getLastError();
-        throw std::runtime_error("CppSerialPort::TcpClient::doConnect(): doConnect(addrinfo *): connect(int, sockaddr *, size_t) failed with error code " + toStdString(errorCode) +  " (" + getErrorString(errorCode) + ')');
+        throw std::runtime_error("CppSerialPort::TcpClient::doConnect(): doConnect(addrinfo *): connect(int, sockaddr *, size_t) did not complete in the specified time frame");
     }
 
     this->setBlockingFlag(true); //Return socket to blocking mode
