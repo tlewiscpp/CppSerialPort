@@ -51,7 +51,9 @@ void TcpClient::doConnect(addrinfo *addressInfo) {
     */
     (void)connectResult;
 
+    //Windows will return 1 if the connection was successful, 0 otherwise, and will always return 0 for socketError, because logic
     if (select(this->socketDescriptor() + 1, nullptr, &fileDescriptorSet, nullptr, &timeout) == 1) {
+#if !defined(_WIN32)
         getsockopt_t socketError{};
         socklen_t socketErrorLength{sizeof(socketError)};
 
@@ -61,6 +63,10 @@ void TcpClient::doConnect(addrinfo *addressInfo) {
             auto errorCode = getLastError();
             throw std::runtime_error("CppSerialPort::TcpClient::doConnect(): doConnect(addrinfo *): connect(int, sockaddr *, size_t) failed with error code " + toStdString(errorCode) +  " (" + getErrorString(errorCode) + ')');
         }
+#endif //!defined(_WIN32)
+    } else {
+        auto errorCode = getLastError();
+        throw std::runtime_error("CppSerialPort::TcpClient::doConnect(): doConnect(addrinfo *): connect(int, sockaddr *, size_t) failed with error code " + toStdString(errorCode) +  " (" + getErrorString(errorCode) + ')');
     }
 
     this->setBlockingFlag(true); //Return socket to blocking mode
