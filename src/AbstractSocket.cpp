@@ -108,9 +108,7 @@ void AbstractSocket::openPort() {
 }
 
 void AbstractSocket::closePort() {
-    if (this->isConnected()) {
-        this->disconnect();
-    }
+    this->disconnect();
 }
 
 void AbstractSocket::flushRx() {
@@ -345,9 +343,7 @@ void AbstractSocket::setBlockingFlag(bool blocking) {
 
 
 AbstractSocket::~AbstractSocket() {
-    if (this->isConnected()) {
-        this->disconnect();
-    }
+    this->closePort();
 }
 
 
