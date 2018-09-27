@@ -2,7 +2,7 @@
 #include <CppSerialPort/ErrorInformation.hpp>
 
 #if defined(_WIN32)
-#    include "ws2tcpip.h"
+#    include <ws2tcpip.h>
      using getsockopt_t = char;
 #else
 #    include <unistd.h>
