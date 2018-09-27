@@ -159,12 +159,13 @@ BasicFile &BasicFile::doOpen(BasicFile::OpenStyle openStyle, const std::string &
         handle = fdopen(fileDescriptor, mode.c_str());
     } else if (openStyle == OpenStyle::OpenFileName){
         handle = fopen(this->m_fileName.c_str(), mode.c_str());
-    } else if (openStyle == OpenStyle::OpenNativeHandle) {
+    }
+#if defined(_WIN32)
+    else if (openStyle == OpenStyle::OpenNativeHandle) {
         fileDescriptor = _open_osfhandle(reinterpret_cast<intptr_t>(this->m_nativeHandle), 0);
         handle = fdopen(fileDescriptor, mode.c_str());
     }
 
-#if defined(_WIN32)
     if (this->m_nativeHandle == nullptr) {
         auto nativeHandle = reinterpret_cast<HANDLE>(_get_osfhandle(fileDescriptor));
         if (nativeHandle == nullptr) {
