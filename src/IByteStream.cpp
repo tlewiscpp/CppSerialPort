@@ -1,14 +1,30 @@
 #include <CppSerialPort/IByteStream.hpp>
 #include <fstream>
+#include <iomanip>
+#include <iostream>
 
 #if defined(_WIN32)
 const char *CppSerialPort::IByteStream::DEFAULT_LINE_ENDING{"\r\n"};
-#    include <Windows.h>
+#    include <windows.h>
 #    include <shlwapi.h>
 #else
 #    include <unistd.h>
 const char *CppSerialPort::IByteStream::DEFAULT_LINE_ENDING{"\n"};
 #endif //defined(_WIN32)
+
+namespace {
+    template <typename InputType> static std::string toFixedWidthHex(InputType value, size_t targetLength, bool includeZeroX = true) {
+        std::stringstream returnString{};
+        if (includeZeroX) {
+            returnString << "0x";
+        }
+        returnString << std::setfill('0');
+        returnString << std::setw(static_cast<int>(targetLength));
+        returnString << std::hex;
+        returnString << static_cast<int>(value);
+        return returnString.str();
+    }
+}
 
 namespace CppSerialPort {
 
@@ -148,12 +164,7 @@ bool IByteStream::fileExists(const std::string &fileToCheck) {
 
 #if defined(_MSC_VER)
 #include <Windows.h>
-uint64_t IByteStream::getEpoch()
-{
-    /*
-     * Are you fucking kidding me Windows?
-     * https://stackoverflow.com/a/1695332/4791654
-     */
+uint64_t IByteStream::getEpoch() {
     FILETIME ft_now{};
     LONGLONG ll_now{(LONGLONG)ft_now.dwLowDateTime + ((LONGLONG)(ft_now.dwHighDateTime) << 32LL)};
     LONGLONG win32Epoch{ll_now/10000};
