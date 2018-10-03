@@ -153,12 +153,11 @@ ByteArray IByteStream::readUntil(char until, bool *timeout) {
 
 bool IByteStream::fileExists(const std::string &fileToCheck) {
 #if defined(_WIN32)
-    std::ifstream readFromFile{};
-    readFromFile.open(fileToCheck.c_str());
-    return readFromFile.is_open();
+    DWORD dwAttrib{GetFileAttributes(fileToCheck.c_str())};
+    return ( (dwAttrib != INVALID_FILE_ATTRIBUTES) && !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY) );
 #else
-    return (access(fileToCheck.c_str(),F_OK) != -1);
-#endif
+    return access(fileToCheck.c_str(), F_OK) != -1;
+#endif //defined(_WIN32)
 }
 
 /*
