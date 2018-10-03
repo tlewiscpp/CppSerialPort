@@ -125,7 +125,7 @@ ByteArray IByteStream::readUntil(const std::string &until, bool *timeout) {
 
 ByteArray IByteStream::readUntil(const ByteArray &until, bool *timeout) {
 	std::lock_guard<std::mutex> readLock{ this->m_readMutex };
-    uint64_t startTime{IByteStream::getEpoch()};
+    auto startTime = IByteStream::getEpoch();
     ByteArray returnArray{""};
     if (timeout) {
         *timeout = false;
@@ -161,7 +161,7 @@ bool IByteStream::fileExists(const std::string &fileToCheck) {
 #endif
 }
 
-
+/*
 #if defined(_MSC_VER)
 #include <Windows.h>
 uint64_t IByteStream::getEpoch() {
@@ -179,7 +179,13 @@ uint64_t IByteStream::getEpoch() {
     return (static_cast<unsigned long long>(tv.tv_sec) * 1000) +
            (static_cast<unsigned long long>(tv.tv_usec) / 1000);
 }
+ #endif //defined(_WIN32)
 
-#endif //defined(_WIN32)
+ */
+
+int64_t IByteStream::getEpoch() {
+    return static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count());
+}
+
 
 } //namespace CppSerialPort

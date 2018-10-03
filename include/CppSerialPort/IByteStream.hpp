@@ -78,7 +78,7 @@ protected:
 
 	static const int DEFAULT_READ_TIMEOUT;
 	static const int DEFAULT_WRITE_TIMEOUT;
-	static uint64_t getEpoch();
+	static int64_t getEpoch();
 
 
 private:
