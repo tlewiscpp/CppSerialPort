@@ -35,6 +35,7 @@ public:
     virtual BasicFile &open(const std::string &name, const std::string &mode);
     virtual BasicFile &open(native_handle_t nativeHandle, const std::string &mode);
     virtual BasicFile &close();
+    virtual BasicFile &flush();
     virtual bool isOpen() const;
     virtual bool isAtEnd();
 

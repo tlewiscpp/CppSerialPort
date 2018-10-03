@@ -4,7 +4,7 @@
 #if defined(_WIN32)
 #    include <winsock2.h>
 #    include <ws2tcpip.h>
-#    include <Windows.h>
+#    include <windows.h>
 typedef SOCKET socket_t;
 #else
 #    include <sys/socket.h>
@@ -25,11 +25,16 @@ namespace CppSerialPort {
     {
     public:
         explicit inline SocketDisconnectedException(const std::string &portName, const std::string &what) :
-                std::runtime_error{what},
-                m_portName{portName}
+            std::runtime_error{what},
+            m_portName{portName}
         {
 
         }
+        SocketDisconnectedException(const SocketDisconnectedException &) = default;
+        SocketDisconnectedException(SocketDisconnectedException &&) = default;
+        SocketDisconnectedException &operator=(const SocketDisconnectedException &) = default;
+        SocketDisconnectedException &operator=(SocketDisconnectedException &&) = default;
+        ~SocketDisconnectedException() override = default;
 
         inline std::string portName() const {
             return this->m_portName;

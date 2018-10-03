@@ -11,7 +11,7 @@
 #include <type_traits>
 
 #if defined(_WIN32)
-#    include <Windows.h>
+#    include <windows.h>
 #endif //defined(_WIN32)
 
 //Thanks to Jarod42
@@ -89,6 +89,12 @@ public:
     {
 
     }
+
+    SerialPortDisconnectedException(const SerialPortDisconnectedException &) = default;
+    SerialPortDisconnectedException(SerialPortDisconnectedException &&) = default;
+    SerialPortDisconnectedException &operator=(const SerialPortDisconnectedException &) = default;
+    SerialPortDisconnectedException &operator=(SerialPortDisconnectedException &&) = default;
+    ~SerialPortDisconnectedException() override = default;
 
     inline std::string portName() const {
         return this->m_portName;

@@ -219,6 +219,22 @@ bool BasicFile::isOpen() const {
     return this->m_fileHandle != nullptr;
 }
 
+BasicFile &BasicFile::flush() {
+    if (!this->isOpen()) {
+        std::stringstream message{};
+        message << "BasicFile::flush(): File cannot be flushed while it is closed (call BasicFile::open() first)";
+        throw std::runtime_error(message.str());
+    }
+    auto result = fflush(this->m_fileHandle);
+    if (result == EOF) {
+        auto errorCode = ferror(this->m_fileHandle);
+        std::stringstream message{};
+        message << "BasicFile::close(): fflush returned error code " << errorCode << " (" << getErrorString(errorCode) << ")" << std::endl;
+        throw std::runtime_error(message.str());
+    }
+    return *this;
+}
+
 BasicFile &BasicFile::close() {
     if (this->isLocked()) {
         this->unlockFile();
