@@ -40,7 +40,7 @@ namespace CppSerialPort {
 
 class ByteArray {
 public:
-    explicit ByteArray() = default;
+    ByteArray();
     explicit ByteArray(const char *cStr);
     explicit ByteArray(const std::string &str);
     explicit ByteArray(char *buffer, size_t length);
@@ -79,11 +79,11 @@ public:
     ByteArray &operator+=(const ByteArray &rhs);
     ByteArray &operator+=(const std::string &rhs);
     ByteArray &operator+=(const std::vector<char> &rhs);
-    ByteArray &operator+(int i);
-    ByteArray &operator+(char c);
-    ByteArray &operator+(const ByteArray &rhs);
-    ByteArray &operator+(const std::string &rhs);
-    ByteArray &operator+(const std::vector<char> &rhs);
+    ByteArray operator+(int i);
+    ByteArray operator+(char c);
+    ByteArray operator+(const ByteArray &rhs);
+    ByteArray operator+(const std::string &rhs);
+    ByteArray operator+(const std::vector<char> &rhs);
 
     size_t find(const ByteArray &toFind);
     size_t find(char c);

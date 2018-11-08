@@ -23,8 +23,8 @@ namespace {
 
 namespace CppSerialPort {
 
-ByteArray::ByteArray(const char *cStr) :
-    m_buffer{cStr, cStr + strlen(cStr)}
+ByteArray::ByteArray():
+    m_buffer{}
 {
 
 }
@@ -269,27 +269,27 @@ ByteArray &ByteArray::popFront() {
     return *this;
 }
 
-ByteArray &ByteArray::operator+(char c) {
+ByteArray ByteArray::operator+(char c) {
     this->append(c);
     return *this;
 }
 
-ByteArray &ByteArray::operator+(int i) {
+ByteArray ByteArray::operator+(int i) {
     this->append(i);
     return *this;
 }
 
-ByteArray &ByteArray::operator+(const ByteArray &rhs) {
+ByteArray ByteArray::operator+(const ByteArray &rhs) {
     this->append(rhs);
     return *this;
 }
 
-ByteArray &ByteArray::operator+(const std::string &rhs) {
+ByteArray ByteArray::operator+(const std::string &rhs) {
     this->append(rhs);
     return *this;
 }
 
-ByteArray &ByteArray::operator+(const std::vector<char> &rhs) {
+ByteArray ByteArray::operator+(const std::vector<char> &rhs) {
     this->append(rhs);
     return *this;
 }
