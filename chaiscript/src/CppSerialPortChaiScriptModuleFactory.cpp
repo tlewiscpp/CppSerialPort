@@ -94,11 +94,11 @@ ModulePtr CppSerialPortChaiScriptModuleFactory::createModule() {
     returnModule->add(fun<ByteArray &, ByteArray, const std::string &>(&ByteArray::operator+=), "+=");
     returnModule->add(fun<ByteArray &, ByteArray, const std::vector<char> &>(&ByteArray::operator+=), "+=");
 
-    returnModule->add(fun<ByteArray &, ByteArray, char>(&ByteArray::operator+), "+");
-    returnModule->add(fun<ByteArray &, ByteArray, int>(&ByteArray::operator+), "+");
-    returnModule->add(fun<ByteArray &, ByteArray, const ByteArray &>(&ByteArray::operator+), "+");
-    returnModule->add(fun<ByteArray &, ByteArray, const std::string &>(&ByteArray::operator+), "+");
-    returnModule->add(fun<ByteArray &, ByteArray, const std::vector<char> &>(&ByteArray::operator+), "+");
+    returnModule->add(fun<ByteArray, ByteArray, char>(&ByteArray::operator+), "+");
+    returnModule->add(fun<ByteArray, ByteArray, int>(&ByteArray::operator+), "+");
+    returnModule->add(fun<ByteArray, ByteArray, const ByteArray &>(&ByteArray::operator+), "+");
+    returnModule->add(fun<ByteArray, ByteArray, const std::string &>(&ByteArray::operator+), "+");
+    returnModule->add(fun<ByteArray, ByteArray, const std::vector<char> &>(&ByteArray::operator+), "+");
 
     returnModule->add(fun<size_t, ByteArray, const ByteArray &>(&ByteArray::find), "find");
     returnModule->add(fun<size_t, ByteArray, char>(&ByteArray::find), "find");

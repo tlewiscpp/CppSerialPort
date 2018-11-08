@@ -47,6 +47,12 @@ ByteArray::ByteArray(char *buffer, int length) :
     
 }
 
+ByteArray::ByteArray(const char *str) :
+    ByteArray{}
+{
+    this->operator+=(str);
+}
+
 ByteArray &ByteArray::clear() {
     this->m_buffer.clear();
     return *this;
