@@ -22,7 +22,7 @@ static const option longOptions[] {
         {nullptr, 0, nullptr, 0}
 };
 
-template <typename T, size_t N> inline constexpr size_t arraySize( T (&t)[N] ) { return t ? N : N; }
+template <typename T, size_t N> inline constexpr size_t arraySize( T (&)[N] ) { return N; }
 
 static const size_t PROGRAM_OPTION_COUNT{arraySize(longOptions)-1};
 
