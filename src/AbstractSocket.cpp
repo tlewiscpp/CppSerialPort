@@ -3,14 +3,17 @@
 
 #if defined(_WIN32)
 #    include <ws2tcpip.h>
+#    include <winsock2.h>
      using accept_reuse_t = char;
+
 #else
 #    include <unistd.h>
 #    include <fcntl.h>
+#    include <sys/ioctl.h>
 #    define INVALID_SOCKET (-1)
      using accept_reuse_t = int;
-#endif //defined(_WIN32)
 
+#endif //defined(_WIN32)
 #include <cstring>
 #include <climits>
 #include <iostream>
@@ -120,7 +123,7 @@ void AbstractSocket::flushTx() {
 }
 
 size_t AbstractSocket::available() {
-    return this->m_readBuffer.size();
+    return this->m_readBuffer.size() + this->checkAvailable();
 }
 
 char AbstractSocket::read(bool *readTimeout) {
@@ -184,6 +187,25 @@ char AbstractSocket::read(bool *readTimeout) {
         *readTimeout = true;
     }
     return 0;
+}
+
+ssize_t AbstractSocket::checkAvailable() {
+#if defined(_WIN32)
+    unsigned long bytesAvailable{0};
+    auto result = ioctlsocket(this->m_socketDescriptor, FIONREAD, &bytesAvailable);
+    if (result == -1) {
+        auto errorCode = getLastError();
+        throw std::runtime_error("CppSerialPort::AbstractSocket::checkAvailable(): ioctlsocket(SOCKET*, int, int): error code " + toStdString(errorCode) + " (" + getErrorString(errorCode) + ')');
+    }
+#else
+    int count{0};
+    auto result = ioctl(this->m_socketDescriptor, FIONREAD, &count);
+    if (result == -1) {
+        auto errorCode = getLastError();
+        throw std::runtime_error("CppSerialPort::AbstractSocket::checkAvailable(): ioctl(int, int, int): error code " + toStdString(errorCode) + " (" + getErrorString(errorCode) + ')');
+    }
+#endif //defined(_WIN32)
+    return static_cast<ssize_t>(bytesAvailable);
 }
 
 ssize_t AbstractSocket::write(const char *bytes, size_t byteCount) {
@@ -296,7 +318,7 @@ void AbstractSocket::connect() {
     this->flushRx();
 
 
-    //Socket read timeout
+    //TcpSocket read timeout
     auto tv = toTimeVal(static_cast<uint32_t>(this->readTimeout()));
     auto readTimeoutResult = setsockopt(this->m_socketDescriptor, SOL_SOCKET, SO_RCVTIMEO, reinterpret_cast<const char *>(&tv), sizeof(struct timeval));
     if (readTimeoutResult == -1) {
@@ -304,7 +326,7 @@ void AbstractSocket::connect() {
         throw std::runtime_error("CppSerialPort::AbstractSocket::connect(): Setting read timeout (" + toStdString(this->readTimeout()) + "): setsockopt(int, int, int, const void *, int) set read timeout failed: error code " + toStdString(errorCode) + " (" + getErrorString(errorCode) + ')');
     }
 
-    //Socket write timeout
+    //TcpSocket write timeout
     tv = toTimeVal(static_cast<uint32_t>(this->writeTimeout()));
     auto writeTimeoutResult = setsockopt(this->m_socketDescriptor, SOL_SOCKET, SO_SNDTIMEO, reinterpret_cast<const char *>(&tv), sizeof(struct timeval));
     if (writeTimeoutResult == -1) {
