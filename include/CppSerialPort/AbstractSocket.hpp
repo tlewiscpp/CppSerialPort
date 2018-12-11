@@ -94,6 +94,7 @@ protected:
         bool isDisconnected() const;
         socket_t socketDescriptor() const;
         void setSocketDescriptor(socket_t socketDescriptor);
+        ssize_t checkAvailable();
 
         void setBlockingFlag(bool blocking);
 };

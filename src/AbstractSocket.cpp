@@ -198,8 +198,8 @@ ssize_t AbstractSocket::checkAvailable() {
         throw std::runtime_error("CppSerialPort::AbstractSocket::checkAvailable(): ioctlsocket(SOCKET*, int, int): error code " + toStdString(errorCode) + " (" + getErrorString(errorCode) + ')');
     }
 #else
-    int count{0};
-    auto result = ioctl(this->m_socketDescriptor, FIONREAD, &count);
+    unsigned long bytesAvailable{0};
+    auto result = ioctl(this->m_socketDescriptor, FIONREAD, &bytesAvailable);
     if (result == -1) {
         auto errorCode = getLastError();
         throw std::runtime_error("CppSerialPort::AbstractSocket::checkAvailable(): ioctl(int, int, int): error code " + toStdString(errorCode) + " (" + getErrorString(errorCode) + ')');
