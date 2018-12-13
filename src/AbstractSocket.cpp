@@ -126,6 +126,33 @@ size_t AbstractSocket::available() {
     return this->m_readBuffer.size() + this->checkAvailable();
 }
 
+size_t AbstractSocket::rawRead(char *buffer, size_t max) {
+    size_t returnSize{0};
+    while (!this->m_readBuffer.empty()) {
+        buffer[returnSize++] = this->m_readBuffer[0];
+        this->m_readBuffer.popFront();
+        if (returnSize >= max) {
+            return returnSize;
+        }
+    }
+    auto remainingMax = max - returnSize;
+    auto result = this->doRead( (buffer + returnSize), remainingMax);
+    if (result == -1) {
+        auto errorCode = getLastError();
+        if (errorCode != EAGAIN) {
+            this->closePort();
+            throw SocketDisconnectedException{this->portName(), "CppSerialPort::AbstractSocket::rawRead(): The server hung up unexpectedly"};
+        }
+        return returnSize;
+    } else if (result == 0) {
+        this->closePort();
+        throw SocketDisconnectedException{this->portName(), "CppSerialPort::AbstractSocket::rawRead(): The server hung up unexpectedly"};
+    } else {
+        returnSize += result;
+        return returnSize;
+    }
+}
+
 char AbstractSocket::read(bool *readTimeout) {
     if (!this->m_readBuffer.empty()) {
         char returnValue{ this->m_readBuffer[0] };
