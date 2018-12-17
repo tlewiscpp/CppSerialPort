@@ -5,19 +5,16 @@
 
 namespace CppSerialPort {
 
-class UdpClient : public AbstractSocket {
+class UdpSocket : public AbstractSocket {
 public:
-    UdpClient(const std::string &hostName, uint16_t portNumber);
-    UdpClient(const IPV4Address &ipAddress, uint16_t portNumber);
-    ~UdpClient() override = default;
+    UdpSocket(const std::string &hostName, uint16_t portNumber);
+    UdpSocket(const IPV4Address &ipAddress, uint16_t portNumber);
+    ~UdpSocket() override = default;
 protected:
     ssize_t doWrite(const char *bytes, size_t byteCount) override;
     ssize_t doRead(char *buffer, size_t bufferMax) override;
-    void doConnect(addrinfo *addressInfo) override;
+    void doConnect() override;
     addrinfo getAddressInfoHints() override;
-
-private:
-    struct sockaddr m_address;
 };
 
 } //namespace CppSerialPort

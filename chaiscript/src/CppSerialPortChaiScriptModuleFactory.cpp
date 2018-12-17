@@ -4,8 +4,8 @@
 #include <CppSerialPort/SerialPort.hpp>
 #include <CppSerialPort/IByteStream.hpp>
 #include <CppSerialPort/AbstractSocket.hpp>
-#include <CppSerialPort/TcpClient.hpp>
-#include <CppSerialPort/UdpClient.hpp>
+#include <CppSerialPort/TcpSocket.hpp>
+#include <CppSerialPort/UdpSocket.hpp>
 #include <CppSerialPort/ByteArray.hpp>
 
 using namespace CppSerialPort;

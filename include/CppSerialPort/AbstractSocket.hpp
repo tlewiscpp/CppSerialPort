@@ -77,6 +77,13 @@ namespace CppSerialPort {
         uint16_t portNumber() const;
         std::string hostName() const;
 
+        void bindSocket(uint16_t portToBind);
+        //void unbindSocket();
+        bool isSocketBound() const;
+
+        bool isBroadcasting() const;
+        void setBroadcast(bool broadcast);
+
         void setReadTimeout(int timeout) override;
         void setWriteTimeout(int timeout) override;
 
@@ -84,15 +91,19 @@ namespace CppSerialPort {
         static const uint16_t MAXIMUM_PORT_NUMBER;
 private:
         socket_t m_socketDescriptor;
+        addrinfo m_addressInfo;
         std::string m_hostName;
         uint16_t m_portNumber;
         ByteArray m_readBuffer;
+        bool m_isBound;
 
 protected:
         virtual ssize_t doRead(char *buffer, size_t bufferMax) = 0;
         virtual ssize_t doWrite(const char *bytes, size_t numberOfBytes) = 0;
-        virtual void doConnect(addrinfo *addressInfo) = 0;
+        virtual void doConnect() = 0;
         virtual addrinfo getAddressInfoHints() = 0;
+
+        const addrinfo *addressInfo();
 
         static timeval toTimeVal(uint32_t totalTimeout);
         bool isDisconnected() const;

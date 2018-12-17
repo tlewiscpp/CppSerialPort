@@ -4,14 +4,14 @@
 #if defined(_WIN32)
 #    include <ws2tcpip.h>
 #    include <winsock2.h>
-     using accept_reuse_t = char;
+     using sockopt_t = char;
 
 #else
 #    include <unistd.h>
 #    include <fcntl.h>
 #    include <sys/ioctl.h>
 #    define INVALID_SOCKET (-1)
-     using accept_reuse_t = int;
+     using sockopt_t = int;
 
 #endif //defined(_WIN32)
 #include <cstring>
@@ -32,9 +32,11 @@ const uint16_t AbstractSocket::MAXIMUM_PORT_NUMBER{std::numeric_limits<uint16_t>
 AbstractSocket::AbstractSocket(const std::string &hostName, uint16_t portNumber) :
     IByteStream{},
     m_socketDescriptor{INVALID_SOCKET},
+    m_addressInfo{},
     m_hostName{hostName},
     m_portNumber{portNumber},
-    m_readBuffer{""}
+    m_readBuffer{""},
+    m_isBound{false}
 {
 #if defined(_WIN32)
 #   if defined(_WIN64)
@@ -58,7 +60,7 @@ AbstractSocket::AbstractSocket(const std::string &hostName, uint16_t portNumber)
 }
 
 AbstractSocket::AbstractSocket(const IPV4Address &ipAddress, uint16_t portNumber) :
-        AbstractSocket{ipAddress.toString(), portNumber}
+    AbstractSocket{ipAddress.toString(), portNumber}
 {
 
 }
@@ -78,11 +80,14 @@ void AbstractSocket::connect(const std::string &hostName, uint16_t portNumber) {
 
 bool AbstractSocket::disconnect() {
 #if defined(_WIN32)
+    shutdown(this->m_socketDescriptor, SD_BOTH);
     closesocket(this->m_socketDescriptor);
 #else
+    shutdown(this->m_socketDescriptor, SHUT_RDWR);
     close(this->m_socketDescriptor);
 #endif //defined(_WIN32)
     this->m_socketDescriptor = INVALID_SOCKET;
+    this->m_isBound = false;
     return true;
 }
 
@@ -184,7 +189,7 @@ char AbstractSocket::read(bool *readTimeout) {
     static char readBuffer[ABSTRACT_SOCKET_BUFFER_MAX];
     memset(readBuffer, '\0', ABSTRACT_SOCKET_BUFFER_MAX);
 
-    if (select(this->socketDescriptor() + 1, &read_fds, &write_fds, &except_fds, &timeout) == 1) {
+    if (select(static_cast<int>(this->socketDescriptor() + 1), &read_fds, &write_fds, &except_fds, &timeout) == 1) {
         auto receiveResult = this->doRead(readBuffer, ABSTRACT_SOCKET_BUFFER_MAX - 1);
         if (receiveResult == -1) {
             auto errorCode = getLastError();
@@ -298,6 +303,48 @@ void AbstractSocket::setSocketDescriptor(socket_t socketDescriptor) {
     this->m_socketDescriptor = socketDescriptor;
 }
 
+void AbstractSocket::bindSocket(uint16_t portToBind) {
+    if (this->isSocketBound()) {
+        throw std::runtime_error("CppSerialPort::AbstractSocket::bindSocket(): Cannot bind socket when already bound (call unbindSocket() first)");
+    }
+
+    //Create new addressInfo that will bind to specified port
+    auto boundAddressInfo = this->m_addressInfo;
+    reinterpret_cast<sockaddr_in *>(boundAddressInfo.ai_addr)->sin_port = portToBind;
+
+    //For a client, bind is only important is we want to choose the local port to bindSocket to
+    //If a socket is not bound before connect(), the kernel will choose a random one
+    //However, for a server, bindSocket MUST be called before calling listen()
+    auto bindResult = bind(this->m_socketDescriptor, boundAddressInfo.ai_addr, static_cast<int>(boundAddressInfo.ai_addrlen));
+    if (bindResult == -1) {
+        auto errorCode = getLastError();
+        throw std::runtime_error("CppSerialPort::AbstractSocket::bindSocket(): bind(int, int, int): error code " + toStdString(errorCode) + " (" + getErrorString(errorCode) + ')');
+    }
+}
+
+bool AbstractSocket::isBroadcasting() const {
+    sockopt_t broadcast{0};
+    socklen_t optionSize{sizeof(sockopt_t)};
+    auto returnStatus = getsockopt(this->m_socketDescriptor, SOL_SOCKET, SO_BROADCAST, &broadcast, &optionSize);
+    if (returnStatus != 0) {
+        throw std::runtime_error("CppSerialPort::AbstractSocket::isBroadcasting(): getsockopt(int, int, const sockopt_t *, int): error code " + toStdString(returnStatus) + " (" + gai_strerror(returnStatus) + ')');
+    }
+    return static_cast<bool>(broadcast);
+}
+
+void AbstractSocket::setBroadcast(bool broadcast) {
+    sockopt_t socketOption{0};
+    socketOption = static_cast<sockopt_t>(broadcast ? 1 : 0);
+    auto returnStatus = setsockopt(this->m_socketDescriptor, SOL_SOCKET, SO_BROADCAST, &socketOption, sizeof(sockopt_t));
+    if (returnStatus != 0) {
+        throw std::runtime_error("CppSerialPort::AbstractSocket::setBroadcast(): setsockopt(int, int, const sockopt_t *, int): error code " + toStdString(returnStatus) + " (" + gai_strerror(returnStatus) + ')');
+    }
+}
+
+bool AbstractSocket::isSocketBound() const {
+    return this->m_isBound;
+}
+
 void AbstractSocket::connect() {
     if (this->isConnected()) {
         throw std::runtime_error("CppSerialPort::AbstractSocket::connect(): Cannot connect to new host when already connected (call disconnect() first)");
@@ -329,15 +376,16 @@ void AbstractSocket::connect() {
     this->m_socketDescriptor = socketDescriptor;
 
     //Let the kernel reuse the socket if I close it
-    accept_reuse_t acceptReuse{1};
+    sockopt_t acceptReuse{1};
     auto reuseSocketResult = setsockopt(this->m_socketDescriptor, SOL_SOCKET,  SO_REUSEADDR, &acceptReuse, sizeof(decltype(acceptReuse)));
     if (reuseSocketResult == -1) {
         freeaddrinfo(addressInfo);
         auto errorCode = getLastError();
         throw std::runtime_error("CppSerialPort::AbstractSocket::connect(): Setting reuse of socket: setsockopt(int, int, int, const void *, socklen_t): error code " + toStdString(errorCode) + " (" + getErrorString(errorCode) + ')');
     }
+    this->m_addressInfo = *addressInfo;
     try {
-        this->doConnect(addressInfo);
+        this->doConnect();
     } catch (std::exception &e) {
         freeaddrinfo(addressInfo);
         std::rethrow_exception(std::current_exception());
@@ -349,14 +397,19 @@ void AbstractSocket::connect() {
     //Free address info
     freeaddrinfo(addressInfo);
     this->flushRx();
+    this->m_isBound = false;
 
+}
+
+const addrinfo *AbstractSocket::addressInfo() {
+    return &this->m_addressInfo;
 }
 
 void AbstractSocket::setReadTimeout(int timeout) {
     if (!this->isConnected()) {
         return IByteStream::setReadTimeout(timeout);
     }
-    //TcpSocket read timeout
+    //SocketInterface read timeout
     auto tv = toTimeVal(static_cast<uint32_t>(this->readTimeout()));
     auto readTimeoutResult = setsockopt(this->m_socketDescriptor, SOL_SOCKET, SO_RCVTIMEO, reinterpret_cast<const char *>(&tv), sizeof(struct timeval));
     if (readTimeoutResult == -1) {
@@ -370,7 +423,7 @@ void AbstractSocket::setWriteTimeout(int timeout) {
     if (!this->isConnected()) {
         return IByteStream::setWriteTimeout(timeout);
     }
-    //TcpSocket write timeout
+    //SocketInterface write timeout
     auto tv = toTimeVal(static_cast<uint32_t>(this->writeTimeout()));
     auto writeTimeoutResult = setsockopt(this->m_socketDescriptor, SOL_SOCKET, SO_SNDTIMEO, reinterpret_cast<const char *>(&tv), sizeof(struct timeval));
     if (writeTimeoutResult == -1) {

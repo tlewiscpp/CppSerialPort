@@ -9,8 +9,8 @@
 #include "CppSerialPortChaiScriptModuleFactory.hpp"
 
 #include "Random.hpp"
-#include <CppSerialPort/UdpClient.hpp>
-#include <CppSerialPort/TcpClient.hpp>
+#include <CppSerialPort/UdpSocket.hpp>
+#include <CppSerialPort/TcpSocket.hpp>
 #include <chaiscript/chaiscript.hpp>
 
 static const ProgramOption portOption        {'p', "port",   required_argument, "Specify the network port to use (ex 5678)" };
