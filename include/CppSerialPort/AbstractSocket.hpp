@@ -76,7 +76,6 @@ namespace CppSerialPort {
         void setHostName(const std::string &hostName);
         uint16_t portNumber() const;
         std::string hostName() const;
-        size_t rawRead(char *buffer, size_t max);
 
         void setReadTimeout(int timeout) override;
         void setWriteTimeout(int timeout) override;
@@ -103,8 +102,6 @@ protected:
         ssize_t checkAvailable();
 
         void setBlockingFlag(bool blocking);
-
-        ssize_t checkAvailable();
 };
 
 } //namespace CppSerialPort
