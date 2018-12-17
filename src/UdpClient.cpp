@@ -17,13 +17,13 @@ using NetworkErrorInformation::getErrorString;
 namespace CppSerialPort {
 
 UdpClient::UdpClient(const IPV4Address &ipAddress, uint16_t portNumber) :
-        AbstractSocket(ipAddress, portNumber)
+    AbstractSocket{ipAddress, portNumber}
 {
 
 }
 
 UdpClient::UdpClient(const std::string &hostName, uint16_t portNumber) :
-        AbstractSocket(hostName, portNumber)
+    AbstractSocket{hostName, portNumber}
 {
 
 }

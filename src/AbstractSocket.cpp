@@ -3,14 +3,17 @@
 
 #if defined(_WIN32)
 #    include <ws2tcpip.h>
+#    include <winsock2.h>
      using accept_reuse_t = char;
+
 #else
 #    include <unistd.h>
 #    include <fcntl.h>
+#    include <sys/ioctl.h>
 #    define INVALID_SOCKET (-1)
      using accept_reuse_t = int;
-#endif //defined(_WIN32)
 
+#endif //defined(_WIN32)
 #include <cstring>
 #include <climits>
 #include <iostream>
@@ -120,7 +123,34 @@ void AbstractSocket::flushTx() {
 }
 
 size_t AbstractSocket::available() {
-    return this->m_readBuffer.size();
+    return this->m_readBuffer.size() + this->checkAvailable();
+}
+
+size_t AbstractSocket::rawRead(char *buffer, size_t max) {
+    size_t returnSize{0};
+    while (!this->m_readBuffer.empty()) {
+        buffer[returnSize++] = this->m_readBuffer[0];
+        this->m_readBuffer.popFront();
+        if (returnSize >= max) {
+            return returnSize;
+        }
+    }
+    auto remainingMax = max - returnSize;
+    auto result = this->doRead( (buffer + returnSize), remainingMax);
+    if (result == -1) {
+        auto errorCode = getLastError();
+        if (errorCode != EAGAIN) {
+            this->closePort();
+            throw SocketDisconnectedException{this->portName(), "CppSerialPort::AbstractSocket::rawRead(): The server hung up unexpectedly"};
+        }
+        return returnSize;
+    } else if (result == 0) {
+        this->closePort();
+        throw SocketDisconnectedException{this->portName(), "CppSerialPort::AbstractSocket::rawRead(): The server hung up unexpectedly"};
+    } else {
+        returnSize += result;
+        return returnSize;
+    }
 }
 
 char AbstractSocket::read(bool *readTimeout) {
@@ -186,6 +216,25 @@ char AbstractSocket::read(bool *readTimeout) {
     return 0;
 }
 
+ssize_t AbstractSocket::checkAvailable() {
+#if defined(_WIN32)
+    unsigned long bytesAvailable{0};
+    auto result = ioctlsocket(this->m_socketDescriptor, FIONREAD, &bytesAvailable);
+    if (result == -1) {
+        auto errorCode = getLastError();
+        throw std::runtime_error("CppSerialPort::AbstractSocket::checkAvailable(): ioctlsocket(SOCKET*, int, int): error code " + toStdString(errorCode) + " (" + getErrorString(errorCode) + ')');
+    }
+#else
+    int count{0};
+    auto result = ioctl(this->m_socketDescriptor, FIONREAD, &count);
+    if (result == -1) {
+        auto errorCode = getLastError();
+        throw std::runtime_error("CppSerialPort::AbstractSocket::checkAvailable(): ioctl(int, int, int): error code " + toStdString(errorCode) + " (" + getErrorString(errorCode) + ')');
+    }
+#endif //defined(_WIN32)
+    return static_cast<ssize_t>(bytesAvailable);
+}
+
 ssize_t AbstractSocket::write(const char *bytes, size_t byteCount) {
     if (!this->isConnected()) {
         throw std::runtime_error("CppSerialPort::AbstractSocket::write(const char *, size_t): Cannot write on closed socket (call connect first)");
@@ -248,13 +297,8 @@ void AbstractSocket::setSocketDescriptor(socket_t socketDescriptor) {
     this->m_socketDescriptor = socketDescriptor;
 }
 
-void AbstractSocket::connect() {
-    if (this->isConnected()) {
-        throw std::runtime_error("CppSerialPort::AbstractSocket::connect(): Cannot connect to new host when already connected (call disconnect() first)");
-    }
-
+int AbstractSocket::getAddressInfo(addrinfo *addressInfo) {
     //Get address info from inheriting class (UDP, TCP, raw socket, etc)
-    addrinfo *addressInfo{nullptr};
     auto hints = this->getAddressInfoHints();
     auto returnStatus = getaddrinfo(
             this->hostName().c_str(), //IP Address or hostname
@@ -262,6 +306,18 @@ void AbstractSocket::connect() {
             &hints, //Use the hints specified above
             &addressInfo //Pointer to linked list to be filled in by getaddrinfo
     );
+    return returnStatus;
+}
+
+void AbstractSocket::connect() {
+    if (this->isConnected()) {
+        throw std::runtime_error("CppSerialPort::AbstractSocket::connect(): Cannot connect to new host when already connected (call disconnect() first)");
+    }
+
+    //Get address info from inheriting class (UDP, TCP, raw socket, etc)
+    addrinfo *addressInfo{nullptr};
+    auto returnStatus = this->getAddressInfo(addressInfo);
+
     if (returnStatus != 0) {
         freeaddrinfo(addressInfo);
         throw std::runtime_error("CppSerialPort::AbstractSocket::connect(): getaddrinfo(const char *, const char *, constr addrinfo *, addrinfo **): error code " + toStdString(returnStatus) + " (" + gai_strerror(returnStatus) + ')');
@@ -291,26 +347,41 @@ void AbstractSocket::connect() {
         std::rethrow_exception(std::current_exception());
     }
 
+    this->setReadTimeout(this->readTimeout());
+    this->setWriteTimeout(this->writeTimeout());
+
     //Free address info
     freeaddrinfo(addressInfo);
     this->flushRx();
 
+}
 
-    //Socket read timeout
+void AbstractSocket::setReadTimeout(int timeout) {
+    if (!this->isConnected()) {
+        return IByteStream::setReadTimeout(timeout);
+    }
+    //TcpSocket read timeout
     auto tv = toTimeVal(static_cast<uint32_t>(this->readTimeout()));
     auto readTimeoutResult = setsockopt(this->m_socketDescriptor, SOL_SOCKET, SO_RCVTIMEO, reinterpret_cast<const char *>(&tv), sizeof(struct timeval));
     if (readTimeoutResult == -1) {
         auto errorCode = getLastError();
-        throw std::runtime_error("CppSerialPort::AbstractSocket::connect(): Setting read timeout (" + toStdString(this->readTimeout()) + "): setsockopt(int, int, int, const void *, int) set read timeout failed: error code " + toStdString(errorCode) + " (" + getErrorString(errorCode) + ')');
+        throw std::runtime_error("CppSerialPort::AbstractSocket::setReadTimeout(): Setting read timeout (" + toStdString(this->readTimeout()) + "): setsockopt(int, int, int, const void *, int) set read timeout failed: error code " + toStdString(errorCode) + " (" + getErrorString(errorCode) + ')');
     }
+    return IByteStream::setReadTimeout(timeout);
+}
 
-    //Socket write timeout
-    tv = toTimeVal(static_cast<uint32_t>(this->writeTimeout()));
+void AbstractSocket::setWriteTimeout(int timeout) {
+    if (!this->isConnected()) {
+        return IByteStream::setWriteTimeout(timeout);
+    }
+    //TcpSocket write timeout
+    auto tv = toTimeVal(static_cast<uint32_t>(this->writeTimeout()));
     auto writeTimeoutResult = setsockopt(this->m_socketDescriptor, SOL_SOCKET, SO_SNDTIMEO, reinterpret_cast<const char *>(&tv), sizeof(struct timeval));
     if (writeTimeoutResult == -1) {
         auto errorCode = getLastError();
         throw std::runtime_error("CppSerialPort::AbstractSocket::connect(): Setting write timeout(" + toStdString(this->writeTimeout())  + "): setsockopt(int, int, int, const void *, int) set write timeout failed: error code " + toStdString(errorCode) + " (" + getErrorString(errorCode) + ')');
     }
+    return IByteStream::setWriteTimeout(timeout);
 }
 
 void AbstractSocket::setBlockingFlag(bool blocking) {

@@ -18,8 +18,8 @@
 #    include <thread>
 #else
 #   include <termios.h>
-#   include <sys/ioctl.h>
 #   include <unistd.h>
+#   include <sys/ioctl.h>
 #   include <fcntl.h>
 #   include <sys/types.h>
 #   include <sys/stat.h>

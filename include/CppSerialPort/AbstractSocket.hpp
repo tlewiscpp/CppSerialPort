@@ -75,6 +75,10 @@ namespace CppSerialPort {
         void setHostName(const std::string &hostName);
         uint16_t portNumber() const;
         std::string hostName() const;
+        size_t rawRead(char *buffer, size_t max);
+
+        void setReadTimeout(int timeout) override;
+        void setWriteTimeout(int timeout) override;
 
         static const uint16_t MINIMUM_PORT_NUMBER;
         static const uint16_t MAXIMUM_PORT_NUMBER;
@@ -89,6 +93,7 @@ protected:
         virtual ssize_t doWrite(const char *bytes, size_t numberOfBytes) = 0;
         virtual void doConnect(addrinfo *addressInfo) = 0;
         virtual addrinfo getAddressInfoHints() = 0;
+        int getAddressInfo(addrinfo *addressInfo);
 
         static timeval toTimeVal(uint32_t totalTimeout);
         bool isDisconnected() const;
@@ -96,6 +101,8 @@ protected:
         void setSocketDescriptor(socket_t socketDescriptor);
 
         void setBlockingFlag(bool blocking);
+
+        ssize_t checkAvailable();
 };
 
 } //namespace CppSerialPort
