@@ -42,7 +42,7 @@ addrinfo UdpSocket::getAddressInfoHints() {
 }
 
 ssize_t UdpSocket::doWrite(const char *bytes, size_t byteCount) {
-    return sendto(this->socketDescriptor(), bytes, static_cast<int>(byteCount), 0, this->addressInfo()->ai_addr, sizeof(this->addressInfo()->ai_addr));
+    return sendto(this->socketDescriptor(), bytes, static_cast<int>(byteCount), 0, this->addressInfo()->ai_addr, static_cast<int>(this->addressInfo()->ai_addrlen));
 }
 
 ssize_t UdpSocket::doRead(char *buffer, size_t bufferMax) {
