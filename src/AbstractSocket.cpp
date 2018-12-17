@@ -298,7 +298,13 @@ void AbstractSocket::setSocketDescriptor(socket_t socketDescriptor) {
     this->m_socketDescriptor = socketDescriptor;
 }
 
-int AbstractSocket::getAddressInfo(addrinfo *addressInfo) {
+void AbstractSocket::connect() {
+    if (this->isConnected()) {
+        throw std::runtime_error("CppSerialPort::AbstractSocket::connect(): Cannot connect to new host when already connected (call disconnect() first)");
+    }
+
+    //Get address info from inheriting class (UDP, TCP, raw socket, etc)
+    addrinfo *addressInfo{nullptr};
     //Get address info from inheriting class (UDP, TCP, raw socket, etc)
     auto hints = this->getAddressInfoHints();
     auto returnStatus = getaddrinfo(
@@ -308,16 +314,6 @@ int AbstractSocket::getAddressInfo(addrinfo *addressInfo) {
             &addressInfo //Pointer to linked list to be filled in by getaddrinfo
     );
     return returnStatus;
-}
-
-void AbstractSocket::connect() {
-    if (this->isConnected()) {
-        throw std::runtime_error("CppSerialPort::AbstractSocket::connect(): Cannot connect to new host when already connected (call disconnect() first)");
-    }
-
-    //Get address info from inheriting class (UDP, TCP, raw socket, etc)
-    addrinfo *addressInfo{nullptr};
-    auto returnStatus = this->getAddressInfo(addressInfo);
 
     if (returnStatus != 0) {
         freeaddrinfo(addressInfo);

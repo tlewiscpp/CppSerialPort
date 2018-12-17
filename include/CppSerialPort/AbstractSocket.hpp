@@ -93,7 +93,6 @@ protected:
         virtual ssize_t doWrite(const char *bytes, size_t numberOfBytes) = 0;
         virtual void doConnect(addrinfo *addressInfo) = 0;
         virtual addrinfo getAddressInfoHints() = 0;
-        int getAddressInfo(addrinfo *addressInfo);
 
         static timeval toTimeVal(uint32_t totalTimeout);
         bool isDisconnected() const;
