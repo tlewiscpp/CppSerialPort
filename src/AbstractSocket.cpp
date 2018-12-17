@@ -316,7 +316,7 @@ void AbstractSocket::bindSocket(uint16_t portToBind) {
     //If a socket is not bound before connect(), the kernel will choose a random one
     //However, for a server, bindSocket MUST be called before calling listen()
     auto bindResult = bind(this->m_socketDescriptor, boundAddressInfo.ai_addr, static_cast<int>(boundAddressInfo.ai_addrlen));
-    if (bindResult == -1) {
+    if (bindResult != 0) {
         auto errorCode = getLastError();
         throw std::runtime_error("CppSerialPort::AbstractSocket::bindSocket(): bind(int, int, int): error code " + toStdString(errorCode) + " (" + getErrorString(errorCode) + ')');
     }
@@ -327,7 +327,8 @@ bool AbstractSocket::isBroadcasting() const {
     socklen_t optionSize{sizeof(sockopt_t)};
     auto returnStatus = getsockopt(this->m_socketDescriptor, SOL_SOCKET, SO_BROADCAST, &broadcast, &optionSize);
     if (returnStatus != 0) {
-        throw std::runtime_error("CppSerialPort::AbstractSocket::isBroadcasting(): getsockopt(int, int, const sockopt_t *, int): error code " + toStdString(returnStatus) + " (" + gai_strerror(returnStatus) + ')');
+        auto errorCode = getLastError();
+        throw std::runtime_error("CppSerialPort::AbstractSocket::isBroadcasting(): getsockopt(int, int, const sockopt_t *, int): error code " + toStdString(errorCode) + " (" + getErrorString(errorCode) + ')');
     }
     return static_cast<bool>(broadcast);
 }
@@ -337,7 +338,8 @@ void AbstractSocket::setBroadcast(bool broadcast) {
     socketOption = static_cast<sockopt_t>(broadcast ? 1 : 0);
     auto returnStatus = setsockopt(this->m_socketDescriptor, SOL_SOCKET, SO_BROADCAST, &socketOption, sizeof(sockopt_t));
     if (returnStatus != 0) {
-        throw std::runtime_error("CppSerialPort::AbstractSocket::setBroadcast(): setsockopt(int, int, const sockopt_t *, int): error code " + toStdString(returnStatus) + " (" + gai_strerror(returnStatus) + ')');
+        auto errorCode = getLastError();
+        throw std::runtime_error("CppSerialPort::AbstractSocket::setBroadcast(): setsockopt(int, int, const sockopt_t *, int): error code " + toStdString(errorCode) + " (" + getErrorString(errorCode) + ')');
     }
 }
 
