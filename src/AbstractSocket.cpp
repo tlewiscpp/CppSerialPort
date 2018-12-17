@@ -53,7 +53,8 @@ AbstractSocket::AbstractSocket(const std::string &hostName, uint16_t portNumber)
         this->m_portNumber = 0;
         throw std::runtime_error("CppSerialPort::AbstractSocket::AbstractSocket(const std::string &, uint16_t): portNumber cannot be less than minimum value (" + toStdString(portNumber) + " < " + toStdString(MINIMUM_PORT_NUMBER) + ')');
     }
-    this->setReadTimeout(DEFAULT_READ_TIMEOUT);
+    IByteStream::setReadTimeout(DEFAULT_READ_TIMEOUT);
+    IByteStream::setReadTimeout(DEFAULT_WRITE_TIMEOUT);
 }
 
 AbstractSocket::AbstractSocket(const IPV4Address &ipAddress, uint16_t portNumber) :
