@@ -313,7 +313,6 @@ void AbstractSocket::connect() {
             &hints, //Use the hints specified above
             &addressInfo //Pointer to linked list to be filled in by getaddrinfo
     );
-    return returnStatus;
 
     if (returnStatus != 0) {
         freeaddrinfo(addressInfo);
