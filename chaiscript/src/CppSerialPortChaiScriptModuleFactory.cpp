@@ -383,92 +383,92 @@ ModulePtr CppSerialPortChaiScriptModuleFactory::createModule() {
     returnModule->add(fun<std::string, AbstractSocket>(&AbstractSocket::hostName), "hostName");
     /****End AbstractSocket****/
 
-    /****TcpClient****/
-    returnModule->add(user_type<TcpClient>(), "TcpClient");
-    returnModule->add(base_class<AbstractSocket, TcpClient>());
-    returnModule->add(constructor<TcpClient(const std::string &, uint16_t)>(), "TcpClient");
-    returnModule->add(constructor<TcpClient(const IPV4Address &, uint16_t)>(), "TcpClient");
+    /****ient****/
+    returnModule->add(user_type<ient>(), "TcpSocket");
+    returnModule->add(base_class<AbstractSocket, ient>());
+    returnModule->add(constructor<ient(const std::string &, uint16_t)>(), "TcpSocket");
+    returnModule->add(constructor<ient(const IPV4Address &, uint16_t)>(), "TcpSocket");
 
-    returnModule->add(fun(static_cast<void(TcpClient::*)(const ByteArray &)>(&TcpClient::setLineEnding)), "setLineEnding");
-    returnModule->add(fun(static_cast<void(TcpClient::*)(const std::string &)>(&TcpClient::setLineEnding)), "setLineEnding");
-    returnModule->add(fun(static_cast<void(TcpClient::*)(char)>(&TcpClient::setLineEnding)), "setLineEnding");
-    returnModule->add(fun(static_cast<int(TcpClient::*)() const>(&TcpClient::readTimeout)), "readTimeout");
-    returnModule->add(fun(static_cast<int(TcpClient::*)() const>(&TcpClient::writeTimeout)), "writeTimeout");
-    returnModule->add(fun(static_cast<void(TcpClient::*)(int)>(&TcpClient::setReadTimeout)), "setReadTimeout");
-    returnModule->add(fun(static_cast<void(TcpClient::*)(int)>(&TcpClient::setWriteTimeout)), "setWriteTimeout");
+    returnModule->add(fun(static_cast<void(ient::*)(const ByteArray &)>(&TcpSocket::setLineEnding)), "setLineEnding");
+    returnModule->add(fun(static_cast<void(ient::*)(const std::string &)>(&TcpSocket::setLineEnding)), "setLineEnding");
+    returnModule->add(fun(static_cast<void(ient::*)(char)>(&TcpSocket::setLineEnding)), "setLineEnding");
+    returnModule->add(fun(static_cast<int(ient::*)() const>(&TcpSocket::readTimeout)), "readTimeout");
+    returnModule->add(fun(static_cast<int(ient::*)() const>(&TcpSocket::writeTimeout)), "writeTimeout");
+    returnModule->add(fun(static_cast<void(ient::*)(int)>(&TcpSocket::setReadTimeout)), "setReadTimeout");
+    returnModule->add(fun(static_cast<void(ient::*)(int)>(&TcpSocket::setWriteTimeout)), "setWriteTimeout");
 
-    returnModule->add(fun(static_cast<ByteArray(TcpClient::*)(bool *)>(&TcpClient::readLine)), "readLine");
-    returnModule->add(fun(static_cast<ByteArray(TcpClient::*)(const ByteArray &, bool *)>(&TcpClient::readUntil)), "readUntil");
-    returnModule->add(fun(static_cast<ByteArray(TcpClient::*)(const std::string &, bool *)>(&TcpClient::readUntil)), "readUntil");
-    returnModule->add(fun(static_cast<ByteArray(TcpClient::*)(char, bool *)>(&TcpClient::readUntil)), "readUntil");
+    returnModule->add(fun(static_cast<ByteArray(ient::*)(bool *)>(&TcpSocket::readLine)), "readLine");
+    returnModule->add(fun(static_cast<ByteArray(ient::*)(const ByteArray &, bool *)>(&TcpSocket::readUntil)), "readUntil");
+    returnModule->add(fun(static_cast<ByteArray(ient::*)(const std::string &, bool *)>(&TcpSocket::readUntil)), "readUntil");
+    returnModule->add(fun(static_cast<ByteArray(ient::*)(char, bool *)>(&TcpSocket::readUntil)), "readUntil");
 
-    returnModule->add(fun(static_cast<void(TcpClient::*)()>(&TcpClient::openPort)), "openPort");
-    returnModule->add(fun(static_cast<void(TcpClient::*)()>(&TcpClient::closePort)), "closePort");
-    returnModule->add(fun(static_cast<char(TcpClient::*)(bool *)>(&TcpClient::read)), "read");
-    returnModule->add(fun(static_cast<bool(TcpClient::*)() const>(&TcpClient::isOpen)), "isOpen");
+    returnModule->add(fun(static_cast<void(ient::*)()>(&TcpSocket::openPort)), "openPort");
+    returnModule->add(fun(static_cast<void(ient::*)()>(&TcpSocket::closePort)), "closePort");
+    returnModule->add(fun(static_cast<char(ient::*)(bool *)>(&TcpSocket::read)), "read");
+    returnModule->add(fun(static_cast<bool(ient::*)() const>(&TcpSocket::isOpen)), "isOpen");
 
-    returnModule->add(fun(static_cast<void(TcpClient::*)()>(&TcpClient::flushRx)), "flushRx");
-    returnModule->add(fun(static_cast<void(TcpClient::*)()>(&TcpClient::flushTx)), "flushTx");
-    returnModule->add(fun(static_cast<ssize_t(TcpClient::*)(char)>(&TcpClient::write)), "write");
-    returnModule->add(fun(static_cast<ssize_t(TcpClient::*)(const char *, size_t)>(&TcpClient::write)), "write");
+    returnModule->add(fun(static_cast<void(ient::*)()>(&TcpSocket::flushRx)), "flushRx");
+    returnModule->add(fun(static_cast<void(ient::*)()>(&TcpSocket::flushTx)), "flushTx");
+    returnModule->add(fun(static_cast<ssize_t(ient::*)(char)>(&TcpSocket::write)), "write");
+    returnModule->add(fun(static_cast<ssize_t(ient::*)(const char *, size_t)>(&TcpSocket::write)), "write");
 
-    returnModule->add(fun(static_cast<ssize_t(TcpClient::*)(const std::string &)>(&TcpClient::writeLine)), "writeLine");
-    returnModule->add(fun(static_cast<ssize_t(TcpClient::*)(const ByteArray &)>(&TcpClient::writeLine)), "writeLine");
+    returnModule->add(fun(static_cast<ssize_t(ient::*)(const std::string &)>(&TcpSocket::writeLine)), "writeLine");
+    returnModule->add(fun(static_cast<ssize_t(ient::*)(const ByteArray &)>(&TcpSocket::writeLine)), "writeLine");
 
-    //returnModule->add(fun(static_cast<void(TcpClient::*)(const std::string &, uint16_t)>(&TcpClient::connect)), "connect");
-    returnModule->add(fun(static_cast<void(TcpClient::*)()>(&TcpClient::connect)), "connect");
-    returnModule->add(fun(static_cast<bool(TcpClient::*)()>(&TcpClient::disconnect)), "disconnect");
-    returnModule->add(fun(static_cast<bool(TcpClient::*)() const>(&TcpClient::isConnected)), "isConnected");
-    returnModule->add(fun(static_cast<void(TcpClient::*)(uint16_t)>(&TcpClient::setPortNumber)), "setPortNumber");
-    returnModule->add(fun(static_cast<void(TcpClient::*)(const std::string &)>(&TcpClient::setHostName)), "setHostName");
-    returnModule->add(fun(static_cast<uint16_t(TcpClient::*)() const>(&TcpClient::portNumber)), "portNumber");
-    returnModule->add(fun(static_cast<std::string(TcpClient::*)() const>(&TcpClient::hostName)), "hostName");
-    /****End TcpClient****/
+    //returnModule->add(fun(static_cast<void(ient::*)(const std::string &, uint16_t)>(&TcpSocket::connect)), "connect");
+    returnModule->add(fun(static_cast<void(ient::*)()>(&TcpSocket::connect)), "connect");
+    returnModule->add(fun(static_cast<bool(ient::*)()>(&TcpSocket::disconnect)), "disconnect");
+    returnModule->add(fun(static_cast<bool(ient::*)() const>(&TcpSocket::isConnected)), "isConnected");
+    returnModule->add(fun(static_cast<void(ient::*)(uint16_t)>(&TcpSocket::setPortNumber)), "setPortNumber");
+    returnModule->add(fun(static_cast<void(ient::*)(const std::string &)>(&TcpSocket::setHostName)), "setHostName");
+    returnModule->add(fun(static_cast<uint16_t(ient::*)() const>(&TcpSocket::portNumber)), "portNumber");
+    returnModule->add(fun(static_cast<std::string(ient::*)() const>(&TcpSocket::hostName)), "hostName");
+    /****End ient****/
 
-    /****UdpClient****/
-    returnModule->add(user_type<UdpClient>(), "UdpClient");
-    returnModule->add(base_class<AbstractSocket, UdpClient>());
+    /****UdpSocket****/
+    returnModule->add(user_type<UdpSocket>(), "UdpSocket");
+    returnModule->add(base_class<AbstractSocket, UdpSocket>());
 
-    returnModule->add(fun(static_cast<void(UdpClient::*)(const ByteArray &)>(&UdpClient::setLineEnding)), "setLineEnding");
-    returnModule->add(fun(static_cast<void(UdpClient::*)(const std::string &)>(&UdpClient::setLineEnding)), "setLineEnding");
-    returnModule->add(fun(static_cast<void(UdpClient::*)(char)>(&UdpClient::setLineEnding)), "setLineEnding");
-    returnModule->add(fun(static_cast<int(UdpClient::*)() const>(&UdpClient::readTimeout)), "readTimeout");
-    returnModule->add(fun(static_cast<int(UdpClient::*)() const>(&UdpClient::writeTimeout)), "writeTimeout");
-    returnModule->add(fun(static_cast<void(UdpClient::*)(int)>(&UdpClient::setReadTimeout)), "setReadTimeout");
-    returnModule->add(fun(static_cast<void(UdpClient::*)(int)>(&UdpClient::setWriteTimeout)), "setWriteTimeout");
+    returnModule->add(fun(static_cast<void(UdpSocket::*)(const ByteArray &)>(&UdpSocket::setLineEnding)), "setLineEnding");
+    returnModule->add(fun(static_cast<void(UdpSocket::*)(const std::string &)>(&UdpSocket::setLineEnding)), "setLineEnding");
+    returnModule->add(fun(static_cast<void(UdpSocket::*)(char)>(&UdpSocket::setLineEnding)), "setLineEnding");
+    returnModule->add(fun(static_cast<int(UdpSocket::*)() const>(&UdpSocket::readTimeout)), "readTimeout");
+    returnModule->add(fun(static_cast<int(UdpSocket::*)() const>(&UdpSocket::writeTimeout)), "writeTimeout");
+    returnModule->add(fun(static_cast<void(UdpSocket::*)(int)>(&UdpSocket::setReadTimeout)), "setReadTimeout");
+    returnModule->add(fun(static_cast<void(UdpSocket::*)(int)>(&UdpSocket::setWriteTimeout)), "setWriteTimeout");
 
-    returnModule->add(fun(static_cast<ByteArray(UdpClient::*)(bool *)>(&UdpClient::readLine)), "readLine");
-    returnModule->add(fun(static_cast<ByteArray(UdpClient::*)(const ByteArray &, bool *)>(&UdpClient::readUntil)), "readUntil");
-    returnModule->add(fun(static_cast<ByteArray(UdpClient::*)(const std::string &, bool *)>(&UdpClient::readUntil)), "readUntil");
-    returnModule->add(fun(static_cast<ByteArray(UdpClient::*)(char, bool *)>(&UdpClient::readUntil)), "readUntil");
+    returnModule->add(fun(static_cast<ByteArray(UdpSocket::*)(bool *)>(&UdpSocket::readLine)), "readLine");
+    returnModule->add(fun(static_cast<ByteArray(UdpSocket::*)(const ByteArray &, bool *)>(&UdpSocket::readUntil)), "readUntil");
+    returnModule->add(fun(static_cast<ByteArray(UdpSocket::*)(const std::string &, bool *)>(&UdpSocket::readUntil)), "readUntil");
+    returnModule->add(fun(static_cast<ByteArray(UdpSocket::*)(char, bool *)>(&UdpSocket::readUntil)), "readUntil");
 
-    returnModule->add(fun(static_cast<void(UdpClient::*)()>(&UdpClient::openPort)), "openPort");
-    returnModule->add(fun(static_cast<void(UdpClient::*)()>(&UdpClient::closePort)), "closePort");
-    returnModule->add(fun(static_cast<char(UdpClient::*)(bool *)>(&UdpClient::read)), "read");
-    returnModule->add(fun(static_cast<bool(UdpClient::*)() const>(&UdpClient::isOpen)), "isOpen");
+    returnModule->add(fun(static_cast<void(UdpSocket::*)()>(&UdpSocket::openPort)), "openPort");
+    returnModule->add(fun(static_cast<void(UdpSocket::*)()>(&UdpSocket::closePort)), "closePort");
+    returnModule->add(fun(static_cast<char(UdpSocket::*)(bool *)>(&UdpSocket::read)), "read");
+    returnModule->add(fun(static_cast<bool(UdpSocket::*)() const>(&UdpSocket::isOpen)), "isOpen");
 
-    returnModule->add(fun(static_cast<void(UdpClient::*)()>(&UdpClient::flushRx)), "flushRx");
-    returnModule->add(fun(static_cast<void(UdpClient::*)()>(&UdpClient::flushTx)), "flushTx");
-    returnModule->add(fun(static_cast<ssize_t(UdpClient::*)(char)>(&UdpClient::write)), "write");
-    returnModule->add(fun(static_cast<ssize_t(UdpClient::*)(const char *, size_t)>(&UdpClient::write)), "write");
+    returnModule->add(fun(static_cast<void(UdpSocket::*)()>(&UdpSocket::flushRx)), "flushRx");
+    returnModule->add(fun(static_cast<void(UdpSocket::*)()>(&UdpSocket::flushTx)), "flushTx");
+    returnModule->add(fun(static_cast<ssize_t(UdpSocket::*)(char)>(&UdpSocket::write)), "write");
+    returnModule->add(fun(static_cast<ssize_t(UdpSocket::*)(const char *, size_t)>(&UdpSocket::write)), "write");
 
-    returnModule->add(fun(static_cast<ssize_t(UdpClient::*)(const std::string &)>(&UdpClient::writeLine)), "writeLine");
-    returnModule->add(fun(static_cast<ssize_t(UdpClient::*)(const ByteArray &)>(&UdpClient::writeLine)), "writeLine");
-
-
-    //returnModule->add(fun(static_cast<void(UdpClient::*)(const std::string &, uint16_t)>(&UdpClient::connect)), "connect");
-    returnModule->add(fun(static_cast<void(UdpClient::*)()>(&UdpClient::connect)), "connect");
-    returnModule->add(fun(static_cast<bool(UdpClient::*)()>(&UdpClient::disconnect)), "disconnect");
-    returnModule->add(fun(static_cast<bool(UdpClient::*)() const>(&UdpClient::isConnected)), "isConnected");
-    returnModule->add(fun(static_cast<void(UdpClient::*)(uint16_t)>(&UdpClient::setPortNumber)), "setPortNumber");
-    returnModule->add(fun(static_cast<void(UdpClient::*)(const std::string &)>(&UdpClient::setHostName)), "setHostName");
-    returnModule->add(fun(static_cast<uint16_t(UdpClient::*)() const>(&UdpClient::portNumber)), "portNumber");
-    returnModule->add(fun(static_cast<std::string(UdpClient::*)() const>(&UdpClient::hostName)), "hostName");
+    returnModule->add(fun(static_cast<ssize_t(UdpSocket::*)(const std::string &)>(&UdpSocket::writeLine)), "writeLine");
+    returnModule->add(fun(static_cast<ssize_t(UdpSocket::*)(const ByteArray &)>(&UdpSocket::writeLine)), "writeLine");
 
 
-    returnModule->add(constructor<UdpClient(const std::string &, uint16_t)>(), "UdpClient");
-    returnModule->add(constructor<UdpClient(const IPV4Address &, uint16_t)>(), "UdpClient");
-    /****End UdpClient****/
+    //returnModule->add(fun(static_cast<void(UdpSocket::*)(const std::string &, uint16_t)>(&UdpSocket::connect)), "connect");
+    returnModule->add(fun(static_cast<void(UdpSocket::*)()>(&UdpSocket::connect)), "connect");
+    returnModule->add(fun(static_cast<bool(UdpSocket::*)()>(&UdpSocket::disconnect)), "disconnect");
+    returnModule->add(fun(static_cast<bool(UdpSocket::*)() const>(&UdpSocket::isConnected)), "isConnected");
+    returnModule->add(fun(static_cast<void(UdpSocket::*)(uint16_t)>(&UdpSocket::setPortNumber)), "setPortNumber");
+    returnModule->add(fun(static_cast<void(UdpSocket::*)(const std::string &)>(&UdpSocket::setHostName)), "setHostName");
+    returnModule->add(fun(static_cast<uint16_t(UdpSocket::*)() const>(&UdpSocket::portNumber)), "portNumber");
+    returnModule->add(fun(static_cast<std::string(UdpSocket::*)() const>(&UdpSocket::hostName)), "hostName");
+
+
+    returnModule->add(constructor<UdpSocket(const std::string &, uint16_t)>(), "UdpSocket");
+    returnModule->add(constructor<UdpSocket(const IPV4Address &, uint16_t)>(), "UdpSocket");
+    /****End UdpSocket****/
 
     return returnModule;
 }
