@@ -164,9 +164,9 @@ int main(int argc, char *argv[])
 
     std::shared_ptr<CppSerialPort::AbstractSocket> networkClient{nullptr};
     if (useUdp) {
-        networkClient = std::make_shared<CppSerialPort::UdpClient>(hostName, portNumber);
+        networkClient = std::make_shared<CppSerialPort::UdpSocket>(hostName, portNumber);
     } else {
-        networkClient = std::make_shared<CppSerialPort::TcpClient>(hostName, portNumber);
+        networkClient = std::make_shared<CppSerialPort::TcpSocket>(hostName, portNumber);
     }
 
     std::shared_ptr<Random> random{std::make_shared<Random>()};
