@@ -104,7 +104,6 @@ size_t BasicFile::write(const char *buffer, size_t maximum) {
         throw std::runtime_error(message.str());
     }
 
-    //this->flush();
     if (this->flushOnWrite()) {
         this->flush();
     }
@@ -236,10 +235,13 @@ BasicFile &BasicFile::flush() {
         throw std::runtime_error(message.str());
     }
     auto result = fflush(this->m_fileHandle);
-    if (result == EOF) {
+    if (result != 0) {
         auto errorCode = ferror(this->m_fileHandle);
+        if (errorCode == 0) {
+            return *this;
+        }
         std::stringstream message{};
-        message << "BasicFile::close(): fflush returned error code " << errorCode << " (" << getErrorString(errorCode) << ")" << std::endl;
+        message << "BasicFile::flush(): fflush returned error code " << errorCode << " (" << getErrorString(errorCode) << ")" << std::endl;
         throw std::runtime_error(message.str());
     }
     return *this;

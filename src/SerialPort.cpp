@@ -479,6 +479,7 @@ void SerialPort::flushTx() {
     if (!this->isOpen()) {
         return;
     }
+    this->m_fileStream.flush();
 #if defined(_WIN32)
     PurgeComm(this->m_fileStream.getNativeHandle(), PURGE_TXCLEAR | PURGE_TXABORT);
 #else
