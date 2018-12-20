@@ -130,7 +130,6 @@ ByteArray IByteStream::readUntil(const ByteArray &until, bool *timeout) {
     if (timeout) {
         *timeout = false;
     }
-    auto remainingTime = int64_t{};
     do {
         bool readTimeout{false};
         char maybeChar{this->read(&readTimeout)};
@@ -141,8 +140,7 @@ ByteArray IByteStream::readUntil(const ByteArray &until, bool *timeout) {
         if (returnArray.endsWith(until)) {
             return returnArray.subsequence(0, returnArray.length() - until.length());
         }
-        remainingTime = IByteStream::getEpoch() - startTime;
-    } while (remainingTime <= this->m_readTimeout);
+    } while ( (IByteStream::getEpoch() - startTime) <= this->m_readTimeout);
     if (timeout) {
         *timeout = true;
     }
