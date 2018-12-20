@@ -27,6 +27,7 @@ public:
     std::string fileName() const;
     BasicFile &setFileName(const std::string &fileName);
 
+
     virtual char read();
     virtual size_t read(char *buffer, size_t maximum);
     virtual size_t write(const char *buffer, size_t maximum);
@@ -43,6 +44,9 @@ public:
     virtual BasicFile &unlockFile();
     bool isLocked() const;
 
+    bool flushOnWrite() const;
+    BasicFile &setFlushOnWrite(bool flushOnWrite);
+
     int getFileDescriptor() const;
     FILE *getFileHandle() const;
 
@@ -52,6 +56,7 @@ private:
     std::string m_fileName;
     FILE *m_fileHandle;
     bool m_fileLock;
+    bool m_flushOnWrite;
 
 #if defined(_WIN32)
     HANDLE m_nativeHandle;

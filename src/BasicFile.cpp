@@ -24,7 +24,8 @@ namespace CppSerialPort {
 BasicFile::BasicFile(const std::string &fileName) :
     m_fileName{""},
     m_fileHandle{nullptr},
-    m_fileLock{false}
+    m_fileLock{false},
+    m_flushOnWrite{true}
 {
     this->setFileName(fileName);
 }
@@ -32,7 +33,8 @@ BasicFile::BasicFile(const std::string &fileName) :
 BasicFile::BasicFile() :
     m_fileName{""},
     m_fileHandle{nullptr},
-    m_fileLock{false}
+    m_fileLock{false},
+    m_flushOnWrite{true}
 {
 
 }
@@ -40,7 +42,8 @@ BasicFile::BasicFile() :
 BasicFile::BasicFile(BasicFile &&file) noexcept :
     m_fileName{std::move(file.m_fileName)},
     m_fileHandle{file.m_fileHandle},
-    m_fileLock{file.m_fileLock}
+    m_fileLock{file.m_fileLock},
+    m_flushOnWrite{file.m_flushOnWrite}
 {
     file.m_fileHandle = nullptr;
 
@@ -55,6 +58,7 @@ BasicFile &BasicFile::operator=(BasicFile &&file) noexcept {
     this->m_fileHandle = file.m_fileHandle;
     file.m_fileHandle = nullptr;
     this->m_fileLock = file.m_fileLock;
+    this->m_flushOnWrite = file.m_flushOnWrite;
 
 #if defined(_WIN32)
     this->m_nativeHandle = file.m_nativeHandle;
@@ -100,14 +104,20 @@ size_t BasicFile::write(const char *buffer, size_t maximum) {
         throw std::runtime_error(message.str());
     }
 
-    auto flushResult = fflush(this->m_fileHandle);
-    if (flushResult == -1) {
-        auto errorCode = getLastError();
-        std::stringstream message{};
-        message << "BasicFile::write(): flush of file \"" << this->m_fileName << "\" failed with error code " << errorCode << " (" << getErrorString(errorCode) << ")";
-        throw std::runtime_error(message.str());
+    //this->flush();
+    if (this->flushOnWrite()) {
+        this->flush();
     }
     return result;
+}
+
+bool BasicFile::flushOnWrite() const {
+    return this->m_flushOnWrite;
+}
+
+BasicFile &BasicFile::setFlushOnWrite(bool flushOnWrite) {
+    this->m_flushOnWrite = flushOnWrite;
+    return *this;
 }
 
 size_t BasicFile::write(char c) {
