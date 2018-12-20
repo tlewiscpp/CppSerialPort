@@ -69,6 +69,14 @@ bool AbstractSocket::isDisconnected() const {
     return false;
 }
 
+void AbstractSocket::setFlushOnWrite(bool flushOnWrite) {
+    (void)flushOnWrite; //Socket always flushes
+}
+
+bool AbstractSocket::flushOnWrite() const {
+    return true; //Socket always flushes
+}
+
 void AbstractSocket::connect(const std::string &hostName, uint16_t portNumber) {
     if (this->isConnected()) {
         throw std::runtime_error("CppSerialPort::AbstractSocket::connect(const std::string &, uint16_t): Cannot connect to new host when already connected (call disconnect() first)");

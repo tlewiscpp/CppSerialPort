@@ -289,6 +289,15 @@ bool SerialPort::isDisconnected() {
     return (std::find(availablePorts.begin(), availablePorts.end(), this->m_portName) == availablePorts.end());
 }
 
+void SerialPort::setFlushOnWrite(bool flushOnWrite) {
+    this->m_fileStream.setFlushOnWrite(flushOnWrite);
+}
+
+bool SerialPort::flushOnWrite() const {
+    return this->m_fileStream.flushOnWrite();
+}
+
+
 ssize_t SerialPort::write(char c) {
     auto writtenBytes = this->m_fileStream.write(c);
     if (writtenBytes != 1) {

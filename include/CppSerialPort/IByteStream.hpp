@@ -47,6 +47,9 @@ public:
     void setLineEnding(const ByteArray &str);
     void setLineEnding(char chr);
 
+    virtual void setFlushOnWrite(bool flushOnWrite) = 0;
+    virtual bool flushOnWrite() const = 0;
+
 	virtual ssize_t writeLine(const std::string &str);
     virtual ssize_t writeLine(const ByteArray &byteArray);
 

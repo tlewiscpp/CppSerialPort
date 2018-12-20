@@ -269,6 +269,9 @@ public:
     std::string portName() const override;
     bool isOpen() const override;
 
+    void setFlushOnWrite(bool flushOnWrite) override;
+    bool flushOnWrite() const override;
+
     bool isDCDEnabled() const;
     bool isCTSEnabled() const;
     bool isDSREnabled() const;
