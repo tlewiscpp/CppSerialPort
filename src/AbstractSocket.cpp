@@ -331,6 +331,9 @@ void AbstractSocket::bindSocket(uint16_t portToBind) {
 }
 
 bool AbstractSocket::isBroadcasting() const {
+    if (!this->isConnected()) {
+        throw std::runtime_error("CppSerialPort::AbstractSocket::setBroadcast(): A closed socket cannot be broadcasting (call connect() first)");
+    }
     sockopt_t broadcast{0};
     socklen_t optionSize{sizeof(sockopt_t)};
     auto returnStatus = getsockopt(this->m_socketDescriptor, SOL_SOCKET, SO_BROADCAST, &broadcast, &optionSize);
@@ -342,6 +345,9 @@ bool AbstractSocket::isBroadcasting() const {
 }
 
 void AbstractSocket::setBroadcast(bool broadcast) {
+    if (!this->isConnected()) {
+        throw std::runtime_error("CppSerialPort::AbstractSocket::setBroadcast(): Cannot set broadcast on closed socket (call connect() first)");
+    }
     sockopt_t socketOption{0};
     socketOption = static_cast<sockopt_t>(broadcast ? 1 : 0);
     auto returnStatus = setsockopt(this->m_socketDescriptor, SOL_SOCKET, SO_BROADCAST, &socketOption, sizeof(sockopt_t));
