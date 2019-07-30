@@ -180,11 +180,12 @@ void SerialPort::setReadTimeout(int timeout) {
 char SerialPort::read(bool *readTimeout) {
 #if defined(_WIN32)
     if (!this->m_readBuffer.empty()) {
-        if (readTimeout) *readTimeout = false;
         char returnValue{this->m_readBuffer[0]};
-        this->m_readBuffer = this->m_readBuffer.popFront();
-        return returnValue;
-    }
+        this->m_readBuffer.popFront();
+        if (readTimeout) {
+            *readTimeout = false;
+        }
+    return returnValue;
 
     static char readStuff[SERIAL_PORT_BUFFER_MAX];
     memset(readStuff, '\0', SERIAL_PORT_BUFFER_MAX);
