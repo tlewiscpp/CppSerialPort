@@ -185,7 +185,8 @@ char SerialPort::read(bool *readTimeout) {
         if (readTimeout) {
             *readTimeout = false;
         }
-    return returnValue;
+        return returnValue;
+    }
 
     static char readStuff[SERIAL_PORT_BUFFER_MAX];
     memset(readStuff, '\0', SERIAL_PORT_BUFFER_MAX);
