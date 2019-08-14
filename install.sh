@@ -96,7 +96,7 @@ if ! [[ -d "$buildDir" ]]; then
 fi
 
 cd "$buildDir" || { echo "Unable to enter build directory \"$buildDir\""; exit 1; }
-runCmake "$filePath" || { echo "cmake failed"; exit 1; }
+runCmake "$criteria" || { echo "cmake failed"; exit 1; }
 make -j$(nproc) || { echo "make failed, bailing out"; exit 1; }
 $SUDO make install || { echo "Could not install"; exit 1; }
 installMessage="$programName Installed Successfully!"
