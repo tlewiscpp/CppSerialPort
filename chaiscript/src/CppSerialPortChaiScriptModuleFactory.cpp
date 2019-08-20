@@ -340,7 +340,7 @@ ModulePtr CppSerialPortChaiScriptModuleFactory::createModule() {
     returnModule->add(constructor<SocketDisconnectedException(const std::string &, const std::string &)>(), "SocketDisconnectedException");
     returnModule->add(fun(&SocketDisconnectedException::portName), "portName");
     returnModule->add(fun(&SocketDisconnectedException::setPortName), "setPortName");
-    returnModule->add(fun(&SocketDisconnectedException::what), "what");
+    //returnModule->add(fun(&SocketDisconnectedException::what), "what");
 
     returnModule->add(user_type<AbstractSocket>(), "AbstractSocket");
     returnModule->add(base_class<IByteStream, AbstractSocket>());

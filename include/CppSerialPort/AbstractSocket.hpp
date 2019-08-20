@@ -24,12 +24,7 @@ namespace CppSerialPort {
     class SocketDisconnectedException : public std::runtime_error
     {
     public:
-        explicit inline SocketDisconnectedException(const std::string &portName, const std::string &what) :
-            std::runtime_error{what},
-            m_portName{portName}
-        {
-
-        }
+        explicit SocketDisconnectedException(const std::string &portName, const std::string &what) : std::runtime_error{what}, m_portName{portName} {}
         SocketDisconnectedException(const SocketDisconnectedException &) = default;
         SocketDisconnectedException(SocketDisconnectedException &&) = default;
         SocketDisconnectedException &operator=(const SocketDisconnectedException &) = default;
@@ -40,8 +35,9 @@ namespace CppSerialPort {
             return this->m_portName;
         }
 
-        inline void setPortName(const std::string &portName) {
+        inline SocketDisconnectedException &setPortName(const std::string &portName) {
             this->m_portName = portName;
+            return *this;
         }
 
     private:
