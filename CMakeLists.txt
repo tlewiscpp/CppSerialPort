@@ -42,7 +42,6 @@ set (${PROJECT_NAME}_SOURCE_FILES
     "${SOURCE_ROOT}/UdpSocket.cpp"
     "${SOURCE_ROOT}/AbstractSocket.cpp"
     "${SOURCE_ROOT}/ErrorInformation.cpp"
-    "${SOURCE_ROOT}/BasicFile.cpp"
     "${SOURCE_ROOT}/ByteArray.cpp")
 
 set (${PROJECT_NAME}_HEADER_FILES
@@ -53,7 +52,6 @@ set (${PROJECT_NAME}_HEADER_FILES
     "${HEADER_ROOT}/UdpSocket.hpp"
     "${HEADER_ROOT}/AbstractSocket.hpp"
     "${HEADER_ROOT}/ErrorInformation.hpp"
-    "${HEADER_ROOT}/BasicFile.hpp"
     "${HEADER_ROOT}/ByteArray.hpp")
 
 add_library(${PROJECT_NAME} SHARED
