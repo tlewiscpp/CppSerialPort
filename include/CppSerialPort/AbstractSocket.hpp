@@ -80,9 +80,6 @@ namespace CppSerialPort {
         bool isBroadcasting() const;
         void setBroadcast(bool broadcast);
 
-        void setFlushOnWrite(bool flushOnWrite) override;
-        bool flushOnWrite() const override;
-
         void setReadTimeout(int timeout) override;
         void setWriteTimeout(int timeout) override;
 
