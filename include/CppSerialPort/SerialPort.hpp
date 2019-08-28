@@ -6,7 +6,6 @@
 #include <sstream>
 
 #include "IByteStream.hpp"
-#include "BasicFile.hpp"
 #include <unordered_set>
 #include <type_traits>
 
@@ -269,9 +268,6 @@ public:
     std::string portName() const override;
     bool isOpen() const override;
 
-    void setFlushOnWrite(bool flushOnWrite) override;
-    bool flushOnWrite() const override;
-
     bool isDCDEnabled() const;
     bool isCTSEnabled() const;
     bool isDSREnabled() const;
@@ -317,7 +313,11 @@ private:
     DataBits m_dataBits;
     Parity m_parity;
     FlowControl m_flowControl;
-    BasicFile m_fileStream;
+#if defined(_WIN32)
+    HANDLE m_fileDescriptor;
+#else
+    int m_fileDescriptor;
+#endif //defined(_WIN32)
 
     static const long constexpr SERIAL_PORT_BUFFER_MAX{4096};
 

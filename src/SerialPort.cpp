@@ -16,6 +16,7 @@
 #    include <io.h>
 #    include <fcntl.h>
 #    include <thread>
+#define INVALID_FILE_DESCRIPTOR NULL
 #else
 #   include <termios.h>
 #   include <unistd.h>
@@ -27,6 +28,7 @@
 #   include <sys/file.h>
 #   include <cerrno>
 #   include <sys/signal.h>
+#define INVALID_FILE_DESCRIPTOR -1
 #endif //defined(_WIN32)
 
 
@@ -63,7 +65,7 @@ SerialPort::SerialPort(const std::string &name, BaudRate baudRate, DataBits data
         m_dataBits{dataBits},
         m_parity{parity},
         m_flowControl{flowControl},
-        m_fileStream{}
+        m_fileDescriptor{INVALID_FILE_DESCRIPTOR}
 {
     this->setLineEnding(lineEnding);
     std::pair<int, std::string> truePortNameAndNumber{getPortNameAndNumber(this->m_portName)};
@@ -74,10 +76,7 @@ SerialPort::SerialPort(const std::string &name, BaudRate baudRate, DataBits data
 
 #if !defined(_WIN32)
 int SerialPort::getFileDescriptor() const {
-if (this->m_fileStream.getFileHandle() == nullptr) {
-    throw SerialPortDisconnectedException(this->portName(), "CppSerialPort::SerialPort::getFileDescriptpr(): FileStream FILE * handle is a nullptr");
-}
-return this->m_fileStream.getFileDescriptor();
+    return this->m_fileDescriptor;
 }
 #endif //!defined(_WIN32)
 
@@ -87,10 +86,8 @@ void SerialPort::openPort() {
         throw std::runtime_error("CppSerialPort::SerialPort::openPort(): ERROR: " + this->portName() + " is not a currently available serial port (is something else using it?)");
     }
 #if defined(_WIN32)
-
-    //auto handle = CreateFileA(this->portName().c_str(), GENERIC_READ|GENERIC_WRITE, 0, nullptr, OPEN_EXISTING, FILE_FLAG_OVERLAPPED, nullptr);
     auto handle = CreateFileA(this->m_portName.c_str(), GENERIC_READ|GENERIC_WRITE, 0, nullptr, OPEN_EXISTING, 0, nullptr);
-    if(handle == INVALID_HANDLE_VALUE) {
+    if(handle == INVALID_FILE_DESCRIPTOR) {
         const auto errorCode = getLastError();
         throw std::runtime_error("CppSerialPort::SerialPort::openPort(): CreateFileA(LPCSTR, DWORD, DWORD, LPSECURITY_ATTRIBUTES, DWORD, DWORD, HANDLE, HANDLE): Unable to open serial port " + this->portName() + ": error code " + toStdString(errorCode) + " (" + getErrorString(errorCode) + ')');
     }
@@ -107,10 +104,6 @@ void SerialPort::openPort() {
         throw std::runtime_error("CppSerialPort::SerialPort::openPort(): GetCommState(HANDLE, LPDCB): Unable to get current communication state for  " + this->portName() + ": error code " + toStdString(errorCode) + " (" + getErrorString(errorCode) + ')');
     }
 
-    this->m_fileStream.setFileName(this->portName());
-    this->m_fileStream.open(handle, "r+");
-    this->m_fileStream.lockFile();
-
     /*set up parameters*/
     this->m_portSettings.dcb.fBinary=TRUE;
     this->m_portSettings.dcb.fInX=FALSE;
@@ -118,23 +111,25 @@ void SerialPort::openPort() {
     this->m_portSettings.dcb.fAbortOnError=FALSE;
     this->m_portSettings.dcb.fNull=FALSE;
 #else
-    this->m_fileStream.setFileName(this->portName());
-this->m_fileStream.open("r+");
-this->m_fileStream.lockFile();
+    auto fileHandle = ::open(this->portName().c_str(), O_RDWR);
+    if (fileHandle == INVALID_FILE_DESCRIPTOR) {
+        auto errorCode = getLastError();
+        throw std::runtime_error("CppSerialPort::SerialPort::openPort(): ERROR: open(" + this->portName() + ") returned error code " + std::to_string(errorCode) + " (" + getErrorString(errorCode) + ")");
+    }
 
-if (tcgetattr(this->getFileDescriptor(), &this->m_oldPortSettings) != 0) {
-    const auto errorCode = getLastError();
-    throw std::runtime_error("CppSerialPort::SerialPort::openPort(): tcgetattr(int, termios *): Unable to get current attributes for " + this->portName() + ": error code " + toStdString(errorCode) + " (" + getErrorString(errorCode) + ')');
-}
-memset(&this->m_portSettings, 0, sizeof(this->m_portSettings));
-this->m_portSettings = this->m_oldPortSettings;
-cfmakeraw(&this->m_portSettings);
+    if (tcgetattr(this->getFileDescriptor(), &this->m_oldPortSettings) != 0) {
+        const auto errorCode = getLastError();
+        throw std::runtime_error("CppSerialPort::SerialPort::openPort(): tcgetattr(int, termios *): Unable to get current attributes for " + this->portName() + ": error code " + toStdString(errorCode) + " (" + getErrorString(errorCode) + ')');
+    }
+    memset(&this->m_portSettings, 0, sizeof(this->m_portSettings));
+    this->m_portSettings = this->m_oldPortSettings;
+    cfmakeraw(&this->m_portSettings);
 
-this->m_portSettings.c_lflag &= (~(ICANON|ECHO|ECHOE|ECHOK|ECHONL|ISIG));
-this->m_portSettings.c_iflag &= (~(INPCK|IGNPAR|PARMRK|ISTRIP|ICRNL|IXANY));
-this->m_portSettings.c_oflag &= (~OPOST);
-this->m_portSettings.c_cc[VMIN]= 0;
-this->m_portSettings.c_cflag |= (CLOCAL | CREAD);
+    this->m_portSettings.c_lflag &= (~(ICANON|ECHO|ECHOE|ECHOK|ECHONL|ISIG));
+    this->m_portSettings.c_iflag &= (~(INPCK|IGNPAR|PARMRK|ISTRIP|ICRNL|IXANY));
+    this->m_portSettings.c_oflag &= (~OPOST);
+    this->m_portSettings.c_cc[VMIN]= 0;
+    this->m_portSettings.c_cflag |= (CLOCAL | CREAD);
 #endif
 
     this->setBaudRate(this->m_baudRate);
@@ -161,7 +156,7 @@ void SerialPort::setReadTimeout(int timeout) {
     commTimeouts.WriteTotalTimeoutMultiplier = 0;
     commTimeouts.WriteTotalTimeoutConstant   = static_cast<DWORD>(this->writeTimeout());
 
-    if(!SetCommTimeouts(this->m_fileStream.getNativeHandle(), &commTimeouts)) {
+    if(!SetCommTimeouts(this->m_fileDescriptor, &commTimeouts)) {
         auto errorCode = getLastError();
         this->closePort();
         throw std::runtime_error("CppSerialPort::SerialPort::setReadTimeout(int timeout): SetCommTimeouts(HANDLE, COMMTIMEOUTS*): Unable to set timeout settings for " + this->portName() + ": error code " + toStdString(errorCode) + " (" + getErrorString(errorCode) + ')');
@@ -194,7 +189,7 @@ char SerialPort::read(bool *readTimeout) {
     do {
         DWORD commErrors{};
         COMSTAT commStatus{0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-        auto clearErrorsResult = ClearCommError(this->m_fileStream.getNativeHandle(), &commErrors, &commStatus);
+        auto clearErrorsResult = ClearCommError(this->m_fileDescriptor, &commErrors, &commStatus);
         if (clearErrorsResult == 0) {
             const auto errorCode = getLastError();
             throw std::runtime_error("ClearCommError(HANDLE, LPDWORD, LPCOMSTAT) error: " + toStdString(errorCode) + " (" + getErrorString(errorCode) + ")");
@@ -207,7 +202,8 @@ char SerialPort::read(bool *readTimeout) {
                 break;
             }
         }
-        auto returnedBytes = this->m_fileStream.read(readStuff, static_cast<size_t>(maxBytes));
+        DWORD readBytes{0};
+        auto result = ReadFile(this->m_fileDescriptor, &readStuff, maxBytes, &readBytes, nullptr);
         if (returnedBytes > 0) {
             for (size_t i = 0; i < returnedBytes; i++) {
                 this->m_readBuffer += readStuff[i];
@@ -227,81 +223,72 @@ char SerialPort::read(bool *readTimeout) {
 
 #else
     if (!this->m_readBuffer.empty()) {
-    char returnValue{this->m_readBuffer[0]};
-    this->m_readBuffer.popFront();
-    if (readTimeout) {
-        *readTimeout = false;
-    }
-    return returnValue;
-}
-if (this->isDisconnected()) {
-    this->closePort();
-    throw SerialPortDisconnectedException{this->m_portName, "CppSerialPort::SerialPort::read(): The serial port has been disconnected from the system"};
-}
-
-//Use select() to wait for data to arrive
-//At socket, then read and return
-fd_set read_fds{0, 0, 0};
-fd_set write_fds{0, 0, 0};
-fd_set except_fds{0, 0, 0};
-FD_ZERO(&read_fds);
-FD_ZERO(&write_fds);
-FD_ZERO(&except_fds);
-FD_SET(this->getFileDescriptor(), &read_fds);
-
-struct timeval timeout{0, 0};
-timeout.tv_sec = 0;
-timeout.tv_usec = (this->readTimeout() * 1000);
-static char readStuff[SERIAL_PORT_BUFFER_MAX];
-memset(readStuff, '\0', SERIAL_PORT_BUFFER_MAX);
-
-if (select(this->getFileDescriptor() + 1, &read_fds, &write_fds, &except_fds, &timeout) == 1) {
-    int bytesAvailable{0};
-    ioctl(this->getFileDescriptor(), FIONREAD, &bytesAvailable);
-    auto returnedBytes = this->m_fileStream.read(readStuff, static_cast<size_t>(bytesAvailable));
-    if (returnedBytes <= 0) {
+        char returnValue{this->m_readBuffer[0]};
+        this->m_readBuffer.popFront();
         if (readTimeout) {
-            *readTimeout = true;
+            *readTimeout = false;
         }
-        if (this->isDisconnected()) {
-            this->closePort();
-            throw SerialPortDisconnectedException{this->m_portName, "CppSerialPort::SerialPort::read(): The serial port has been disconnected from the system"};
+        return returnValue;
+    }
+    if (this->isDisconnected()) {
+        this->closePort();
+        throw SerialPortDisconnectedException{this->m_portName, "CppSerialPort::SerialPort::read(): The serial port has been disconnected from the system"};
+    }
+
+    //Use select() to wait for data to arrive
+    //At socket, then read and return
+    fd_set read_fds{0, 0, 0};
+    fd_set write_fds{0, 0, 0};
+    fd_set except_fds{0, 0, 0};
+    FD_ZERO(&read_fds);
+    FD_ZERO(&write_fds);
+    FD_ZERO(&except_fds);
+    FD_SET(this->getFileDescriptor(), &read_fds);
+
+    struct timeval timeout{0, 0};
+    timeout.tv_sec = 0;
+    timeout.tv_usec = (this->readTimeout() * 1000);
+    static char readStuff[SERIAL_PORT_BUFFER_MAX];
+    memset(readStuff, '\0', SERIAL_PORT_BUFFER_MAX);
+
+    if (select(this->getFileDescriptor() + 1, &read_fds, &write_fds, &except_fds, &timeout) == 1) {
+        int bytesAvailable{0};
+        ioctl(this->getFileDescriptor(), FIONREAD, &bytesAvailable);
+        auto returnedBytes = ::read(this->getFileDescriptor(), readStuff, static_cast<size_t>(bytesAvailable));
+        if (returnedBytes <= 0) {
+            if (readTimeout) {
+                *readTimeout = true;
+            }
+            if (this->isDisconnected()) {
+                this->closePort();
+                throw SerialPortDisconnectedException{this->m_portName, "CppSerialPort::SerialPort::read(): The serial port has been disconnected from the system"};
+            }
+            return 0;
         }
-        return 0;
+        for (size_t i = 0; i < returnedBytes; i++) {
+            this->m_readBuffer += readStuff[i];
+        }
+        char returnValue{this->m_readBuffer[0]};
+        this->m_readBuffer.popFront();
+        if (readTimeout) {
+            *readTimeout = false;
+        }
+        return returnValue;
     }
-    for (size_t i = 0; i < returnedBytes; i++) {
-        this->m_readBuffer += readStuff[i];
-    }
-    char returnValue{this->m_readBuffer[0]};
-    this->m_readBuffer.popFront();
     if (readTimeout) {
-        *readTimeout = false;
+        *readTimeout = true;
     }
-    return returnValue;
-}
-if (readTimeout) {
-    *readTimeout = true;
-}
-return 0;
+    return 0;
 #endif //defined(_WIN32)
 }
 
 bool SerialPort::isDisconnected() {
     auto availablePorts = SerialPort::availableSerialPorts();
-    return (std::find(availablePorts.begin(), availablePorts.end(), this->m_portName) == availablePorts.end());
+    return (availablePorts.find(this->m_portName) == availablePorts.end());
 }
-
-void SerialPort::setFlushOnWrite(bool flushOnWrite) {
-    this->m_fileStream.setFlushOnWrite(flushOnWrite);
-}
-
-bool SerialPort::flushOnWrite() const {
-    return this->m_fileStream.flushOnWrite();
-}
-
 
 ssize_t SerialPort::write(char c) {
-    auto writtenBytes = this->m_fileStream.write(c);
+    auto writtenBytes = ::write(this->getFileDescriptor(), &c, 1);
     if (writtenBytes != 1) {
         return (getLastError() == EAGAIN ? 0 : writtenBytes);
     }
@@ -309,8 +296,8 @@ ssize_t SerialPort::write(char c) {
 }
 
 ssize_t SerialPort::write(const char *bytes, size_t numberOfBytes) {
-    auto writtenBytes = this->m_fileStream.write(bytes, numberOfBytes);
-    if (writtenBytes != numberOfBytes) {
+    auto writtenBytes = ::write(this->m_fileDescriptor, bytes, numberOfBytes);
+    if (writtenBytes != static_cast<long>(numberOfBytes)) {
         return (getLastError() == EAGAIN ? 0 : writtenBytes);
     }
     return writtenBytes;
@@ -322,25 +309,26 @@ void SerialPort::closePort() {
     }
     try {
 #if defined(_WIN32)
-        CancelIo(this->m_fileStream.getNativeHandle());
-        //CloseHandle(this->m_fileStream.getNativeHandle());
-        this->m_fileStream.close();
+    CancelIo(this->m_fileDescriptor);
+    CloseHandle(this->m_fileDescriptor);
 #else
         //TODO: Check error codes for these functions
-std::memcpy(&this->m_portSettings, &this->m_oldPortSettings, sizeof(this->m_portSettings));
-this->m_portSettings = this->m_oldPortSettings;
-this->applyPortSettings();
-this->m_fileStream.close();
+    std::memcpy(&this->m_portSettings, &this->m_oldPortSettings, sizeof(this->m_portSettings));
+    this->m_portSettings = this->m_oldPortSettings;
+    this->applyPortSettings();
+    auto result = ::close(this->m_fileDescriptor);
+        (void)result;
 #endif
     } catch (const std::exception &e) {
         std::cerr << "CppSerialPort::SerialPort::closePort(): Exception caught: \"" << e.what() << "\"" << std::endl;
     }
+    this->m_fileDescriptor = INVALID_FILE_DESCRIPTOR;
 }
 
 modem_status_t SerialPort::getModemStatus() const {
 #if defined(_WIN32)
     modem_status_t status{0};
-    if (GetCommModemStatus(this->m_fileStream.getNativeHandle(), &status) == 0) {
+    if (GetCommModemStatus(this->m_fileDescriptor, &status) == 0) {
         const auto errorCode = getLastError();
         throw std::runtime_error("CppSerialPort::SerialPort::getModemStatus(): GetCommModemStatus(HANDLE, LPDWORD): Unable to get modem status for " + this->portName() + ": error code " + toStdString(errorCode) + " (" + getErrorString(errorCode) + ')');
     }
@@ -360,7 +348,7 @@ void SerialPort::enableDTR() {
         return;
     }
 #if defined(_WIN32)
-    if (EscapeCommFunction(this->m_fileStream.getNativeHandle(), SETDTR) == 0) {
+    if (EscapeCommFunction(this->m_fileDescriptor, SETDTR) == 0) {
         const auto errorCode = getLastError();
         throw std::runtime_error("CppSerialPort::SerialPort::enableDTR(): EscapeCommFunction(HANDLE, DWORD): Unable to set DTR settings for " + this->portName() + ": error code " + toStdString(errorCode) + " (" + getErrorString(errorCode) + ')');
     }
@@ -379,7 +367,7 @@ void SerialPort::disableDTR() {
         return;
     }
 #if defined(_WIN32)
-    if (EscapeCommFunction(this->m_fileStream.getNativeHandle(), CLRDTR) == 0) {
+    if (EscapeCommFunction(this->m_fileDescriptor, CLRDTR) == 0) {
         const auto errorCode = getLastError();
         throw std::runtime_error("CppSerialPort::SerialPort::disableDTR(): EscapeCommFunction(HANDLE, DWORD): Unable to reset DTR for " + this->portName() + ": error code " + toStdString(errorCode) + " (" + getErrorString(errorCode) + ')');
     }
@@ -398,7 +386,7 @@ void SerialPort::enableRTS() {
         return;
     }
 #if defined(_WIN32)
-    if (EscapeCommFunction(this->m_fileStream.getNativeHandle(), SETRTS) == 0) {
+    if (EscapeCommFunction(this->m_fileDescriptor, SETRTS) == 0) {
         const auto errorCode = getLastError();
         throw std::runtime_error("CppSerialPort::SerialPort::enableRTS(): EscapeCommFunction(HANDLE, DWORD): Unable to set RTS for " + this->portName() + ": error code " + toStdString(errorCode) + " (" + getErrorString(errorCode) + ')');
     }
@@ -417,7 +405,7 @@ void SerialPort::disableRTS() {
         return;
     }
 #if defined(_WIN32)
-    if (EscapeCommFunction(this->m_fileStream.getNativeHandle(), CLRRTS) == 0) {
+    if (EscapeCommFunction(this->m_fileDescriptor, CLRRTS) == 0) {
         const auto errorCode = getLastError();
         throw std::runtime_error("CppSerialPort::SerialPort::disableRTS(): EscapeCommFunction(HANDLE, DWORD): Unable to reset RTS for " + this->portName() + ": error code " + toStdString(errorCode) + " (" + getErrorString(errorCode) + ')');
     }
@@ -470,7 +458,7 @@ void SerialPort::flushRx() {
         return;
     }
 #if defined(_WIN32)
-    PurgeComm(this->m_fileStream.getNativeHandle(), PURGE_RXCLEAR | PURGE_RXABORT);
+    PurgeComm(this->m_fileDescriptor, PURGE_RXCLEAR | PURGE_RXABORT);
 #else
     tcflush(this->getFileDescriptor(), TCIFLUSH);
 #endif
@@ -481,9 +469,8 @@ void SerialPort::flushTx() {
     if (!this->isOpen()) {
         return;
     }
-    this->m_fileStream.flush();
 #if defined(_WIN32)
-    PurgeComm(this->m_fileStream.getNativeHandle(), PURGE_TXCLEAR | PURGE_TXABORT);
+    PurgeComm(this->m_fileDescriptor, PURGE_TXCLEAR | PURGE_TXABORT);
 #else
     tcflush(this->getFileDescriptor(), TCOFLUSH);
 #endif
@@ -502,7 +489,7 @@ bool SerialPort::isAvailableSerialPort(const std::string &name) {
 }
 
 bool SerialPort::isOpen() const {
-    return this->m_fileStream.isOpen();
+    return (this->m_fileDescriptor != INVALID_FILE_DESCRIPTOR);
 }
 
 
@@ -643,7 +630,7 @@ void SerialPort::applyPortSettings() {
         return;
     }
 #if defined(_WIN32)
-    if (SetCommConfig(this->m_fileStream.getNativeHandle(), &this->m_portSettings, sizeof(COMMCONFIG)) == 0) {
+    if (SetCommConfig(this->m_fileDescriptor, &this->m_portSettings, sizeof(COMMCONFIG)) == 0) {
         const auto errorCode = getLastError();
         throw std::runtime_error("CppSerialPort::SerialPort::applyPortSettings(): SetCommConfig(HANDLE, COMMCONFIG, DWORD): Unable to apply serial port attributes for " + this->portName() + ": error code " + toStdString(errorCode) + " (" + getErrorString(errorCode) + ')');
     }
