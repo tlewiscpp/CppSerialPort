@@ -116,7 +116,7 @@ void SerialPort::openPort() {
         auto errorCode = getLastError();
         throw std::runtime_error("CppSerialPort::SerialPort::openPort(): ERROR: open(" + this->portName() + ") returned error code " + std::to_string(errorCode) + " (" + getErrorString(errorCode) + ")");
     }
-
+    this->m_fileDescriptor = fileHandle;
     if (tcgetattr(this->getFileDescriptor(), &this->m_oldPortSettings) != 0) {
         const auto errorCode = getLastError();
         throw std::runtime_error("CppSerialPort::SerialPort::openPort(): tcgetattr(int, termios *): Unable to get current attributes for " + this->portName() + ": error code " + toStdString(errorCode) + " (" + getErrorString(errorCode) + ')');
