@@ -10,7 +10,10 @@
 #include <type_traits>
 
 #if defined(_WIN32)
-#    include <windows.h>
+#include <windows.h>
+typedef HANDLE file_descriptor_t;
+#else
+typedef int file_descriptor_t;
 #endif //defined(_WIN32)
 
 //Thanks to Jarod42
@@ -335,8 +338,8 @@ private:
     static const int constexpr NUMBER_OF_POSSIBLE_SERIAL_PORTS{256*9};
     termios m_portSettings;
     termios m_oldPortSettings;
-	int getFileDescriptor() const;
 #endif //defined(_WIN32)
+    file_descriptor_t getFileDescriptor() const;
     void applyPortSettings();
     modem_status_t getModemStatus() const;
 

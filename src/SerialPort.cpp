@@ -74,11 +74,9 @@ SerialPort::SerialPort(const std::string &name, BaudRate baudRate, DataBits data
 }
 
 
-#if !defined(_WIN32)
-int SerialPort::getFileDescriptor() const {
+file_descriptor_t SerialPort::getFileDescriptor() const {
     return this->m_fileDescriptor;
 }
-#endif //!defined(_WIN32)
 
 
 void SerialPort::openPort() {
@@ -202,8 +200,13 @@ char SerialPort::read(bool *readTimeout) {
                 break;
             }
         }
-        DWORD readBytes{0};
-        auto result = ReadFile(this->m_fileDescriptor, &readStuff, maxBytes, &readBytes, nullptr);
+        DWORD returnedBytes{0};
+        auto result = ReadFile(this->m_fileDescriptor, &readStuff, maxBytes, &returnedBytes, nullptr);
+        if (result == 0) {
+            const auto errorCode = getLastError();
+            throw std::runtime_error("ReadFile(HANDLE, LPDWORD, DWORD, LPDWORD, LPOVERLAPPED) error: " + toStdString(errorCode) + " (" + getErrorString(errorCode) + ")");
+        }
+
         if (returnedBytes > 0) {
             for (size_t i = 0; i < returnedBytes; i++) {
                 this->m_readBuffer += readStuff[i];
@@ -288,7 +291,15 @@ bool SerialPort::isDisconnected() {
 }
 
 ssize_t SerialPort::write(char c) {
+#if defined(_WIN32)
+    DWORD writtenBytes{};
+    auto result = WriteFile(this->getFileDescriptor(), &c, 1, &writtenBytes, nullptr);
+    if (result == 0) {
+        return (getLastError() == EAGAIN ? 0 : writtenBytes);
+    }
+#else
     auto writtenBytes = ::write(this->getFileDescriptor(), &c, 1);
+#endif //defined(_WIN32)
     if (writtenBytes != 1) {
         return (getLastError() == EAGAIN ? 0 : writtenBytes);
     }
@@ -296,7 +307,15 @@ ssize_t SerialPort::write(char c) {
 }
 
 ssize_t SerialPort::write(const char *bytes, size_t numberOfBytes) {
+#if defined(_WIN32)
+    DWORD writtenBytes{};
+    auto result = WriteFile(this->getFileDescriptor(), bytes, numberOfBytes, &writtenBytes, nullptr);
+    if (result == 0) {
+        return (getLastError() == EAGAIN ? 0 : writtenBytes);
+    }
+#else
     auto writtenBytes = ::write(this->m_fileDescriptor, bytes, numberOfBytes);
+#endif //defined(_WIN32)
     if (writtenBytes != static_cast<long>(numberOfBytes)) {
         return (getLastError() == EAGAIN ? 0 : writtenBytes);
     }
