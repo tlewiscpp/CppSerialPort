@@ -268,7 +268,7 @@ char SerialPort::read(bool *readTimeout) {
             }
             return 0;
         }
-        for (size_t i = 0; i < returnedBytes; i++) {
+        for (auto i = 0; i < returnedBytes; i++) {
             this->m_readBuffer += readStuff[i];
         }
         char returnValue{this->m_readBuffer[0]};
