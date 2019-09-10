@@ -183,7 +183,7 @@ uint64_t IByteStream::getEpoch() {
  */
 
 int64_t IByteStream::getEpoch() {
-    return static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count());
+    return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
 }
 
 
