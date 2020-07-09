@@ -7,8 +7,8 @@
 #include <CppSerialPort/SerialPort.hpp>
 
 std::string nativeOptionsPrefix{"/dev/ttyS"};
-std::vector<std::string> optionPrefixes{"-", "--"};
-std::vector<std::string> skipNativeOptions{"s, skip-native"};
+std::vector<std::string> optionPrefixes{"--", "-"};
+std::vector<std::string> skipNativeOptions{"s", "skip-native"};
 
 bool skipNativePorts{false};
 bool unknownOption{false};
