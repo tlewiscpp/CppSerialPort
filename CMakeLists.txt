@@ -78,6 +78,8 @@ if (WIN32 OR WIN64)
     target_link_libraries(${PROJECT_NAME} shlwapi Ws2_32)
 endif()
 
+option (WITH_CHAISCRIPT "Building with chaiscript support" OFF)
+option (BUILD_LS_TOOL "Build lscomm tool" ON)
 
 if(${CMAKE_SYSTEM_NAME} MATCHES Linux|.*BSD|DragonFly)
 
@@ -92,9 +94,14 @@ install(TARGETS ${PROJECT_NAME}_STATIC
         ARCHIVE DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/"
         LIBRARY DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/"
         PUBLIC_HEADER DESTINATION "${CMAKE_INSTALL_PREFIX}/include/${PROJECT_NAME}/")
-
 endif()
+
 
 if (WITH_CHAISCRIPT)
-add_subdirectory(chaiscript)
+    add_subdirectory(chaiscript)
 endif()
+
+if (BUILD_LS_TOOL)
+    add_subdirectory(ls_tool)
+endif()
+
